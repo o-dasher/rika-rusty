@@ -1,0 +1,26 @@
+[package]
+name = "osaka-bot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy_reflect = "0.12.1"
+deep-struct-update = "0.1.0"
+derive_more = "0.99.17"
+dotenvy = "0.15.7"
+envy = "0.4.2"
+itertools = "0.12.0"
+log = "0.4.20"
+nestruct = "0.1.0"
+paste = "1.0.14"
+poise = "0.5.7"
+poise-i18n = "0.1.0"
+rand = "0.8.5"
+rusty18n = "0.1.1"
+serde = { version = "1.0.193", features = ["serde_derive"] }
+strum = { version = "0.25.0", features = ["strum_macros", "derive"] }
+thiserror = "1.0.52"
+tokio = { version = "1.35.1", features = ["rt-multi-thread"] }
+tracing-subscriber = "0.3.18"

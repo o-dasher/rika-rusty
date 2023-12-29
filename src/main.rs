@@ -1,0 +1,65 @@
+use error::OsakaError;
+use i18n::OsakaLocale;
+use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br};
+use poise::{
+    serenity_prelude::{futures::TryFutureExt, GatewayIntents},
+    Context, FrameworkOptions,
+};
+use poise_i18n::{apply_translations, PoiseI18NMeta};
+use rusty18n::I18NWrapper;
+use serde::{Deserialize, Serialize};
+
+pub mod commands;
+pub mod error;
+pub mod i18n;
+pub mod responses;
+pub mod setup;
+
+pub type OsakaContext<'a> = Context<'a, OsakaData, OsakaError>;
+pub type OsakaResult = Result<(), OsakaError>;
+
+#[derive(Serialize, Deserialize)]
+pub struct OsakaConfig {
+    pub bot_token: String,
+    pub development_guild: Option<u64>,
+}
+
+pub struct OsakaData {
+    pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
+}
+
+impl PoiseI18NMeta<OsakaLocale, OsakaI18N> for OsakaContext<'_> {
+    fn locales(&self) -> &I18NWrapper<OsakaLocale, OsakaI18N> {
+        &self.data().i18n
+    }
+}
+
+#[tokio::main]
+async fn main() -> OsakaResult {
+    dotenvy::dotenv().ok();
+    tracing_subscriber::fmt().with_target(true).pretty().init();
+
+    let mut commands = vec![commands::user::user(), commands::fun::fun()];
+
+    let i18n =
+        I18NWrapper::<OsakaLocale, OsakaI18N>::new(vec![(OsakaLocale::BrazilianPortuguese, pt_br)]);
+    apply_translations(&mut commands, &i18n);
+
+    let config = envy::from_env::<OsakaConfig>().map_err(OsakaError::unexpect)?;
+
+    poise::Framework::builder()
+        .options(FrameworkOptions {
+            commands,
+            on_error: |err| Box::pin(error::on_error(err).unwrap_or_else(|e| log::error!("{}", e))),
+            ..Default::default()
+        })
+        .token(&config.bot_token)
+        .intents(GatewayIntents::non_privileged())
+        .setup(move |ctx, _ready, framework| {
+            Box::pin(async move { setup::setup(ctx, framework, config, i18n).await })
+        })
+        .run()
+        .await?;
+
+    Ok(())
+}
