@@ -39,7 +39,7 @@ async fn main() -> OsakaResult {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt().with_target(true).pretty().init();
 
-    let mut commands = vec![commands::user::user(), commands::fun::fun()];
+    let mut commands = vec![commands::user::user(), commands::fun::fun(), commands::gif::gif()];
 
     let i18n =
         I18NWrapper::<OsakaLocale, OsakaI18N>::new(vec![(OsakaLocale::BrazilianPortuguese, pt_br)]);

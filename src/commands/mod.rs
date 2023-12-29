@@ -1,5 +1,6 @@
 pub mod user;
 pub mod fun;
+pub mod gif;
 
 #[macro_export]
 macro_rules! create_command_group {

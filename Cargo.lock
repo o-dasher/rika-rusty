@@ -971,6 +971,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing-subscriber",
+ "url",
 ]
 
 [[package]]
