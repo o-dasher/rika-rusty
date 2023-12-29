@@ -5,7 +5,7 @@ pub fn pt_br() -> OsakaI18N {
     define_i18n!(
         OsakaI18N,
         errors: {
-            unexpected: r!("")
+            unexpected: r!("Alguma coisa bem paia aconteceu...")
         },
         user: {
             avatar: {
