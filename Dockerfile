@@ -4,9 +4,12 @@ FROM rust:latest AS builder
 WORKDIR /app
 
 # Copy required files
+# Copy the .env file from the build context into the Docker image
+COPY .env /app/.env
 COPY src src
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
+COPY migrations migrations
 
 ARG BUILD_ENV=production
 
@@ -26,9 +29,6 @@ FROM ubuntu:latest
 EXPOSE 443
 
 WORKDIR /app
-
-# Copy the .env file from the build context into the Docker image
-COPY .env /app/.env
 
 # Copy the built binary from the builder image
 COPY --from=builder /app/target/releas[e] /app/target/debu[g] .

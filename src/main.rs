@@ -8,6 +8,8 @@ use poise::{
 use poise_i18n::{apply_translations, PoiseI18NMeta};
 use rusty18n::I18NWrapper;
 use serde::{Deserialize, Serialize};
+use sqlx::pool::PoolOptions;
+use sqlx::MySql;
 
 pub mod commands;
 pub mod error;
@@ -22,6 +24,9 @@ pub type OsakaResult = Result<(), OsakaError>;
 pub struct OsakaConfig {
     pub bot_token: String,
     pub development_guild: Option<u64>,
+
+    pub database_url: String,
+    pub mysql_database: String,
 }
 
 pub struct OsakaData {
@@ -39,13 +44,24 @@ async fn main() -> OsakaResult {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt().with_target(true).pretty().init();
 
-    let mut commands = vec![commands::user::user(), commands::fun::fun(), commands::gif::gif()];
+    let config = envy::from_env::<OsakaConfig>()?;
+
+    let pool = PoolOptions::<MySql>::new()
+        .max_connections(10)
+        .connect(&config.database_url)
+        .await?;
+
+    sqlx::migrate!("./migrations").run(&pool).await?;
+
+    let mut commands = vec![
+        commands::user::user(),
+        commands::fun::fun(),
+        commands::gif::gif(),
+    ];
 
     let i18n =
         I18NWrapper::<OsakaLocale, OsakaI18N>::new(vec![(OsakaLocale::BrazilianPortuguese, pt_br)]);
     apply_translations(&mut commands, &i18n);
-
-    let config = envy::from_env::<OsakaConfig>().map_err(OsakaError::unexpect)?;
 
     poise::Framework::builder()
         .options(FrameworkOptions {

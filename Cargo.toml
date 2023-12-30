@@ -18,6 +18,7 @@ poise-i18n = "0.1.0"
 rand = "0.8.5"
 rusty18n = "0.1.1"
 serde = { version = "1.0.193", features = ["serde_derive"] }
+sqlx = { version = "0.7.3", features = ["mysql"] }
 strum = { version = "0.25.0", features = ["strum_macros", "derive"] }
 thiserror = "1.0.52"
 tokio = { version = "1.35.1", features = ["rt-multi-thread"] }

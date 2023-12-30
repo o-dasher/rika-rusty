@@ -34,7 +34,7 @@ pub async fn coinflip(ctx: OsakaContext<'_>) -> OsakaResult {
     
     ctx.reply(cool_text(
         OsakaMoji::ZanyFace,
-        &format!("{} {}", t!(show), mono( coin_string)),
+        &format!("{} {}", t!(show), mono(coin_string)),
     ))
     .await?;
 

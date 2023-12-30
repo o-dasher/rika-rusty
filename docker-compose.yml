@@ -17,7 +17,7 @@ services:
       MYSQL_USER: osaka
       MYSQL_PASSWORD: osaka
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
       - ./docker_volume:/var/lib/mysql
 

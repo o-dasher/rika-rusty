@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use crate::{
-    error::OsakaError,
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaResult,
 };
@@ -11,7 +10,7 @@ const OHMAGA_URL: &str = "https://media1.tenor.com/m/of_mwJmMNbsAAAAC/azumanga-a
 
 #[command(slash_command)]
 pub async fn ohmaga(ctx: OsakaContext<'_>) -> OsakaResult {
-    let url = url::Url::from_str(OHMAGA_URL).map_err(OsakaError::unexpect)?;
+    let url = url::Url::from_str(OHMAGA_URL)?;
 
     ctx.send(|r| {
         r.content(cool_text(OsakaMoji::ZanyFace, "OhMaga!"))
