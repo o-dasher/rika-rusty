@@ -26,7 +26,6 @@ pub struct OsakaConfig {
     pub development_guild: Option<u64>,
 
     pub database_url: String,
-    pub mysql_database: String,
 }
 
 pub struct OsakaData {
