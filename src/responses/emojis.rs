@@ -1,11 +1,30 @@
 use std::fmt::Display;
 
+use poise::serenity_prelude::ReactionType;
 use strum::IntoStaticStr;
 
 #[derive(IntoStaticStr)]
 #[strum(serialize_all = "snake_case")]
 pub enum OsakaMoji {
-    ZanyFace
+    ZanyFace,
+    ArrowForward,
+    ArrowBackward,
+}
+
+impl From<OsakaMoji> for char {
+    fn from(value: OsakaMoji) -> Self {
+        match value {
+            OsakaMoji::ArrowForward => '▶',
+            OsakaMoji::ArrowBackward => '◀',
+            OsakaMoji::ZanyFace => ' ',
+        }
+    }
+}
+
+impl From<OsakaMoji> for ReactionType {
+    fn from(value: OsakaMoji) -> Self {
+        char::from(value).into()
+    }
 }
 
 impl Display for OsakaMoji {

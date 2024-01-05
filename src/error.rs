@@ -1,6 +1,7 @@
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
+use rusty_booru::generic::client::GenericClientError;
 
 use crate::OsakaData;
 use log::error;
@@ -22,6 +23,15 @@ pub enum OsakaError {
     #[error(transparent)]
     Url(url::ParseError),
 
+    #[error(transparent)]
+    BooruGeneric(GenericClientError),
+
+    #[error(transparent)]
+    BooruValidation(rusty_booru::shared::ValidationError),
+
+    #[error(transparent)]
+    Reqwest(reqwest::Error),
+
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
 }
@@ -39,13 +49,16 @@ pub async fn on_error(
                 | OsakaError::Migrate(..)
                 | OsakaError::Envy(..)
                 | OsakaError::Url(..)
+                | OsakaError::BooruGeneric(..)
+                | OsakaError::Reqwest(..)
+                | OsakaError::BooruValidation(..)
                 | OsakaError::SimplyUnexpected => {
                     log::error!("{error}");
                     t!(i18n.errors.unexpected)
                 }
             };
 
-            ctx.send(|r| r.content(response)).await?;
+            ctx.say(response).await?;
         }
         e => poise::builtins::on_error(e).await?,
     }

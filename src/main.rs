@@ -16,6 +16,7 @@ pub mod error;
 pub mod i18n;
 pub mod responses;
 pub mod setup;
+pub mod utils;
 
 pub type OsakaContext<'a> = Context<'a, OsakaData, OsakaError>;
 pub type OsakaResult = Result<(), OsakaError>;
@@ -53,6 +54,7 @@ async fn main() -> OsakaResult {
     sqlx::migrate!("./migrations").run(&pool).await?;
 
     let mut commands = vec![
+        commands::naughty::naughty(),
         commands::user::user(),
         commands::fun::fun(),
         commands::gif::gif(),
