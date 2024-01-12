@@ -1,10 +1,9 @@
+use crate::OsakaData;
+use chrono::OutOfRangeError;
+use log::error;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
-use rusty_booru::generic::client::GenericClientError;
-
-use crate::OsakaData;
-use log::error;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
 pub enum OsakaError {
@@ -24,10 +23,10 @@ pub enum OsakaError {
     Url(url::ParseError),
 
     #[error(transparent)]
-    BooruGeneric(GenericClientError),
+    Booru(rusty_booru::shared::Error),
 
     #[error(transparent)]
-    BooruValidation(rusty_booru::shared::ValidationError),
+    DurationOutOfRange(OutOfRangeError),
 
     #[error(transparent)]
     Reqwest(reqwest::Error),
@@ -49,9 +48,9 @@ pub async fn on_error(
                 | OsakaError::Migrate(..)
                 | OsakaError::Envy(..)
                 | OsakaError::Url(..)
-                | OsakaError::BooruGeneric(..)
+                | OsakaError::Booru(..)
                 | OsakaError::Reqwest(..)
-                | OsakaError::BooruValidation(..)
+                | OsakaError::DurationOutOfRange(..)
                 | OsakaError::SimplyUnexpected => {
                     log::error!("{error}");
                     t!(i18n.errors.unexpected)

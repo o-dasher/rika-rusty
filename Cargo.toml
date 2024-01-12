@@ -8,6 +8,7 @@ incremental = true
 
 [dependencies]
 bevy_reflect = "0.12.1"
+chrono = "0.4.31"
 deep-struct-update = "0.1.0"
 derive_more = "0.99.17"
 dotenvy = "0.15.7"

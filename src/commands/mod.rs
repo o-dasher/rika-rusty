@@ -1,7 +1,7 @@
-pub mod user;
+pub mod booru;
 pub mod fun;
 pub mod gif;
-pub mod naughty;
+pub mod user;
 
 #[macro_export]
 macro_rules! create_command_group {

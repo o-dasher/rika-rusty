@@ -54,7 +54,7 @@ async fn main() -> OsakaResult {
     sqlx::migrate!("./migrations").run(&pool).await?;
 
     let mut commands = vec![
-        commands::naughty::naughty(),
+        commands::booru::booru(),
         commands::user::user(),
         commands::fun::fun(),
         commands::gif::gif(),

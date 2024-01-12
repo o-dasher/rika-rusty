@@ -1,5 +1,4 @@
-use std::time::Duration;
-
+use chrono::Duration;
 use poise::{serenity_prelude::CollectComponentInteraction, CreateReply};
 
 use crate::{error::OsakaError, responses::emojis::OsakaMoji, OsakaContext, OsakaResult};
@@ -13,8 +12,8 @@ impl ComponentContextId {
 }
 
 pub struct Paginator<'a> {
-    ctx: OsakaContext<'a>,
-    amount_pages: usize,
+    pub ctx: OsakaContext<'a>,
+    pub amount_pages: usize,
 }
 
 impl<'a> Paginator<'a> {
@@ -32,6 +31,7 @@ impl<'a> Paginator<'a> {
         let ctx_id = ComponentContextId(ctx.id());
 
         let prev_button = ctx_id.create_id("prev");
+        let close_button = ctx_id.create_id("close");
         let next_button = ctx_id.create_id("next");
 
         let mut current_idx = 0usize;
@@ -43,7 +43,7 @@ impl<'a> Paginator<'a> {
         fn forward_reply<'a, 'b>(
             mut based_on: CreateReply<'a>,
             r: &'b mut CreateReply<'a>,
-            (prev_button, next_button): (&String, &String),
+            (prev_button, close_button, next_button): (&String, &String, &String),
         ) -> &'b mut CreateReply<'a> {
             r.clone_from(&mut based_on);
 
@@ -56,6 +56,7 @@ impl<'a> Paginator<'a> {
 
                 b.create_action_row(|b| {
                     b.create_button(|b| b.custom_id(&prev_button).emoji(OsakaMoji::ArrowBackward))
+                        .create_button(|b| b.custom_id(&close_button).emoji(OsakaMoji::Close))
                         .create_button(|b| b.custom_id(&next_button).emoji(OsakaMoji::ArrowForward))
                 })
             });
@@ -63,15 +64,16 @@ impl<'a> Paginator<'a> {
             r
         }
 
-        let response = create_reply_inner(current_idx)?;
+        let buttons_tuple = (&prev_button, &close_button, &next_button);
 
+        let response = create_reply_inner(current_idx)?;
         let sent = ctx
-            .send(|b| forward_reply(response, b, (&prev_button, &next_button)))
+            .send(|b| forward_reply(response, b, buttons_tuple))
             .await?;
 
         while let Some(press) = CollectComponentInteraction::new(ctx)
             .filter(move |press| press.data.custom_id.starts_with(&ctx_id.0.to_string()))
-            .timeout(Duration::from_secs(60))
+            .timeout(Duration::hours(1).to_std()?)
             .await
         {
             current_idx = match &press.data.custom_id {
@@ -86,17 +88,25 @@ impl<'a> Paginator<'a> {
                         new_idx
                     }
                 }
+                x if x == &close_button => {
+                    sent.delete(ctx).await?;
+                    continue;
+                }
                 _ => continue,
             };
 
-            let response = create_reply_inner(current_idx)?;
-
             press.defer(self.ctx).await?;
-            sent.edit(ctx, |b| {
-                forward_reply(response, b, (&prev_button, &next_button))
-            })
-            .await?;
+
+            let response = create_reply_inner(current_idx)?;
+            sent.edit(ctx, |b| forward_reply(response, b, buttons_tuple))
+                .await?;
         }
+
+        let response = create_reply_inner(current_idx)?;
+        sent.edit(ctx, |b| {
+            forward_reply(response, b, buttons_tuple).components(|b| b)
+        })
+        .await?;
 
         Ok(())
     }

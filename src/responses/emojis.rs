@@ -9,6 +9,7 @@ pub enum OsakaMoji {
     ZanyFace,
     ArrowForward,
     ArrowBackward,
+    Close,
 }
 
 impl From<OsakaMoji> for char {
@@ -16,6 +17,7 @@ impl From<OsakaMoji> for char {
         match value {
             OsakaMoji::ArrowForward => '▶',
             OsakaMoji::ArrowBackward => '◀',
+            OsakaMoji::Close => '❌',
             OsakaMoji::ZanyFace => ' ',
         }
     }
