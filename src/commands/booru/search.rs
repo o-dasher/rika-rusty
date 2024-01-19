@@ -37,6 +37,10 @@ pub async fn autocomplete<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
     searching: &str,
 ) -> Vec<String> {
+    if searching.is_empty() {
+        return vec![]
+    }
+
     let booru_choice = ctx
         .args
         .get(1)
@@ -47,8 +51,8 @@ pub async fn autocomplete<'a>(
         .unwrap_or_default();
 
     let search_vec = searching.split_whitespace().collect_vec();
-    let mut search_iter = search_vec.iter();
 
+    let mut search_iter = search_vec.iter();
     let prefix_search = search_iter.by_ref().take(search_vec.len() - 1).join(" ");
 
     match search_iter.next() {
@@ -68,8 +72,9 @@ pub async fn search<'a>(
     ctx: OsakaContext<'a>,
     booru: Option<BooruChoice>,
     #[autocomplete = "autocomplete"] tags: String,
+    ephemeral: Option<bool>,
 ) -> OsakaResult {
-    default_args!(booru);
+    default_args!(booru, ephemeral);
 
     let built_tags = tags.split(" ");
     let mut query = GenericClient::query();
@@ -81,7 +86,7 @@ pub async fn search<'a>(
     let reply_not_found = || {
         ctx.send(|f| {
             f.content(something_wrong("Nothing here but us chickens... maybe something sketchy happened to this booru instance!"))
-                .attachment("https://media1.tenor.com/m/mb-bdtZ7toYAAAAd/chicken.gif".into())
+                .attachment("https://media1.tenor.com/m/mb-bdtZ7toYAAAAd/chicken.gif".into()).ephemeral(ephemeral)
         })
     };
 
@@ -136,40 +141,41 @@ pub async fn search<'a>(
 
             dbg!(&queried.file_url);
 
-            Ok(r.embed(|e| {
-                e.image(&file_url)
-                    .description(
-                        vec![
-                            ("Score", queried.score.to_string()),
-                            ("Rating", queried.rating.to_string()),
-                            ("Tags", tag_description),
-                        ]
-                        .iter()
-                        .map(|(label, value)| format!("{}: {value}", bold(label)))
-                        .join(" | "),
-                    )
-                    .footer(|b| {
-                        b.text(format!(
-                            "{} - {}/{}",
-                            booru.to_string(),
-                            idx + 1,
-                            paginator.amount_pages
-                        ))
-                    })
-            })
-            .components(|b| {
-                if let Some(source) = &queried.source {
-                    if !source.is_empty() {
-                        b.create_action_row(|b| {
-                            b.create_button(|b| {
-                                b.label("Source").url(source).style(ButtonStyle::Link)
-                            })
-                        });
-                    }
-                };
-                b
-            })
-            .to_owned())
+            Ok(r.ephemeral(ephemeral)
+                .embed(|e| {
+                    e.image(&file_url)
+                        .description(
+                            vec![
+                                ("Score", queried.score.to_string()),
+                                ("Rating", queried.rating.to_string()),
+                                ("Tags", tag_description),
+                            ]
+                            .iter()
+                            .map(|(label, value)| format!("{}: {value}", bold(label)))
+                            .join(" | "),
+                        )
+                        .footer(|b| {
+                            b.text(format!(
+                                "{} - {}/{}",
+                                booru.to_string(),
+                                idx + 1,
+                                paginator.amount_pages
+                            ))
+                        })
+                })
+                .components(|b| {
+                    if let Some(source) = &queried.source {
+                        if !source.is_empty() {
+                            b.create_action_row(|b| {
+                                b.create_button(|b| {
+                                    b.label("Source").url(source).style(ButtonStyle::Link)
+                                })
+                            });
+                        }
+                    };
+                    b
+                })
+                .to_owned())
         })
         .await?;
 
