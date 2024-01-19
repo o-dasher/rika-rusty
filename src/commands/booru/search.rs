@@ -38,7 +38,7 @@ pub async fn autocomplete<'a>(
     searching: &str,
 ) -> Vec<String> {
     if searching.is_empty() {
-        return vec![]
+        return vec![];
     }
 
     let booru_choice = ctx
