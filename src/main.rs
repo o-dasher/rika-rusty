@@ -27,6 +27,7 @@ pub struct OsakaConfig {
     pub development_guild: Option<u64>,
 
     pub database_url: String,
+
 }
 
 pub struct OsakaData {

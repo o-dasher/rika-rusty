@@ -1,5 +1,8 @@
 use crate::{
-    default_args, error::OsakaError, responses::markdown::bold, utils::pagination::Paginator,
+    default_args,
+    error::OsakaError,
+    responses::{self, markdown::bold, templates::something_wrong},
+    utils::pagination::Paginator,
     OsakaContext, OsakaResult,
 };
 use itertools::Itertools;
@@ -35,15 +38,37 @@ pub async fn search<'a>(
     default_args!(booru);
 
     let built_tags = tags.split(" ");
-    let mut client = GenericClient::query();
+    let mut query = GenericClient::query();
 
     for tag in built_tags {
-        client.tag(tag);
+        query.tag(tag);
     }
 
-    let result_query = client.get(booru.clone().into()).await?;
+    let reply_not_found = || {
+        ctx.send(|f| {
+            f.content(something_wrong("Nothing here but us chickens... maybe something sketchy happened to this booru instance!"))
+                .attachment("https://media1.tenor.com/m/mb-bdtZ7toYAAAAd/chicken.gif".into())
+        })
+    };
 
-    let mapped_result = result_query
+    let query_res = query.get(booru.clone().into()).await;
+
+    match &query_res {
+        Ok(value) => {
+            if value.is_empty() {
+                reply_not_found().await?;
+                return Ok(());
+            }
+        }
+        Err(..) => {
+            reply_not_found().await?;
+            return Ok(());
+        }
+    }
+
+    let query_res = query_res?;
+
+    let mapped_result = query_res
         .iter()
         .filter_map(|v| {
             if let Some(file_url) = &v.file_url {

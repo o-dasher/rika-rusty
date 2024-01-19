@@ -1775,9 +1775,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.29"
+version = "0.38.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a1a81a2478639a14e68937903356dbac62cf52171148924f754bb8a8cd7a96c"
+checksum = "322394588aaf33c24007e8bb3238ee3e4c5c09c084ab32bc73890b99ff326bca"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
@@ -1837,9 +1837,9 @@ checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "rusty-booru"
-version = "0.1.5"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54799a735da2a90a27d9d84070ed5964a218095998b3fa9a28a5b06198fda33e"
+checksum = "49887354174fbf0143189de5f2d8451959b8e9c9f0d77f53dcc6de8939316efc"
 dependencies = [
  "anyhow",
  "derive_is_enum_variant",
