@@ -1,17 +1,21 @@
+use std::vec;
+
 use crate::{
     default_args,
     error::OsakaError,
-    responses::{self, markdown::bold, templates::something_wrong},
+    responses::{markdown::bold, templates::something_wrong},
     utils::pagination::Paginator,
-    OsakaContext, OsakaResult,
+    OsakaContext, OsakaData, OsakaResult,
 };
 use itertools::Itertools;
-use poise::{command, serenity_prelude::ButtonStyle, ChoiceParameter};
+use poise::{command, serenity_prelude::ButtonStyle, ApplicationContext, ChoiceParameter};
 use rusty_booru::generic::client::{BooruOption, GenericClient};
+use serde::{Deserialize, Serialize};
+use strum::IntoStaticStr;
 
 const CLAMP_TAGS_LEN: usize = 75;
 
-#[derive(ChoiceParameter, Default, Clone)]
+#[derive(IntoStaticStr, ChoiceParameter, Debug, Serialize, Deserialize, Default, Clone)]
 enum BooruChoice {
     #[default]
     Danbooru,
@@ -29,11 +33,41 @@ impl From<BooruChoice> for BooruOption {
     }
 }
 
+pub async fn autocomplete<'a>(
+    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
+    searching: &str,
+) -> Vec<String> {
+    let booru_choice = ctx
+        .args
+        .get(1)
+        .map(|v| {
+            serde_json::from_value::<BooruChoice>(v.value.clone().unwrap_or_default())
+                .unwrap_or_default()
+        })
+        .unwrap_or_default();
+
+    let search_vec = searching.split_whitespace().collect_vec();
+    let mut search_iter = search_vec.iter();
+
+    let prefix_search = search_iter.by_ref().take(search_vec.len() - 1).join(" ");
+
+    match search_iter.next() {
+        Some(last_term) => GenericClient::query()
+            .get_autocomplete(booru_choice.into(), *last_term)
+            .await
+            .unwrap_or_default()
+            .iter()
+            .map(|v| [prefix_search.clone(), v.value.clone()].join(" "))
+            .collect_vec(),
+        None => vec![prefix_search],
+    }
+}
+
 #[command(slash_command)]
 pub async fn search<'a>(
     ctx: OsakaContext<'a>,
-    tags: String,
     booru: Option<BooruChoice>,
+    #[autocomplete = "autocomplete"] tags: String,
 ) -> OsakaResult {
     default_args!(booru);
 

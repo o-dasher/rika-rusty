@@ -24,6 +24,7 @@ reqwest = "0.11.23"
 rusty-booru = "0.1.0"
 rusty18n = "0.1.1"
 serde = { version = "1.0.193", features = ["serde_derive"] }
+serde_json = "1.0.111"
 sqlx = { version = "0.7.3", features = ["mysql", "runtime-tokio"] }
 strum = { version = "0.25.0", features = ["strum_macros", "derive"] }
 thiserror = "1.0.52"
