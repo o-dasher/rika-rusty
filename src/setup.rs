@@ -1,5 +1,6 @@
 use poise::framework;
 use rusty18n::I18NWrapper;
+use sqlx::{Pool, MySql};
 
 use crate::{
     error::OsakaError,
@@ -12,10 +13,11 @@ pub async fn setup(
     framework: &framework::Framework<OsakaData, OsakaError>,
     config: OsakaConfig,
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
+    pool: Pool<MySql>,
 ) -> Result<OsakaData, OsakaError> {
     let registered_commands = &framework.options().commands;
 
-    let data = OsakaData { i18n };
+    let data = OsakaData { i18n, pool };
 
     match config.development_guild {
         None => {

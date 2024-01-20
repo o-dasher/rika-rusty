@@ -9,7 +9,7 @@ use poise_i18n::{apply_translations, PoiseI18NMeta};
 use rusty18n::I18NWrapper;
 use serde::{Deserialize, Serialize};
 use sqlx::pool::PoolOptions;
-use sqlx::MySql;
+use sqlx::{MySql, Pool};
 
 pub mod commands;
 pub mod error;
@@ -27,11 +27,11 @@ pub struct OsakaConfig {
     pub development_guild: Option<u64>,
 
     pub database_url: String,
-
 }
 
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
+    pub pool: Pool<MySql>,
 }
 
 impl PoiseI18NMeta<OsakaLocale, OsakaI18N> for OsakaContext<'_> {
@@ -74,7 +74,7 @@ async fn main() -> OsakaResult {
         .token(&config.bot_token)
         .intents(GatewayIntents::non_privileged())
         .setup(move |ctx, _ready, framework| {
-            Box::pin(async move { setup::setup(ctx, framework, config, i18n).await })
+            Box::pin(async move { setup::setup(ctx, framework, config, i18n, pool).await })
         })
         .run()
         .await?;
