@@ -1,13 +1,13 @@
 version: '3'
 services:
-  mariadb:
-    image: mariadb:latest
+  postgres:
+    image: postgres:latest
     environment:
-      MYSQL_ROOT_PASSWORD: osaka
-      MYSQL_DATABASE: osaka
-      MYSQL_USER: osaka
-      MYSQL_PASSWORD: osaka
+      POSTGRES_ROOT_PASSWORD: osaka
+      POSTGRES_DATABASE: osaka
+      POSTGRES_USER: osaka
+      POSTGRES_PASSWORD: osaka
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - ./docker_volume:/var/lib/mysql
+      - ./docker_volume:/var/lib/psql

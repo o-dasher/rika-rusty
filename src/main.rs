@@ -1,3 +1,5 @@
+extern crate eager;
+
 use error::OsakaError;
 use i18n::OsakaLocale;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br};
@@ -9,7 +11,7 @@ use poise_i18n::{apply_translations, PoiseI18NMeta};
 use rusty18n::I18NWrapper;
 use serde::{Deserialize, Serialize};
 use sqlx::pool::PoolOptions;
-use sqlx::{MySql, Pool};
+use sqlx::{Pool, Postgres};
 
 pub mod commands;
 pub mod error;
@@ -31,7 +33,7 @@ pub struct OsakaConfig {
 
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
-    pub pool: Pool<MySql>,
+    pub pool: Pool<Postgres>,
 }
 
 impl PoiseI18NMeta<OsakaLocale, OsakaI18N> for OsakaContext<'_> {
@@ -47,7 +49,7 @@ async fn main() -> OsakaResult {
 
     let config = envy::from_env::<OsakaConfig>()?;
 
-    let pool = PoolOptions::<MySql>::new()
+    let pool = PoolOptions::<Postgres>::new()
         .max_connections(10)
         .connect(&config.database_url)
         .await?;

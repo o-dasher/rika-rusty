@@ -1,31 +1,31 @@
 CREATE TABLE discord_guild (
-	id INT PRIMARY KEY
+	id NUMERIC PRIMARY KEY
 );
 
 CREATE TABLE discord_channel (
-	id INT PRIMARY KEY,
-	guild_id INT NOT NULL,
+	id NUMERIC PRIMARY KEY,
+	guild_id NUMERIC NOT NULL,
 
 	FOREIGN KEY (guild_id) REFERENCES discord_guild(id)
 );
 
 CREATE TABLE discord_user (
-	id INT PRIMARY KEY
+	id NUMERIC PRIMARY KEY
 );
 
 CREATE TABLE booru_setting (
-	id INT AUTO_INCREMENT PRIMARY KEY,
+	id SERIAL PRIMARY KEY,
 
-	guild_id INT,
-	user_id INT,
-	channel_id INT,
+	guild_id NUMERIC,
+	user_id NUMERIC,
+	channel_id NUMERIC,
 
 	FOREIGN KEY (guild_id) REFERENCES discord_guild(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE booru_blacklisted_tag (
-	id INT AUTO_INCREMENT PRIMARY KEY,
+	id SERIAL PRIMARY KEY,
 
 	booru_setting_id INT NOT NULL,
 	blacklisted VARCHAR(255) NOT NULL,

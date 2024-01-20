@@ -1,6 +1,6 @@
 use poise::framework;
 use rusty18n::I18NWrapper;
-use sqlx::{Pool, MySql};
+use sqlx::{Pool, Postgres};
 
 use crate::{
     error::OsakaError,
@@ -13,7 +13,7 @@ pub async fn setup(
     framework: &framework::Framework<OsakaData, OsakaError>,
     config: OsakaConfig,
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
-    pool: Pool<MySql>,
+    pool: Pool<Postgres>,
 ) -> Result<OsakaData, OsakaError> {
     let registered_commands = &framework.options().commands;
 
