@@ -21,14 +21,16 @@ CREATE TABLE booru_setting (
 	channel_id NUMERIC,
 
 	FOREIGN KEY (guild_id) REFERENCES discord_guild(id) ON DELETE CASCADE,
+	FOREIGN KEY (channel_id) REFERENCES discord_channel(id) ON DELETE CASCADE,
 	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE
 );
 
-CREATE TABLE booru_blacklisted_tag (
-	id SERIAL PRIMARY KEY,
+create table booru_blacklisted_tag (
+	id serial primary key,
 
-	booru_setting_id INT NOT NULL,
-	blacklisted VARCHAR(255) NOT NULL,
+	booru_setting_id int not null,
+	blacklisted varchar(255) not null,
 
-	FOREIGN KEY (booru_setting_id) REFERENCES booru_setting(id) ON DELETE CASCADE
+	foreign key (booru_setting_id) references booru_setting(id) on delete cascade,
+	UNIQUE (blacklisted, booru_setting_id)
 );

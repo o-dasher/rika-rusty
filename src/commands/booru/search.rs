@@ -1,9 +1,12 @@
-use std::vec;
+use std::{collections::HashSet, vec};
 
 use crate::{
     default_args,
     error::OsakaError,
-    responses::{markdown::bold, templates::something_wrong},
+    responses::{
+        markdown::{bold, mono},
+        templates::something_wrong,
+    },
     utils::pagination::Paginator,
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -11,6 +14,7 @@ use itertools::Itertools;
 use poise::{command, serenity_prelude::ButtonStyle, ApplicationContext, ChoiceParameter};
 use rusty_booru::generic::client::{BooruOption, GenericClient};
 use serde::{Deserialize, Serialize};
+use sqlx::types::BigDecimal;
 use strum::IntoStaticStr;
 
 const CLAMP_TAGS_LEN: usize = 75;
@@ -76,10 +80,38 @@ pub async fn search<'a>(
 ) -> OsakaResult {
     default_args!(booru, ephemeral);
 
-    let built_tags = tags.split(" ");
+    let OsakaData { pool, .. } = ctx.data();
     let mut query = GenericClient::query();
 
-    for tag in built_tags {
+    let all_blacklists = sqlx::query!(
+        "
+        SELECT blacklisted FROM booru_blacklisted_tag t
+        JOIN booru_setting s ON t.booru_setting_id = s.id
+        WHERE s.guild_id = $1 OR s.user_id = $2 OR s.channel_id = $3
+        ",
+        ctx.guild_id().map(|v| BigDecimal::from(*v.as_u64())),
+        BigDecimal::from(*ctx.author().id.as_u64()),
+        BigDecimal::from(*ctx.channel_id().as_u64())
+    )
+    .fetch_all(pool)
+    .await?;
+
+    let built_tags = tags.split(" ").map(str::to_string).collect_vec();
+    let blacklisted_tags = all_blacklists.iter().map(|v| format!("-{}", v.blacklisted));
+
+    let blacklist_set = blacklisted_tags.clone().collect::<HashSet<_>>();
+
+    if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklist_set.contains(*v)) {
+        Err(OsakaError::Warn(format!(
+            "The tag {} is being blacklisted by either yourself, the channel or this server.",
+            mono(blacklisted_tag)
+        )))?;
+    }
+
+    let mut queried_tags = built_tags.clone();
+    queried_tags.extend(blacklisted_tags);
+
+    for tag in queried_tags {
         query.tag(tag);
     }
 

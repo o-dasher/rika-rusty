@@ -31,6 +31,9 @@ pub enum OsakaError {
     #[error(transparent)]
     Reqwest(reqwest::Error),
 
+    #[error("Warned someone...")]
+    Warn(String),
+
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
 }
@@ -41,6 +44,10 @@ pub async fn on_error(
     match err {
         FrameworkError::Command { error, ctx } => {
             let i18n = ctx.i18n();
+
+            enum ErrorResponse {
+                Say(String),
+            }
 
             let response = match error {
                 OsakaError::Serenity(..)
@@ -53,11 +60,16 @@ pub async fn on_error(
                 | OsakaError::DurationOutOfRange(..)
                 | OsakaError::SimplyUnexpected => {
                     log::error!("{error}");
-                    t!(i18n.errors.unexpected)
+                    ErrorResponse::Say(t!(i18n.errors.unexpected).clone())
                 }
+                OsakaError::Warn(warn) => ErrorResponse::Say(warn),
             };
 
-            ctx.say(response).await?;
+            match response {
+                ErrorResponse::Say(say) => {
+                    ctx.say(say).await?;
+                }
+            }
         }
         e => poise::builtins::on_error(e).await?,
     }

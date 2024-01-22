@@ -1,5 +1,3 @@
-extern crate eager;
-
 use error::OsakaError;
 use i18n::OsakaLocale;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br};

@@ -1,21 +1,21 @@
-use eager::eager_macro_rules;
-use poise::{command, serenity_prelude::GuildId, ChoiceParameter};
+use poise::{command, serenity_prelude::GuildId};
 use sqlx::types::BigDecimal;
 
-use crate::{error::OsakaError, OsakaContext, OsakaData, OsakaResult};
+use crate::{
+    commands::booru::SettingKind, error::OsakaError, OsakaContext, OsakaData, OsakaResult,
+};
 
-#[derive(ChoiceParameter, Clone, Copy)]
-enum SettingKind {
-    Guild,
-    Channel,
-    User,
+pub struct ID {
+    pub id: BigDecimal,
 }
 
-pub struct ID<T> {
-    id: T,
+fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
+    if condition(&value) {
+        Some(value)
+    } else {
+        None
+    }
 }
-
-pub type BigID = ID<BigDecimal>;
 
 #[command(slash_command)]
 pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String) -> OsakaResult {
@@ -27,19 +27,22 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
             .map(|GuildId(id)| id)
     };
 
+    let guild_id = get_guild_id()?.clone();
+    let channel_id = *ctx.channel_id().as_u64();
+    let user_id = *ctx.author().id.as_u64();
+
     let to_id = BigDecimal::from(match kind {
-        SettingKind::Guild => get_guild_id()?.clone(),
-        SettingKind::Channel => *ctx.channel_id().as_u64(),
-        SettingKind::User => *ctx.author().id.as_u64(),
+        SettingKind::Guild => guild_id,
+        SettingKind::Channel => channel_id,
+        SettingKind::User => user_id,
     });
 
     let guild_id_stored = get_guild_id().map(BigDecimal::from).ok();
-
     sqlx_conditional_queries::conditional_query_as!(
-        BigID,
+        ID,
         "
         INSERT INTO discord_{#id_kind} (id{#args}) VALUES ({to_id}{#binds})
-        ON CONFLICT DO NOTHING RETURNING id
+        ON CONFLICT (id) DO UPDATE SET id={to_id} RETURNING id
         ",
         #(id_kind, args, binds) = match kind {
             SettingKind::Guild => ("guild", "", ""),
@@ -50,17 +53,15 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
     .fetch_one(pool)
     .await?;
 
-    let booru_setting_insertion = sqlx_conditional_queries::conditional_query_as!(
-        ID,
+    let get_insert_option = |v: u64| as_some_if(BigDecimal::from(v), |v| *v == to_id);
+    let booru_setting_insertion = sqlx::query!(
         "
-        INSERT INTO booru_setting ({#id_kind}_id) VALUES ({to_id})
-        ON CONFLICT DO NOTHING RETURNING id
+        INSERT INTO booru_setting AS s (guild_id, channel_id, user_id) VALUES ($1, $2, $3)
+        ON CONFLICT (id) DO UPDATE SET id=s.id RETURNING id 
         ",
-        #id_kind = match kind {
-            SettingKind::Guild => "guild",
-            SettingKind::Channel => "channel",
-            SettingKind::User =>"user"
-        }
+        get_insert_option(guild_id),
+        get_insert_option(channel_id),
+        get_insert_option(user_id)
     )
     .fetch_one(pool)
     .await?;
@@ -69,13 +70,14 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
         "
         INSERT INTO booru_blacklisted_tag
         (booru_setting_id, blacklisted) VALUES ($1, $2)
-        ON CONFLICT DO NOTHING
         ",
         booru_setting_insertion.id,
         tag
     )
     .execute(pool)
     .await?;
+
+    ctx.say("BLACKLISTED").await?;
 
     Ok(())
 }
