@@ -41,11 +41,11 @@ impl<'a> Paginator<'a> {
         };
 
         fn forward_reply<'a, 'b>(
-            mut based_on: CreateReply<'a>,
+            based_on: CreateReply<'a>,
             r: &'b mut CreateReply<'a>,
             (prev_button, close_button, next_button): (&String, &String, &String),
         ) -> &'b mut CreateReply<'a> {
-            r.clone_from(&mut based_on);
+            r.clone_from(&based_on);
 
             let existing_components = r.components.clone();
 

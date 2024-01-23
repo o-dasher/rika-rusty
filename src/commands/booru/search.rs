@@ -20,8 +20,8 @@ use rusty_booru::generic::client::GenericClient;
 const CLAMP_TAGS_LEN: usize = 75;
 
 #[command(slash_command)]
-pub async fn search<'a>(
-    ctx: OsakaContext<'a>,
+pub async fn search(
+    ctx: OsakaContext<'_>,
     booru: Option<BooruChoice>,
     #[autocomplete = "autocomplete_tag"] tags: String,
     ephemeral: Option<bool>,

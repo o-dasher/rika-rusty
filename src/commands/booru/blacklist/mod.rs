@@ -24,8 +24,8 @@ pub fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> 
     }
 }
 
-pub async fn try_begin_blacklist_storing<'a>(
-    ctx: OsakaContext<'a>,
+pub async fn try_begin_blacklist_storing(
+    ctx: OsakaContext<'_>,
     operation_kind: SettingKind,
 ) -> Result<(i32, Transaction<'_, Postgres>), OsakaError> {
     let booru_ctx = BooruContext(ctx);

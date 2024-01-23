@@ -10,8 +10,8 @@ use rusty18n::t;
 use rusty18n::I18NAccessible;
 
 #[command(slash_command)]
-pub async fn add<'a>(
-    ctx: OsakaContext<'a>,
+pub async fn add(
+    ctx: OsakaContext<'_>,
     kind: SettingKind,
     #[autocomplete = "autocomplete_tag"] tag: String,
 ) -> OsakaResult {
