@@ -1,25 +1,22 @@
-use poise::command;
-use poise::serenity_prelude::Permissions;
-use poise_i18n::PoiseI18NTrait;
-use rusty18n::t;
-use rusty18n::I18NAccessible;
-use sqlx::types::BigDecimal;
+pub mod add;
 
-use crate::error::NotifyError;
-use crate::responses::emojis::OsakaMoji;
-use crate::responses::markdown::mono;
-use crate::responses::templates::cool_text;
 use crate::{
-    commands::booru::{BooruContext, SettingKind},
-    error::OsakaError,
-    OsakaContext, OsakaData, OsakaResult,
+    create_command_group,
+    error::{NotifyError, OsakaError},
+    OsakaData,
 };
+use add::add;
+use sqlx::{types::BigDecimal, Postgres, Transaction};
+
+use super::{BooruContext, SettingKind};
+
+create_command_group!(blacklist, ["add"]);
 
 pub struct ID {
     pub id: BigDecimal,
 }
 
-fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
+pub fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
     if condition(&value) {
         Some(value)
     } else {
@@ -27,9 +24,10 @@ fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
     }
 }
 
-#[command(slash_command)]
-pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String) -> OsakaResult {
-    let i18n = ctx.i18n();
+pub async fn try_begin_blacklist_storing<'a>(
+    ctx: OsakaContext<'a>,
+    operation_kind: SettingKind,
+) -> Result<(i32, Transaction<'_, Postgres>), OsakaError> {
     let booru_ctx = BooruContext(ctx);
     let OsakaData { pool, .. } = ctx.data();
 
@@ -40,7 +38,7 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
         .permissions
         .ok_or(OsakaError::SimplyUnexpected)?;
 
-    let authorized = match kind {
+    let authorized = match operation_kind {
         SettingKind::Guild => perms.administrator(),
         SettingKind::Channel => perms.administrator(),
         SettingKind::User => true,
@@ -54,11 +52,13 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
     let channel_id = booru_ctx.channel();
     let user_id = booru_ctx.user();
 
-    let to_id = BigDecimal::from(match kind {
+    let to_id = BigDecimal::from(match operation_kind {
         SettingKind::Guild => guild_id.clone().ok_or(OsakaError::SimplyUnexpected)?,
         SettingKind::Channel => channel_id.clone(),
         SettingKind::User => user_id.clone(),
     });
+
+    let mut tx = pool.begin().await?;
 
     sqlx_conditional_queries::conditional_query_as!(
         ID,
@@ -66,13 +66,13 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
         INSERT INTO discord_{#id_kind} (id{#args}) VALUES ({to_id}{#binds})
         ON CONFLICT (id) DO UPDATE SET id={to_id} RETURNING id
         ",
-        #(id_kind, args, binds) = match kind {
+        #(id_kind, args, binds) = match operation_kind {
             SettingKind::Guild => ("guild", "", ""),
             SettingKind::Channel => ("channel", ", guild_id", ", {guild_id}"),
             SettingKind::User => ("user", "", "")
         },
     )
-    .fetch_one(pool)
+    .fetch_one(&mut *tx)
     .await?;
 
     let get_insert_option = |v: Option<BigDecimal>| {
@@ -88,25 +88,8 @@ pub async fn blacklist<'a>(ctx: OsakaContext<'a>, kind: SettingKind, tag: String
         get_insert_option(channel_id.into()),
         get_insert_option(user_id.into())
     )
-    .fetch_one(pool)
+    .fetch_one(&mut *tx)
     .await?;
 
-    sqlx::query!(
-        "
-        INSERT INTO booru_blacklisted_tag
-        (booru_setting_id, blacklisted) VALUES ($1, $2)
-        ",
-        booru_setting_insertion.id,
-        tag
-    )
-    .execute(pool)
-    .await?;
-
-    ctx.say(cool_text(
-        OsakaMoji::ZanyFace,
-        &t!(i18n.booru.blacklist.blacklisted).access(mono(tag)),
-    ))
-    .await?;
-
-    Ok(())
+    Ok((booru_setting_insertion.id, tx))
 }

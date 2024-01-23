@@ -33,7 +33,7 @@ impl Display for OsakaMoji {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", {
             match self {
-                OsakaMoji::X => char::from(self.clone()).to_string(),
+                OsakaMoji::X => char::from(*self).to_string(),
                 OsakaMoji::ZanyFace | OsakaMoji::ArrowForward | OsakaMoji::ArrowBackward => {
                     format!(":{}:", Into::<&'static str>::into(self))
                 }

@@ -55,9 +55,9 @@ impl<'a> Paginator<'a> {
                 }
 
                 b.create_action_row(|b| {
-                    b.create_button(|b| b.custom_id(&prev_button).emoji(OsakaMoji::ArrowBackward))
-                        .create_button(|b| b.custom_id(&close_button).emoji(OsakaMoji::X))
-                        .create_button(|b| b.custom_id(&next_button).emoji(OsakaMoji::ArrowForward))
+                    b.create_button(|b| b.custom_id(prev_button).emoji(OsakaMoji::ArrowBackward))
+                        .create_button(|b| b.custom_id(close_button).emoji(OsakaMoji::X))
+                        .create_button(|b| b.custom_id(next_button).emoji(OsakaMoji::ArrowForward))
                 })
             });
 

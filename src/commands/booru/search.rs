@@ -1,3 +1,5 @@
+use crate::commands::booru::autocomplete_tag;
+use crate::commands::booru::BooruChoice;
 use std::{collections::HashSet, vec};
 
 use crate::{
@@ -12,70 +14,16 @@ use crate::{
     OsakaContext, OsakaData, OsakaResult,
 };
 use itertools::Itertools;
-use poise::{command, serenity_prelude::ButtonStyle, ApplicationContext, ChoiceParameter};
-use rusty_booru::generic::client::{BooruOption, GenericClient};
-use serde::{Deserialize, Serialize};
-use strum::IntoStaticStr;
+use poise::{command, serenity_prelude::ButtonStyle};
+use rusty_booru::generic::client::GenericClient;
 
 const CLAMP_TAGS_LEN: usize = 75;
-
-#[derive(IntoStaticStr, ChoiceParameter, Debug, Serialize, Deserialize, Default, Clone)]
-enum BooruChoice {
-    #[default]
-    Danbooru,
-    Gelbooru,
-    Safebooru,
-}
-
-impl From<BooruChoice> for BooruOption {
-    fn from(value: BooruChoice) -> Self {
-        match value {
-            BooruChoice::Danbooru => BooruOption::Danbooru,
-            BooruChoice::Gelbooru => BooruOption::Gelbooru,
-            BooruChoice::Safebooru => BooruOption::Safebooru,
-        }
-    }
-}
-
-pub async fn autocomplete<'a>(
-    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
-    searching: &str,
-) -> Vec<String> {
-    if searching.is_empty() {
-        return vec![];
-    }
-
-    let booru_choice = ctx
-        .args
-        .get(1)
-        .map(|v| {
-            serde_json::from_value::<BooruChoice>(v.value.clone().unwrap_or_default())
-                .unwrap_or_default()
-        })
-        .unwrap_or_default();
-
-    let search_vec = searching.split_whitespace().collect_vec();
-
-    let mut search_iter = search_vec.iter();
-    let prefix_search = search_iter.by_ref().take(search_vec.len() - 1).join(" ");
-
-    match search_iter.next() {
-        Some(last_term) => GenericClient::query()
-            .get_autocomplete(booru_choice.into(), *last_term)
-            .await
-            .unwrap_or_default()
-            .iter()
-            .map(|v| [prefix_search.clone(), v.value.clone()].join(" "))
-            .collect_vec(),
-        None => vec![prefix_search],
-    }
-}
 
 #[command(slash_command)]
 pub async fn search<'a>(
     ctx: OsakaContext<'a>,
     booru: Option<BooruChoice>,
-    #[autocomplete = "autocomplete"] tags: String,
+    #[autocomplete = "autocomplete_tag"] tags: String,
     ephemeral: Option<bool>,
 ) -> OsakaResult {
     ctx.defer().await?;
@@ -102,8 +50,7 @@ pub async fn search<'a>(
     let built_tags = tags.split(" ").map(str::to_string).collect_vec();
     let blacklisted_tags = all_blacklists.iter().map(|v| format!("-{}", v.blacklisted));
 
-    let blacklist_set = blacklisted_tags.clone().collect::<HashSet<_>>();
-
+    let blacklist_set: HashSet<_> = blacklisted_tags.clone().collect::<HashSet<_>>();
     if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklist_set.contains(*v)) {
         Err(NotifyError::Warn(format!(
             "The tag {} is being blacklisted by either yourself, the channel or this server.",
@@ -111,8 +58,7 @@ pub async fn search<'a>(
         )))?;
     }
 
-    let mut queried_tags = built_tags.clone();
-    queried_tags.extend(blacklisted_tags);
+    let queried_tags = built_tags.clone();
 
     for tag in queried_tags {
         query.tag(tag);
@@ -134,7 +80,8 @@ pub async fn search<'a>(
                 return Ok(());
             }
         }
-        Err(..) => {
+        Err(e) => {
+            dbg!("Something bad happened, booru: {}", e);
             reply_not_found().await?;
             return Ok(());
         }
@@ -144,6 +91,7 @@ pub async fn search<'a>(
 
     let mapped_result = query_res
         .iter()
+        .filter(|v| !v.tags.split(" ").any(|v| blacklist_set.contains(v)))
         .filter_map(|v| {
             if let Some(file_url) = &v.file_url {
                 Some((file_url, v))
@@ -178,9 +126,9 @@ pub async fn search<'a>(
 
             Ok(r.ephemeral(ephemeral)
                 .embed(|e| {
-                    e.image(&file_url)
+                    e.image(file_url)
                         .description(
-                            vec![
+                            [
                                 ("Score", queried.score.to_string()),
                                 ("Rating", queried.rating.to_string()),
                                 ("Tags", tag_description),
@@ -192,7 +140,7 @@ pub async fn search<'a>(
                         .footer(|b| {
                             b.text(format!(
                                 "{} - {}/{}",
-                                booru.to_string(),
+                                booru,
                                 idx + 1,
                                 paginator.amount_pages
                             ))
