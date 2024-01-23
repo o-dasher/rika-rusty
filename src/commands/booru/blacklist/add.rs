@@ -18,7 +18,7 @@ pub async fn add<'a>(
     let i18n = ctx.i18n();
     let (inserted_setting_id, mut tx) = try_begin_blacklist_storing(ctx, kind).await?;
 
-    let all_blacklisted_tags = tag.split(" ").map(str::trim).map(str::to_lowercase);
+    let all_blacklisted_tags = tag.split(' ').map(str::trim).map(str::to_lowercase);
     for blacklisted_tag in all_blacklisted_tags {
         sqlx::query!(
             "

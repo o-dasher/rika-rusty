@@ -52,11 +52,11 @@ pub async fn try_begin_blacklist_storing<'a>(
     let channel_id = booru_ctx.channel();
     let user_id = booru_ctx.user();
 
-    let to_id = BigDecimal::from(match operation_kind {
+    let to_id = match operation_kind {
         SettingKind::Guild => guild_id.clone().ok_or(OsakaError::SimplyUnexpected)?,
         SettingKind::Channel => channel_id.clone(),
         SettingKind::User => user_id.clone(),
-    });
+    };
 
     let mut tx = pool.begin().await?;
 
