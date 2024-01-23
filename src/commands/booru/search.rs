@@ -48,10 +48,12 @@ pub async fn search(
     .await?;
 
     let built_tags = tags.split(' ').map(str::to_string).collect_vec();
-    let blacklisted_tags = all_blacklists.iter().map(|v| format!("-{}", v.blacklisted));
+    let blacklisted_tags = all_blacklists
+        .iter()
+        .map(|v| v.blacklisted.clone())
+        .collect::<HashSet<_>>();
 
-    let blacklist_set: HashSet<_> = blacklisted_tags.clone().collect::<HashSet<_>>();
-    if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklist_set.contains(*v)) {
+    if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklisted_tags.contains(*v)) {
         Err(NotifyError::Warn(format!(
             "The tag {} is being blacklisted by either yourself, the channel or this server.",
             mono(blacklisted_tag)
@@ -91,10 +93,8 @@ pub async fn search(
 
     let mapped_result = query_res
         .iter()
-        .filter(|v| !v.tags.split(' ').any(|v| blacklist_set.contains(v)))
-        .filter_map(|v| {
-            v.file_url.as_ref().map(|file_url| (file_url, v))
-        })
+        .filter(|v| !v.tags.split(' ').any(|v| blacklisted_tags.contains(v)))
+        .filter_map(|v| v.file_url.as_ref().map(|file_url| (file_url, v)))
         .collect_vec();
 
     let paginator = Paginator::new(ctx, mapped_result.len());
