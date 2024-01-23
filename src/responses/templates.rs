@@ -5,5 +5,5 @@ pub fn cool_text(emoji: OsakaMoji, text: &str) -> String {
 }
 
 pub fn something_wrong(text: &str) -> String {
-    cool_text(OsakaMoji::Close, text)
+    cool_text(OsakaMoji::X, text)
 }

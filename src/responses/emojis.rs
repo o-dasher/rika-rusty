@@ -9,7 +9,7 @@ pub enum OsakaMoji {
     ZanyFace,
     ArrowForward,
     ArrowBackward,
-    Close,
+    X,
 }
 
 impl From<OsakaMoji> for char {
@@ -17,7 +17,7 @@ impl From<OsakaMoji> for char {
         match value {
             OsakaMoji::ArrowForward => '▶',
             OsakaMoji::ArrowBackward => '◀',
-            OsakaMoji::Close => '❌',
+            OsakaMoji::X => '❌',
             OsakaMoji::ZanyFace => ' ',
         }
     }
@@ -32,11 +32,11 @@ impl From<OsakaMoji> for ReactionType {
 impl Display for OsakaMoji {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", {
-            let as_char = char::from(*self);
-            if as_char != ' ' {
-                as_char.to_string()
-            } else {
-                format!(":{}:", self.to_string())
+            match self {
+                OsakaMoji::X => char::from(self.clone()).to_string(),
+                OsakaMoji::ZanyFace | OsakaMoji::ArrowForward | OsakaMoji::ArrowBackward => {
+                    format!(":{}:", Into::<&'static str>::into(self))
+                }
             }
         })
     }

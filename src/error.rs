@@ -1,9 +1,10 @@
-use crate::OsakaData;
+use crate::{responses, OsakaData};
 use chrono::OutOfRangeError;
 use log::error;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
+use strum::Display;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
 pub enum OsakaError {
@@ -31,11 +32,17 @@ pub enum OsakaError {
     #[error(transparent)]
     Reqwest(reqwest::Error),
 
-    #[error("Warned someone...")]
-    Warn(String),
+    #[error(transparent)]
+    Notify(NotifyError),
 
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
+}
+
+#[derive(Debug, Display, thiserror::Error)]
+pub enum NotifyError {
+    Warn(String),
+    MissingPermissions,
 }
 
 pub async fn on_error(
@@ -62,12 +69,18 @@ pub async fn on_error(
                     log::error!("{error}");
                     ErrorResponse::Say(t!(i18n.errors.unexpected).clone())
                 }
-                OsakaError::Warn(warn) => ErrorResponse::Say(warn),
+                OsakaError::Notify(e) => match e {
+                    NotifyError::Warn(warn) => ErrorResponse::Say(warn),
+                    NotifyError::MissingPermissions => {
+                        ErrorResponse::Say(t!(i18n.errors.user_missing_permissions).clone())
+                    }
+                },
             };
 
             match response {
                 ErrorResponse::Say(say) => {
-                    ctx.say(say).await?;
+                    ctx.say(&responses::templates::something_wrong(&say))
+                        .await?;
                 }
             }
         }

@@ -1,8 +1,9 @@
 use std::{collections::HashSet, vec};
 
 use crate::{
+    commands::booru::BooruContext,
     default_args,
-    error::OsakaError,
+    error::{NotifyError, OsakaError},
     responses::{
         markdown::{bold, mono},
         templates::something_wrong,
@@ -14,7 +15,6 @@ use itertools::Itertools;
 use poise::{command, serenity_prelude::ButtonStyle, ApplicationContext, ChoiceParameter};
 use rusty_booru::generic::client::{BooruOption, GenericClient};
 use serde::{Deserialize, Serialize};
-use sqlx::types::BigDecimal;
 use strum::IntoStaticStr;
 
 const CLAMP_TAGS_LEN: usize = 75;
@@ -78,6 +78,9 @@ pub async fn search<'a>(
     #[autocomplete = "autocomplete"] tags: String,
     ephemeral: Option<bool>,
 ) -> OsakaResult {
+    ctx.defer().await?;
+
+    let booru_ctx = BooruContext(ctx);
     default_args!(booru, ephemeral);
 
     let OsakaData { pool, .. } = ctx.data();
@@ -89,9 +92,9 @@ pub async fn search<'a>(
         JOIN booru_setting s ON t.booru_setting_id = s.id
         WHERE s.guild_id = $1 OR s.user_id = $2 OR s.channel_id = $3
         ",
-        ctx.guild_id().map(|v| BigDecimal::from(*v.as_u64())),
-        BigDecimal::from(*ctx.author().id.as_u64()),
-        BigDecimal::from(*ctx.channel_id().as_u64())
+        booru_ctx.guild(),
+        booru_ctx.user(),
+        booru_ctx.channel()
     )
     .fetch_all(pool)
     .await?;
@@ -102,7 +105,7 @@ pub async fn search<'a>(
     let blacklist_set = blacklisted_tags.clone().collect::<HashSet<_>>();
 
     if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklist_set.contains(*v)) {
-        Err(OsakaError::Warn(format!(
+        Err(NotifyError::Warn(format!(
             "The tag {} is being blacklisted by either yourself, the channel or this server.",
             mono(blacklisted_tag)
         )))?;

@@ -7,7 +7,8 @@ nestruct::nest!(
     #[derive(bevy_reflect::Reflect)]
     OsakaI18N {
         errors: {
-            unexpected: rusty18n::R?
+            unexpected: rusty18n::R?,
+            user_missing_permissions: rusty18n::R?
         },
         fun: {
             coinflip: {
@@ -23,6 +24,11 @@ nestruct::nest!(
                     other: rusty18n::R?
                 }
             }
+        },
+        booru: {
+            blacklist: {
+                blacklisted: rusty18n::DR<String>?
+            }
         }
     }
 );
@@ -34,5 +40,5 @@ pub enum OsakaLocale {
     UnitedStatesEnglish,
 
     #[strum(serialize = "pt-BR")]
-    BrazilianPortuguese
+    BrazilianPortuguese,
 }

@@ -1,7 +1,9 @@
+use rusty18n::I18NDynamicResource;
 use rusty18n::{r, I18NFallback};
 
 use super::osaka_i_18_n::{
     self,
+    booru::{blacklist::Blacklist, Booru},
     errors::Errors,
     fun::{coinflip::Coinflip, Fun},
     user::avatar::{footer::Footer, Avatar},
@@ -13,6 +15,7 @@ impl I18NFallback for OsakaI18N {
         Self {
             errors: Errors {
                 unexpected: r!("Heh? Something unexpected happened with my brain."),
+                user_missing_permissions: r!("You don't have the required permissions to execute this command at this level of privilege.")
             },
             user: osaka_i_18_n::user::User {
                 avatar: Avatar {
@@ -27,6 +30,11 @@ impl I18NFallback for OsakaI18N {
                     show: r!("I flip a coin and it lands on..."),
                     heads: r!("Heads"),
                     tails: r!("Tails"),
+                },
+            },
+            booru: Booru {
+                blacklist: Blacklist {
+                    blacklisted: r!(|tag| "Sure mistah, blacklisting {tag}!"),
                 },
             },
         }
