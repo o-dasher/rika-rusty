@@ -1,9 +1,9 @@
+use crate::commands::booru;
 use crate::commands::booru::autocomplete_tag;
 use crate::commands::booru::BooruChoice;
 use std::{collections::HashSet, vec};
 
 use crate::{
-    commands::booru::BooruContext,
     default_args,
     error::{NotifyError, OsakaError},
     responses::{
@@ -28,21 +28,23 @@ pub async fn search(
 ) -> OsakaResult {
     ctx.defer().await?;
 
-    let booru_ctx = BooruContext(ctx);
     default_args!(booru, ephemeral);
 
     let OsakaData { pool, .. } = ctx.data();
     let mut query = GenericClient::query();
 
+    let [inserted_guild, inserted_channel, inserted_user] =
+        booru::get_all_owner_insert_options(ctx)?;
+
     let all_blacklists = sqlx::query!(
         "
         SELECT blacklisted FROM booru_blacklisted_tag t
         JOIN booru_setting s ON t.booru_setting_id = s.id
-        WHERE s.guild_id = $1 OR s.user_id = $2 OR s.channel_id = $3
+        WHERE s.guild_id=$1 OR s.channel_id=$2 OR s.user_id=$3
         ",
-        booru_ctx.guild(),
-        booru_ctx.user(),
-        booru_ctx.channel()
+        inserted_guild,
+        inserted_channel,
+        inserted_user, 
     )
     .fetch_all(pool)
     .await?;

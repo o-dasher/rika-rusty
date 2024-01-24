@@ -5,40 +5,15 @@ use crate::{create_command_group, error::OsakaError, OsakaData};
 use blacklist::blacklist;
 use itertools::Itertools;
 use poise::{ApplicationContext, ChoiceParameter};
-use rusty_booru::generic::client::{GenericClient, BooruOption};
+use rusty_booru::generic::client::{BooruOption, GenericClient};
 use search::search;
 use serde::{Deserialize, Serialize};
 use sqlx::types::BigDecimal;
 use strum::IntoStaticStr;
 
+use self::blacklist::as_some_if;
+
 create_command_group!(booru, ["search", "blacklist"]);
-
-#[derive(ChoiceParameter, Clone, Copy)]
-pub enum SettingKind {
-    Guild,
-    Channel,
-    User,
-}
-
-pub struct BooruContext<'a>(OsakaContext<'a>);
-
-impl<'a> BooruContext<'a> {
-    fn acquire(value: impl Into<u64>) -> BigDecimal {
-        Into::<u64>::into(value).into()
-    }
-
-    pub fn guild(&self) -> Option<BigDecimal> {
-        self.0.guild_id().map(Self::acquire)
-    }
-
-    pub fn channel(&self) -> BigDecimal {
-        Self::acquire(self.0.channel_id())
-    }
-
-    pub fn user(&self) -> BigDecimal {
-        Self::acquire(self.0.author().id)
-    }
-}
 
 #[derive(IntoStaticStr, ChoiceParameter, Debug, Serialize, Deserialize, Default, Clone)]
 enum BooruChoice {
@@ -56,6 +31,52 @@ impl From<BooruChoice> for BooruOption {
             BooruChoice::Safebooru => BooruOption::Safebooru,
         }
     }
+}
+
+#[derive(ChoiceParameter, Clone, Copy)]
+pub enum SettingKind {
+    Guild,
+    Channel,
+    User,
+}
+
+pub fn get_owner_insert_option(
+    ctx: OsakaContext,
+    operation_kind: SettingKind,
+) -> Result<BigDecimal, OsakaError> {
+    fn acquire(value: impl Into<u64>) -> BigDecimal {
+        Into::<u64>::into(value).into()
+    }
+
+    match operation_kind {
+        SettingKind::Guild => ctx
+            .guild_id()
+            .map(acquire)
+            .clone()
+            .ok_or(OsakaError::SimplyUnexpected),
+        SettingKind::Channel => Ok(acquire(ctx.channel_id())),
+        SettingKind::User => Ok(acquire(ctx.author().id)),
+    }
+}
+
+pub fn get_all_owner_insert_options(
+    ctx: OsakaContext,
+) -> Result<[Option<BigDecimal>; 3], OsakaError> {
+    Ok(
+        [SettingKind::Guild, SettingKind::Channel, SettingKind::User]
+            .map(|s| get_owner_insert_option(ctx, s))
+            .map(Result::ok),
+    )
+}
+
+pub fn get_all_owner_insert_options_some_owner(
+    ctx: OsakaContext,
+    operation_kind: SettingKind,
+) -> Result<[Option<BigDecimal>; 3], OsakaError> {
+    let owner_id = get_owner_insert_option(ctx, operation_kind)?;
+
+    get_all_owner_insert_options(ctx)
+        .map(|v| v.map(|v| as_some_if(v, |v| v.as_ref().is_some_and(|v| *v == owner_id)).flatten()))
 }
 
 pub async fn autocomplete_tag<'a>(
