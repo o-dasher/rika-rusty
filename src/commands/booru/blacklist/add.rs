@@ -7,6 +7,7 @@ use crate::{
             SettingKind,
         },
     },
+    error::NotifyError,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -112,7 +113,9 @@ pub async fn add(
 
     let response = if !already_was_blacklisted.is_empty() {
         if successfully_blacklisted.is_empty() {
-            t!(i18n.booru.blacklist.everything_blacklisted_already).access(mono(tag))
+            Err(NotifyError::Warn(
+                t!(i18n.booru.blacklist.everything_blacklisted_already).access(mono(tag)),
+            ))?
         } else {
             t!(i18n.booru.blacklist.partial_blacklist).access(
                 [already_was_blacklisted, successfully_blacklisted]
