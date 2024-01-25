@@ -1,8 +1,8 @@
 pub mod add;
 pub mod remove;
 
-use crate::commands::booru::blacklist::remove::remove;
 use crate::{
+    commands::booru::blacklist::remove::remove,
     create_command_group,
     error::{NotifyError, OsakaError},
 };

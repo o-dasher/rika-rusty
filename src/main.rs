@@ -1,6 +1,5 @@
 use error::OsakaError;
-use i18n::OsakaLocale;
-use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br};
+use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,
@@ -8,8 +7,7 @@ use poise::{
 use poise_i18n::{apply_translations, PoiseI18NMeta};
 use rusty18n::I18NWrapper;
 use serde::{Deserialize, Serialize};
-use sqlx::pool::PoolOptions;
-use sqlx::{Pool, Postgres};
+use sqlx::{pool::PoolOptions, Pool, Postgres};
 
 pub mod commands;
 pub mod error;

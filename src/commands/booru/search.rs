@@ -1,6 +1,7 @@
-use crate::commands::booru;
-use crate::commands::booru::autocomplete_tag;
-use crate::commands::booru::BooruChoice;
+use crate::commands::{
+    booru,
+    booru::{autocomplete_tag, BooruChoice},
+};
 use std::{collections::HashSet, vec};
 
 use crate::{
@@ -44,7 +45,7 @@ pub async fn search(
         ",
         inserted_guild,
         inserted_channel,
-        inserted_user, 
+        inserted_user,
     )
     .fetch_all(pool)
     .await?;

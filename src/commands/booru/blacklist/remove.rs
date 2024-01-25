@@ -1,14 +1,12 @@
-use crate::commands::booru::{self, autocomplete_tag, SettingKind};
-use crate::error::NotifyError;
-use crate::responses::emojis::OsakaMoji;
-use crate::responses::markdown::mono;
-use crate::responses::templates::cool_text;
-use crate::OsakaData;
-use crate::{OsakaContext, OsakaResult};
+use crate::{
+    commands::booru::{self, autocomplete_tag, SettingKind},
+    error::NotifyError,
+    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
+    OsakaContext, OsakaData, OsakaResult,
+};
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::t;
-use rusty18n::I18NAccessible;
+use rusty18n::{t, I18NAccessible};
 
 #[command(slash_command)]
 pub async fn remove(

@@ -1,10 +1,11 @@
-use rusty18n::I18NDynamicResource;
-use rusty18n::{r, I18NFallback};
+use rusty18n::{r, I18NDynamicResource, I18NFallback};
 
-use super::osaka_i_18_n::booru::blacklist::remove::Remove;
 use super::osaka_i_18_n::{
     self,
-    booru::{blacklist::Blacklist, Booru},
+    booru::{
+        blacklist::{remove::Remove, Blacklist},
+        Booru,
+    },
     errors::Errors,
     fun::{coinflip::Coinflip, Fun},
     user::avatar::{footer::Footer, Avatar},

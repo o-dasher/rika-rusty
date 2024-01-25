@@ -7,7 +7,7 @@ use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{
     error::OsakaError,
-    responses::{emojis::OsakaMoji, templates::cool_text, markdown::mono},
+    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaResult,
 };
 
@@ -31,7 +31,7 @@ pub async fn coinflip(ctx: OsakaContext<'_>) -> OsakaResult {
         PossiblePlay::Heads => t!(heads),
         PossiblePlay::Flips => t!(tails),
     };
-    
+
     ctx.reply(cool_text(
         OsakaMoji::ZanyFace,
         &format!("{} {}", t!(show), mono(coin_string)),

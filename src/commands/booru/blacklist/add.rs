@@ -1,17 +1,14 @@
-use crate::commands::booru;
-use crate::commands::booru::autocomplete_tag;
-use crate::commands::booru::blacklist;
-use crate::commands::booru::blacklist::ID;
-use crate::commands::booru::SettingKind;
-use crate::responses::emojis::OsakaMoji;
-use crate::responses::markdown::mono;
-use crate::responses::templates::cool_text;
-use crate::OsakaData;
-use crate::{OsakaContext, OsakaResult};
+use crate::{
+    commands::{
+        booru,
+        booru::{autocomplete_tag, blacklist, blacklist::ID, SettingKind},
+    },
+    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
+    OsakaContext, OsakaData, OsakaResult,
+};
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::t;
-use rusty18n::I18NAccessible;
+use rusty18n::{t, I18NAccessible};
 
 #[command(slash_command)]
 pub async fn add(
