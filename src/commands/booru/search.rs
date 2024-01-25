@@ -50,7 +50,13 @@ pub async fn search(
     .fetch_all(pool)
     .await?;
 
-    let built_tags = tags.split(' ').map(str::to_string).collect_vec();
+    let built_tags = tags
+        .trim()
+        .to_lowercase()
+        .split(' ')
+        .map(str::to_string)
+        .collect_vec();
+
     let blacklisted_tags = all_blacklists
         .iter()
         .map(|v| v.blacklisted.clone())

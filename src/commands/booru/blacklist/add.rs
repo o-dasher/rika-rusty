@@ -20,6 +20,7 @@ pub async fn add(
     kind: SettingKind,
     #[autocomplete = "autocomplete_tag"] tag: String,
 ) -> OsakaResult {
+    let tag = tag.trim().to_lowercase();
     blacklist::check_permissions(ctx, kind).await?;
 
     let OsakaData { pool, .. } = ctx.data();
@@ -62,7 +63,7 @@ pub async fn add(
     .fetch_one(&mut *tx)
     .await?;
 
-    let all_blacklisted_tags = tag.split(' ').map(str::trim).map(str::to_lowercase);
+    let all_blacklisted_tags = tag.split(' ');
     for blacklisted_tag in all_blacklisted_tags {
         sqlx::query!(
             "

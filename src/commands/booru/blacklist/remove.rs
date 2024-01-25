@@ -14,6 +14,8 @@ pub async fn remove(
     kind: SettingKind,
     #[autocomplete = "autocomplete_tag"] tag: String,
 ) -> OsakaResult {
+    let tag = tag.trim().to_lowercase();
+
     let i18n = ctx.i18n();
     let OsakaData { pool, .. } = ctx.data();
 

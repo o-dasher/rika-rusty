@@ -22,7 +22,7 @@ CREATE TABLE booru_setting (
 
 	FOREIGN KEY (guild_id) REFERENCES discord_guild(id) ON DELETE CASCADE,
 	FOREIGN KEY (channel_id) REFERENCES discord_channel(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE booru_blacklisted_tag (
