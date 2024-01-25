@@ -10,10 +10,13 @@ use crate::{
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
+use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
-use sqlx::{migrate::Migrate, postgres::any::AnyConnectionBackend};
+use sqlx::postgres::any::AnyConnectionBackend;
+
+use super::as_some_if;
 
 #[command(slash_command)]
 pub async fn add(
@@ -66,9 +69,7 @@ pub async fn add(
 
     let all_blacklisted_tags = tag.split(' ');
 
-    // TODO: No need to mutate here, be more creative.
-    let mut already_was_blacklisted = vec![];
-    let mut successfully_blacklisted = vec![];
+    let mut blacklisted_operations = vec![];
 
     for blacklisted_tag in all_blacklisted_tags {
         (*tx).commit().await?;
@@ -89,7 +90,7 @@ pub async fn add(
                 sqlx::Error::Database(e) => {
                     if e.is_unique_violation() {
                         (*tx).rollback().await?;
-                        already_was_blacklisted.push(blacklisted_tag)
+                        blacklisted_operations.push((blacklisted_tag, Ok(())));
                     } else {
                         Err(sqlx::Error::Database(e))?
                     }
@@ -97,9 +98,17 @@ pub async fn add(
                 e => Err(e)?,
             }
         } else {
-            successfully_blacklisted.push(blacklisted_tag)
+            blacklisted_operations.push((blacklisted_tag, Err(())))
         }
     }
+
+    let [already_was_blacklisted, successfully_blacklisted] = [Ok, Err].map(|k| {
+        blacklisted_operations
+            .iter()
+            .filter(|(.., result)| *result == k(()))
+            .map(|(tag, ..)| *tag)
+            .collect_vec()
+    });
 
     tx.commit().await?;
 
