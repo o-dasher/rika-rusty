@@ -16,13 +16,13 @@ CREATE TABLE discord_user (
 CREATE TABLE booru_setting (
 	id SERIAL PRIMARY KEY,
 	
-	guild_id NUMERIC,
-	user_id NUMERIC,
-	channel_id NUMERIC,
+	guild_id NUMERIC UNIQUE,
+	user_id NUMERIC UNIQUE,
+	channel_id NUMERIC UNIQUE,
 
 	FOREIGN KEY (guild_id) REFERENCES discord_guild(id) ON DELETE CASCADE,
 	FOREIGN KEY (channel_id) REFERENCES discord_channel(id) ON DELETE CASCADE,
-	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE
+	FOREIGN KEY (user_id) REFERENCES discord_user(id) ON DELETE CASCADE,
 );
 
 CREATE TABLE booru_blacklisted_tag (

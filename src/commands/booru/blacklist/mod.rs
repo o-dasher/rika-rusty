@@ -13,9 +13,11 @@ use super::SettingKind;
 
 create_command_group!(blacklist, ["add", "remove"]);
 
-pub struct ID {
-    pub id: BigDecimal,
+pub struct ID<T> {
+    pub id: T,
 }
+
+pub type BigID = ID<BigDecimal>;
 
 pub fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
     if condition(&value) {
