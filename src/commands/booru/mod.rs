@@ -59,9 +59,11 @@ pub fn get_owner_insert_option(
     }
 }
 
+pub const SETTING_KIND_AMOUNT: usize = 3;
+
 pub fn get_all_owner_insert_options(
     ctx: OsakaContext,
-) -> Result<[Option<BigDecimal>; 3], OsakaError> {
+) -> Result<[Option<BigDecimal>; SETTING_KIND_AMOUNT], OsakaError> {
     Ok(
         [SettingKind::Guild, SettingKind::Channel, SettingKind::User]
             .map(|s| get_owner_insert_option(ctx, s))
@@ -72,7 +74,7 @@ pub fn get_all_owner_insert_options(
 pub fn get_all_owner_insert_options_some_owner(
     ctx: OsakaContext,
     operation_kind: SettingKind,
-) -> Result<[Option<BigDecimal>; 3], OsakaError> {
+) -> Result<[Option<BigDecimal>; SETTING_KIND_AMOUNT], OsakaError> {
     let owner_id = get_owner_insert_option(ctx, operation_kind)?;
 
     get_all_owner_insert_options(ctx)
