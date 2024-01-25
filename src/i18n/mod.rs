@@ -28,9 +28,11 @@ nestruct::nest!(
         booru: {
             blacklist: {
                 blacklisted: rusty18n::DR<String>?,
+                everything_blacklisted_already: rusty18n::DR<String>?,
+                partial_blacklist: rusty18n::DR<(String, String)>?,
                 remove: {
                     failed: rusty18n::DR<String>?,
-                    removed: rusty18n::DR<String>?,
+                    removed: rusty18n::DR<String>?
                 }
             }
         }

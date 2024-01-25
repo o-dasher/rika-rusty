@@ -13,6 +13,7 @@ use crate::{
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
+use sqlx::{migrate::Migrate, postgres::any::AnyConnectionBackend};
 
 #[command(slash_command)]
 pub async fn add(
@@ -64,8 +65,15 @@ pub async fn add(
     .await?;
 
     let all_blacklisted_tags = tag.split(' ');
+
+    // TODO: No need to mutate here, be more creative.
+    let mut already_was_blacklisted = vec![];
+    let mut successfully_blacklisted = vec![];
+
     for blacklisted_tag in all_blacklisted_tags {
-        sqlx::query!(
+        (*tx).commit().await?;
+
+        let inserted_tag: Result<_, sqlx::Error> = sqlx::query!(
             "
             INSERT INTO booru_blacklisted_tag
             (booru_setting_id, blacklisted) VALUES ($1, $2)
@@ -74,16 +82,42 @@ pub async fn add(
             blacklisted_tag
         )
         .execute(&mut *tx)
-        .await?;
+        .await;
+
+        if let Err(e) = inserted_tag {
+            match e {
+                sqlx::Error::Database(e) => {
+                    if e.is_unique_violation() {
+                        (*tx).rollback().await?;
+                        already_was_blacklisted.push(blacklisted_tag)
+                    } else {
+                        Err(sqlx::Error::Database(e))?
+                    }
+                }
+                e => Err(e)?,
+            }
+        } else {
+            successfully_blacklisted.push(blacklisted_tag)
+        }
     }
 
     tx.commit().await?;
 
-    ctx.say(cool_text(
-        OsakaMoji::ZanyFace,
-        &t!(i18n.booru.blacklist.blacklisted).access(mono(tag)),
-    ))
-    .await?;
+    let response = if !already_was_blacklisted.is_empty() {
+        if successfully_blacklisted.is_empty() {
+            t!(i18n.booru.blacklist.everything_blacklisted_already).access(mono(tag))
+        } else {
+            t!(i18n.booru.blacklist.partial_blacklist).access(
+                [already_was_blacklisted, successfully_blacklisted]
+                    .map(|v| mono(v.join(" ")))
+                    .into(),
+            )
+        }
+    } else {
+        t!(i18n.booru.blacklist.blacklisted).access(mono(tag))
+    };
+
+    ctx.say(cool_text(OsakaMoji::ZanyFace, &response)).await?;
 
     Ok(())
 }

@@ -37,6 +37,8 @@ impl I18NFallback for OsakaI18N {
             booru: Booru {
                 blacklist: Blacklist {
                     blacklisted: r!(|tag| "Sure mistah, blacklisting {tag}!"),
+                    everything_blacklisted_already: r!(|tag| "Hey, listen! {tag} is already on the blacklist..."),
+                    partial_blacklist: r!(|(was, got)| "Since {was} already was blacklisted, I only blacklisted {got}!"),
                     remove: Remove {
                         removed: r!(|tag| "Ok, then! {tag} is not blacklisted anymore."),
                         failed: r!(|tag| "Hey, it seems that {tag} is not being blacklisted here!")
