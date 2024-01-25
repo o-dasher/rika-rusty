@@ -16,8 +16,6 @@ use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t, I18NAccessible};
 use sqlx::postgres::any::AnyConnectionBackend;
 
-use super::as_some_if;
-
 #[command(slash_command)]
 pub async fn add(
     ctx: OsakaContext<'_>,
