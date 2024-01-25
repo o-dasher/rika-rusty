@@ -26,11 +26,9 @@ CREATE TABLE booru_setting (
 );
 
 CREATE TABLE booru_blacklisted_tag (
-	id serial primary key,
-
-	booru_setting_id int not null,
-	blacklisted varchar(255) not null,
+	booru_setting_id INT NOT NULL,
+	blacklisted VARCHAR(255) NOT NULL,
 
 	FOREIGN KEY (booru_setting_id) REFERENCES booru_setting(id) ON DELETE CASCADE,
-	UNIQUE (blacklisted, booru_setting_id)
+	PRIMARY KEY (blacklisted, booru_setting_id)
 );

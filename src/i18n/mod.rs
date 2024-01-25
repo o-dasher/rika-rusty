@@ -27,7 +27,11 @@ nestruct::nest!(
         },
         booru: {
             blacklist: {
-                blacklisted: rusty18n::DR<String>?
+                blacklisted: rusty18n::DR<String>?,
+                remove: {
+                    failed: rusty18n::DR<String>?,
+                    removed: rusty18n::DR<String>?,
+                }
             }
         }
     }

@@ -71,6 +71,8 @@ pub async fn add(
         .await?;
     }
 
+    tx.commit().await?;
+
     ctx.say(cool_text(
         OsakaMoji::ZanyFace,
         &t!(i18n.booru.blacklist.blacklisted).access(mono(tag)),

@@ -1,6 +1,7 @@
 use rusty18n::I18NDynamicResource;
 use rusty18n::{r, I18NFallback};
 
+use super::osaka_i_18_n::booru::blacklist::remove::Remove;
 use super::osaka_i_18_n::{
     self,
     booru::{blacklist::Blacklist, Booru},
@@ -35,6 +36,10 @@ impl I18NFallback for OsakaI18N {
             booru: Booru {
                 blacklist: Blacklist {
                     blacklisted: r!(|tag| "Sure mistah, blacklisting {tag}!"),
+                    remove: Remove {
+                        removed: r!(|tag| "Ok, then! {tag} is not blacklisted anymore."),
+                        failed: r!(|tag| "Hey, it seems that {tag} is not being blacklisted here!")
+                    }
                 },
             },
         }

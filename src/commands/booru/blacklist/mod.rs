@@ -1,6 +1,7 @@
 pub mod add;
 pub mod remove;
 
+use crate::commands::booru::blacklist::remove::remove;
 use crate::{
     create_command_group,
     error::{NotifyError, OsakaError},
@@ -10,7 +11,7 @@ use sqlx::types::BigDecimal;
 
 use super::SettingKind;
 
-create_command_group!(blacklist, ["add"]);
+create_command_group!(blacklist, ["add", "remove"]);
 
 pub struct ID {
     pub id: BigDecimal,
@@ -39,7 +40,7 @@ pub async fn check_permissions(ctx: OsakaContext<'_>, operation_kind: SettingKin
     };
 
     if !authorized {
-        return Err(NotifyError::MissingPermissions)?;
+        Err(NotifyError::MissingPermissions)?;
     };
 
     Ok(())
