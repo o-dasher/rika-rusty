@@ -5,7 +5,6 @@ use crate::{
         SettingKind,
     },
     error::NotifyError,
-    i18n::osaka_i_18_n::booru::blacklist::Blacklist,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };

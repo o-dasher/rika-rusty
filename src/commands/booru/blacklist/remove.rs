@@ -20,7 +20,7 @@ pub async fn remove(
     let OsakaData { pool, .. } = ctx.data();
 
     let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_setting_kind_db_ids_allowing_only_one(ctx, kind)?;
+        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
     let result = sqlx::query!(
         "
