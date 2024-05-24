@@ -1,3 +1,5 @@
+#![feature(let_chains)]
+
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
 use poise::{

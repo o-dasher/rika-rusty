@@ -1,17 +1,19 @@
 pub mod add;
+pub mod list;
 pub mod remove;
 
 use crate::{
-    commands::booru::blacklist::remove::remove,
     create_command_group,
     error::{NotifyError, OsakaError},
 };
 use add::add;
+use list::list;
+use remove::remove;
 use sqlx::types::BigDecimal;
 
 use super::SettingKind;
 
-create_command_group!(blacklist, ["add", "remove"]);
+create_command_group!(blacklist, ["add", "remove", "list"]);
 
 pub struct ID<T> {
     pub id: T,

@@ -34,7 +34,7 @@ impl<'a> Paginator<'a> {
         let close_button = ctx_id.create_id("close");
         let next_button = ctx_id.create_id("next");
 
-        let mut current_idx = 0usize;
+        let mut current_idx = 0;
 
         let create_reply_inner = |idx: usize| -> Result<CreateReply<'a>, OsakaError> {
             create_reply(idx, &mut CreateReply::default())
@@ -77,17 +77,9 @@ impl<'a> Paginator<'a> {
             .await
         {
             current_idx = match &press.data.custom_id {
-                x if x == &prev_button => {
-                    current_idx.checked_sub(1).unwrap_or(amount_pages - 1usize)
-                }
-                x if x == &next_button => {
-                    let new_idx = current_idx + 1;
-                    if new_idx > amount_pages {
-                        0
-                    } else {
-                        new_idx
-                    }
-                }
+                x if x == &prev_button => 
+                    current_idx.checked_sub(1).unwrap_or(amount_pages - 1usize),
+                x if x == &next_button => (current_idx + 1) % amount_pages,
                 x if x == &close_button => {
                     sent.delete(ctx).await?;
                     continue;
