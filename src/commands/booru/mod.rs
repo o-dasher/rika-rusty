@@ -9,7 +9,7 @@ use rusty_booru::generic::client::{BooruOption, GenericClient};
 use search::search;
 use serde::{Deserialize, Serialize};
 use sqlx::types::BigDecimal;
-use strum::IntoStaticStr;
+use strum::{EnumIter, IntoStaticStr};
 
 use self::blacklist::as_some_if;
 
@@ -33,14 +33,14 @@ impl From<BooruChoice> for BooruOption {
     }
 }
 
-#[derive(ChoiceParameter, Clone, Copy)]
+#[derive(ChoiceParameter, Clone, Copy, EnumIter)]
 pub enum SettingKind {
     Guild,
     Channel,
     User,
 }
 
-pub fn get_owner_insert_option(
+pub fn get_setting_kind_db_id(
     ctx: OsakaContext,
     operation_kind: SettingKind,
 ) -> Result<BigDecimal, OsakaError> {
@@ -59,25 +59,23 @@ pub fn get_owner_insert_option(
     }
 }
 
-pub const SETTING_KIND_AMOUNT: usize = 3;
+type OwnerInsertOptions = Result<[Option<BigDecimal>; 3], OsakaError>;
 
-pub fn get_all_owner_insert_options(
-    ctx: OsakaContext,
-) -> Result<[Option<BigDecimal>; SETTING_KIND_AMOUNT], OsakaError> {
+pub fn get_all_setting_kind_db_ids(ctx: OsakaContext) -> OwnerInsertOptions {
     Ok(
         [SettingKind::Guild, SettingKind::Channel, SettingKind::User]
-            .map(|s| get_owner_insert_option(ctx, s))
+            .map(|s| get_setting_kind_db_id(ctx, s))
             .map(Result::ok),
     )
 }
 
-pub fn get_all_owner_insert_options_some_owner(
+pub fn get_all_setting_kind_db_ids_only_allowing_this_kind(
     ctx: OsakaContext,
     operation_kind: SettingKind,
-) -> Result<[Option<BigDecimal>; SETTING_KIND_AMOUNT], OsakaError> {
-    let owner_id = get_owner_insert_option(ctx, operation_kind)?;
+) -> OwnerInsertOptions {
+    let owner_id = get_setting_kind_db_id(ctx, operation_kind)?;
 
-    get_all_owner_insert_options(ctx)
+    get_all_setting_kind_db_ids(ctx)
         .map(|v| v.map(|v| as_some_if(v, |v| v.as_ref().is_some_and(|v| *v == owner_id)).flatten()))
 }
 

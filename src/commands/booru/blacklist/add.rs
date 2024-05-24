@@ -31,9 +31,9 @@ pub async fn add(
 
     let mut tx = pool.begin().await?;
 
-    let owner_id = booru::get_owner_insert_option(ctx, kind)?;
+    let owner_id = booru::get_setting_kind_db_id(ctx, kind)?;
     let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_owner_insert_options_some_owner(ctx, kind)?;
+        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
     sqlx_conditional_queries::conditional_query_as!(
         BigID,

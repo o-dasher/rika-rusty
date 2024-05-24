@@ -35,7 +35,7 @@ pub async fn search(
     let mut query = GenericClient::query();
 
     let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_owner_insert_options(ctx)?;
+        booru::get_all_setting_kind_db_ids(ctx)?;
 
     let all_blacklists = sqlx::query!(
         "
