@@ -6,7 +6,7 @@ use crate::{
 };
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::{t, I18NAccessible};
+use rusty18n::t;
 
 #[command(slash_command)]
 pub async fn remove(
@@ -39,13 +39,13 @@ pub async fn remove(
 
     if result.rows_affected() < 1 {
         Err(NotifyError::Warn(
-            t!(i18n.booru.blacklist.remove.failed).access(mono(tag.clone())),
+            t!(i18n.booru.blacklist.remove.failed).with(mono(tag.clone())),
         ))?;
     }
 
     ctx.say(cool_text(
         OsakaMoji::ZanyFace,
-        &t!(i18n.booru.blacklist.remove.removed).access(mono(tag)),
+        &t!(i18n.booru.blacklist.remove.removed).with(mono(tag)),
     ))
     .await?;
 

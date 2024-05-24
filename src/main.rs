@@ -32,8 +32,8 @@ pub struct OsakaData {
     pub pool: Pool<Postgres>,
 }
 
-impl PoiseI18NMeta<OsakaLocale, OsakaI18N> for OsakaContext<'_> {
-    fn locales(&self) -> &I18NWrapper<OsakaLocale, OsakaI18N> {
+impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {
+    fn locales(&self) -> &'a I18NWrapper<OsakaLocale, OsakaI18N> {
         &self.data().i18n
     }
 }

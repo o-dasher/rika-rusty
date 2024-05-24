@@ -3,7 +3,7 @@ use chrono::OutOfRangeError;
 use log::error;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::{t, I18NAccessible};
+use rusty18n::t;
 use strum::Display;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]

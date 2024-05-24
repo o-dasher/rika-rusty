@@ -4,7 +4,7 @@ use poise::{
     serenity_prelude::{self, Colour},
 };
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::{t_prefix, I18NAccessible};
+use rusty18n::{t_prefix};
 
 #[command(slash_command)]
 pub async fn avatar(ctx: OsakaContext<'_>, user: Option<serenity_prelude::User>) -> OsakaResult {

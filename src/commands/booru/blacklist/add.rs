@@ -14,7 +14,7 @@ use crate::{
 use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::{t, I18NAccessible};
+use rusty18n::t;
 use sqlx::postgres::any::AnyConnectionBackend;
 
 #[command(slash_command)]
@@ -114,17 +114,17 @@ pub async fn add(
     let response = if !already_was_blacklisted.is_empty() {
         if successfully_blacklisted.is_empty() {
             Err(NotifyError::Warn(
-                t!(i18n.booru.blacklist.everything_blacklisted_already).access(mono(tag)),
+                t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag)),
             ))?
         } else {
-            t!(i18n.booru.blacklist.partial_blacklist).access(
+            t!(i18n.booru.blacklist.partial_blacklist).with(
                 [already_was_blacklisted, successfully_blacklisted]
                     .map(|v| mono(v.join(" ")))
                     .into(),
             )
         }
     } else {
-        t!(i18n.booru.blacklist.blacklisted).access(mono(tag))
+        t!(i18n.booru.blacklist.blacklisted).with(mono(tag))
     };
 
     ctx.say(cool_text(OsakaMoji::ZanyFace, &response)).await?;

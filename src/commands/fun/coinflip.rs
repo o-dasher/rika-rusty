@@ -2,7 +2,7 @@ use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rand::seq::SliceRandom;
-use rusty18n::{t_prefix, I18NAccessible};
+use rusty18n::t_prefix;
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{
