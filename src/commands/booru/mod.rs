@@ -33,8 +33,9 @@ impl From<BooruChoice> for BooruOption {
     }
 }
 
-#[derive(ChoiceParameter, Clone, Copy, EnumIter)]
+#[derive(ChoiceParameter, Clone, Copy, EnumIter, Default)]
 pub enum SettingKind {
+    #[default]
     Guild,
     Channel,
     User,

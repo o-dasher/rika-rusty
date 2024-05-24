@@ -77,8 +77,9 @@ impl<'a> Paginator<'a> {
             .await
         {
             current_idx = match &press.data.custom_id {
-                x if x == &prev_button => 
-                    current_idx.checked_sub(1).unwrap_or(amount_pages - 1usize),
+                x if x == &prev_button => {
+                    current_idx.checked_sub(1).unwrap_or(amount_pages - 1usize)
+                }
                 x if x == &next_button => (current_idx + 1) % amount_pages,
                 x if x == &close_button => {
                     sent.delete(ctx).await?;
