@@ -12,7 +12,6 @@ use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t;
-use sqlx::postgres::any::AnyConnectionBackend;
 
 #[command(slash_command)]
 pub async fn add(
@@ -63,74 +62,24 @@ pub async fn add(
     .fetch_one(&mut *tx)
     .await?;
 
-    let all_blacklisted_tags = tag.split(' ');
-
-    let mut blacklisted_operations = vec![];
-
-    #[derive(Eq, PartialEq)]
-    enum BlacklistTry {
-        AlreadyBlacklisted,
-        SuccesfullyBlacklisted,
-    }
-
-    for blacklisted_tag in all_blacklisted_tags {
-        (*tx).commit().await?;
-
-        let inserted_tag: Result<_, sqlx::Error> = sqlx::query!(
-            "
-            INSERT INTO booru_blacklisted_tag
-            (booru_setting_id, blacklisted) VALUES ($1, $2)
-            ",
-            booru_setting_insertion.id,
-            blacklisted_tag
-        )
-        .execute(&mut *tx)
-        .await;
-
-        if let Err(e) = inserted_tag {
-            match e {
-                sqlx::Error::Database(e) => {
-                    if e.is_unique_violation() {
-                        (*tx).rollback().await?;
-                        blacklisted_operations
-                            .push((blacklisted_tag, BlacklistTry::AlreadyBlacklisted));
-                    } else {
-                        Err(sqlx::Error::Database(e))?
-                    }
-                }
-                e => Err(e)?,
-            }
-        } else {
-            blacklisted_operations.push((blacklisted_tag, BlacklistTry::SuccesfullyBlacklisted))
-        }
-    }
-
-    let [already_was_blacklisted, successfully_blacklisted] = [
-        BlacklistTry::AlreadyBlacklisted,
-        BlacklistTry::SuccesfullyBlacklisted,
-    ]
-    .map(|k| {
-        blacklisted_operations
-            .iter()
-            .filter(|(.., result)| *result == k)
-            .map(|(tag, ..)| *tag)
-            .collect_vec()
-    });
+    let split_tags = tag.split(' ').collect_vec();
+    let inserted_tag: Result<_, sqlx::Error> = sqlx::query!(
+        "
+        INSERT INTO booru_blacklisted_tag
+        (booru_setting_id, blacklisted) VALUES ($1, $2)
+        ",
+        booru_setting_insertion.id,
+        split_tags.first()
+    )
+    .execute(&mut *tx)
+    .await;
 
     tx.commit().await?;
 
-    let response = if !already_was_blacklisted.is_empty() {
-        if successfully_blacklisted.is_empty() {
-            Err(NotifyError::Warn(
-                t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag)),
-            ))?
-        } else {
-            t!(i18n.booru.blacklist.partial_blacklist).with(
-                [already_was_blacklisted, successfully_blacklisted]
-                    .map(|v| mono(v.join(" ")))
-                    .into(),
-            )
-        }
+    let response = if inserted_tag.is_err() {
+        Err(NotifyError::Warn(
+            t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag)),
+        ))?
     } else {
         t!(i18n.booru.blacklist.blacklisted).with(mono(tag))
     };
