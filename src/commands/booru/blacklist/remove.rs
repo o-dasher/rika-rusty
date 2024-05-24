@@ -1,7 +1,7 @@
 use std::{str::FromStr, vec};
 
 use crate::{
-    commands::booru::{self, SettingKind},
+    commands::booru::{self, get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind},
     error::{NotifyError, OsakaError},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -10,15 +10,13 @@ use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t;
 
+use super::query_blacklisted_tags;
+
 pub async fn autocomplete_tag_remove<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
     searching: &str,
 ) -> Vec<String> {
-    if searching.is_empty() {
-        return Default::default();
-    }
-
-    let booru_choice = ctx
+    let kind = ctx
         .args
         .iter()
         .find(|v| v.name == "kind")
@@ -34,11 +32,14 @@ pub async fn autocomplete_tag_remove<'a>(
         .unwrap_or(Ok(Default::default()))
         .unwrap_or(Default::default());
 
+    let ctx = poise::Context::Application(ctx);
+
+    if searching.is_empty() {
+        return query_blacklisted_tags(ctx, kind).await;
+    }
+
     let Ok([inserted_guild, inserted_channel, inserted_user]) =
-        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(
-            poise::Context::Application(ctx),
-            booru_choice,
-        )
+        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)
     else {
         return Default::default();
     };
