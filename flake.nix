@@ -39,8 +39,10 @@
         {
           default = pkgs.mkShell {
             packages = with pkgs; [
-              openssl
               nixfmt-rfc-style
+			  sqlfluff
+
+              openssl
               rustToolchain
               pkg-config
               cargo-deny
