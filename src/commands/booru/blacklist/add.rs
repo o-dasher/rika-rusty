@@ -1,13 +1,11 @@
 use crate::{
-    commands::{
-        booru,
-        booru::{
-            autocomplete_tag, blacklist,
-            blacklist::{BigID, ID},
-            SettingKind,
-        },
+    commands::booru::{
+        self, autocomplete_tag,
+        blacklist::{self, BigID, ID},
+        SettingKind,
     },
     error::NotifyError,
+    i18n::osaka_i_18_n::booru::blacklist::Blacklist,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -70,6 +68,12 @@ pub async fn add(
 
     let mut blacklisted_operations = vec![];
 
+    #[derive(Eq, PartialEq)]
+    enum BlacklistTry {
+        AlreadyBlacklisted,
+        SuccesfullyBlacklisted,
+    }
+
     for blacklisted_tag in all_blacklisted_tags {
         (*tx).commit().await?;
 
@@ -89,7 +93,8 @@ pub async fn add(
                 sqlx::Error::Database(e) => {
                     if e.is_unique_violation() {
                         (*tx).rollback().await?;
-                        blacklisted_operations.push((blacklisted_tag, Ok(())));
+                        blacklisted_operations
+                            .push((blacklisted_tag, BlacklistTry::AlreadyBlacklisted));
                     } else {
                         Err(sqlx::Error::Database(e))?
                     }
@@ -97,14 +102,18 @@ pub async fn add(
                 e => Err(e)?,
             }
         } else {
-            blacklisted_operations.push((blacklisted_tag, Err(())))
+            blacklisted_operations.push((blacklisted_tag, BlacklistTry::SuccesfullyBlacklisted))
         }
     }
 
-    let [already_was_blacklisted, successfully_blacklisted] = [Ok, Err].map(|k| {
+    let [already_was_blacklisted, successfully_blacklisted] = [
+        BlacklistTry::AlreadyBlacklisted,
+        BlacklistTry::SuccesfullyBlacklisted,
+    ]
+    .map(|k| {
         blacklisted_operations
             .iter()
-            .filter(|(.., result)| *result == k(()))
+            .filter(|(.., result)| *result == k)
             .map(|(tag, ..)| *tag)
             .collect_vec()
     });
