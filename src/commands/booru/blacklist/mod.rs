@@ -11,7 +11,7 @@ use list::list;
 use remove::remove;
 use sqlx::types::BigDecimal;
 
-use super::{ get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind};
+use super::{get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind};
 
 create_command_group!(blacklist, ["add", "remove", "list"]);
 

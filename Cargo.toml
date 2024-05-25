@@ -21,7 +21,7 @@ poise = "0.5.7"
 poise-i18n = "0.1.0"
 rand = "0.8.5"
 reqwest = "0.11.23"
-rusty-booru = "0.1.0"
+rusty-booru = "0.2.1"
 rusty18n = "0.1.1"
 serde = { version = "1.0.193", features = ["serde_derive"] }
 serde_json = "1.0.111"

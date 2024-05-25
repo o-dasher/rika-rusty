@@ -16,7 +16,7 @@ use crate::{
 };
 use itertools::Itertools;
 use poise::{command, serenity_prelude::ButtonStyle};
-use rusty_booru::generic::client::GenericClient;
+use rusty_booru::generic::{client::GenericClient, Rating};
 
 const CLAMP_TAGS_LEN: usize = 75;
 
@@ -81,6 +81,17 @@ pub async fn search(
                 .attachment("https://media1.tenor.com/m/mb-bdtZ7toYAAAAd/chicken.gif".into()).ephemeral(ephemeral)
         })
     };
+
+    if !ctx
+        .guild_channel()
+        .await
+        .ok_or(OsakaError::SimplyUnexpected)?
+        .nsfw
+    {
+        query.rating(Rating::Safe);
+    }
+
+    dbg!("Someone is searching: {}", &query.tags);
 
     let query_res = query.get(booru.clone().into()).await;
 
