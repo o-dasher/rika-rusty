@@ -2,7 +2,7 @@ use crate::{
     commands::booru::{
         self, autocomplete_tag,
         blacklist::{self, BigID, ID},
-        SettingKind,
+        get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
     },
     error::NotifyError,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
@@ -27,24 +27,25 @@ pub async fn add(
 
     let mut tx = pool.begin().await?;
 
-    let owner_id = booru::get_setting_kind_db_id(ctx, kind)?;
-    let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
+    let used_setting_kind = booru::get_setting_kind_db_id(ctx, kind)?;
 
     sqlx_conditional_queries::conditional_query_as!(
         BigID,
         "
-        INSERT INTO discord_{#id_kind} (id{#args}) VALUES ({owner_id}{#binds})
-        ON CONFLICT (id) DO UPDATE SET id={owner_id} RETURNING id
+        INSERT INTO discord_{#id_kind} (id{#args}) VALUES ({used_setting_kind}{#binds})
+        ON CONFLICT (id) DO UPDATE SET id={used_setting_kind} RETURNING id
         ",
         #(id_kind, args, binds) = match kind {
             SettingKind::Guild => ("guild", "", ""),
-            SettingKind::Channel => ("channel", ", guild_id", ", {inserted_guild}"),
+            SettingKind::Channel => ("channel", "", ""),
             SettingKind::User => ("user", "", "")
         },
     )
     .fetch_one(&mut *tx)
     .await?;
+
+    let [inserted_guild, inserted_channel, inserted_user] =
+        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
     let booru_setting_insertion = sqlx_conditional_queries::conditional_query_as!(
         ID,

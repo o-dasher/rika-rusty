@@ -3,10 +3,7 @@ CREATE TABLE discord_guild (
 );
 
 CREATE TABLE discord_channel (
-    id NUMERIC PRIMARY KEY,
-    guild_id NUMERIC NOT NULL,
-
-    FOREIGN KEY (guild_id) REFERENCES discord_guild (id)
+    id NUMERIC PRIMARY KEY
 );
 
 CREATE TABLE discord_user (
