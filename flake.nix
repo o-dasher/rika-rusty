@@ -39,9 +39,8 @@
         {
           default = pkgs.mkShell {
             packages = with pkgs; [
+              nodePackages.dotenv-cli
               nixfmt-rfc-style
-			  sqlfluff
-
               openssl
               rustToolchain
               pkg-config
