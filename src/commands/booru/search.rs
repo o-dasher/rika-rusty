@@ -163,14 +163,14 @@ pub async fn search(
                         })
                 })
                 .components(|b| {
-                    if let Some(source) = &queried.source {
-                        if !source.is_empty() {
-                            b.create_action_row(|b| {
-                                b.create_button(|b| {
-                                    b.label("Source").url(source).style(ButtonStyle::Link)
-                                })
-                            });
-                        }
+                    if let Some(source) = &queried.source
+                        && !source.is_empty()
+                    {
+                        b.create_action_row(|b| {
+                            b.create_button(|b| {
+                                b.label("Source").url(source).style(ButtonStyle::Link)
+                            })
+                        });
                     };
                     b
                 })

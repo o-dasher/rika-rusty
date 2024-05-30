@@ -1,6 +1,6 @@
 use crate::{
     commands::booru::{
-        self, autocomplete_tag,
+        self, autocomplete_tag_single,
         blacklist::{self, BigID, ID},
         get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
     },
@@ -17,7 +17,7 @@ use rusty18n::t;
 pub async fn add(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    #[autocomplete = "autocomplete_tag"] tag: String,
+    #[autocomplete = "autocomplete_tag_single"] tag: String,
 ) -> OsakaResult {
     let tag = tag.trim().to_lowercase();
     blacklist::check_permissions(ctx, kind).await?;

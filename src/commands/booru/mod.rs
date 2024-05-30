@@ -80,6 +80,17 @@ pub fn get_all_setting_kind_db_ids_only_allowing_this_kind(
         .map(|v| v.map(|v| as_some_if(v, |v| v.as_ref().is_some_and(|v| *v == owner_id)).flatten()))
 }
 
+pub async fn autocomplete_tag_single<'a>(
+    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
+    searching: &str,
+) -> Vec<String> {
+    autocomplete_tag(
+        ctx,
+        searching.split(" ").collect_vec().first().unwrap_or(&""),
+    )
+    .await
+}
+
 pub async fn autocomplete_tag<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
     searching: &str,
