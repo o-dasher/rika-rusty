@@ -28,6 +28,9 @@ pub async fn add(
     let mut tx = pool.begin().await?;
 
     let used_setting_kind = booru::get_setting_kind_db_id(ctx, kind)?;
+    let [inserted_guild, inserted_channel, inserted_user] =
+        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
+
 
     sqlx_conditional_queries_layering::create_conditional_query_as!(
         $conditional_id_kind_query,
@@ -42,22 +45,21 @@ pub async fn add(
         BigID,
         "
         INSERT INTO discord_{#id_kind} (id) VALUES ({used_setting_kind})
-        ON CONFLICT (id) DO UPDATE SET id={used_setting_kind} RETURNING id
+        ON CONFLICT (id) DO UPDATE SET id=EXCLUDED.id RETURNING id
         "
     )
     .fetch_one(&mut *tx)
     .await?;
 
-    let [inserted_guild, inserted_channel, inserted_user] =
-        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
-
     let booru_setting_insertion = conditional_id_kind_query!(
         ID,
         "
-        INSERT INTO booru_setting AS s (guild_id, channel_id, user_id)
+        INSERT INTO booru_setting (guild_id, channel_id, user_id)
         VALUES ({inserted_guild}, {inserted_channel}, {inserted_user})
-        ON CONFLICT ({#id_kind}_id) DO UPDATE SET id=s.id RETURNING id 
-        "
+        ON CONFLICT ({#id_kind}_id) DO UPDATE
+            SET {#id_kind}_id=EXCLUDED.{#id_kind}_id
+        RETURNING id 
+        ",
     )
     .fetch_one(&mut *tx)
     .await?;
