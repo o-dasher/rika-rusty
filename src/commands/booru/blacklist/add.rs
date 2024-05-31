@@ -1,3 +1,5 @@
+use paste::paste;
+
 use crate::{
     commands::booru::{
         self, autocomplete_tag_single,
@@ -29,17 +31,21 @@ pub async fn add(
 
     let used_setting_kind = booru::get_setting_kind_db_id(ctx, kind)?;
 
-    sqlx_conditional_queries::conditional_query_as!(
+    sqlx_conditional_queries_layering::create_conditional_query_as!(
+        $conditional_id_kind_query,
+        #id_kind = match kind {
+            SettingKind::Guild => "guild",
+            SettingKind::Channel => "channel",
+            SettingKind::User => "user"
+        }
+    );
+
+    conditional_id_kind_query!(
         BigID,
         "
-        INSERT INTO discord_{#id_kind} (id{#args}) VALUES ({used_setting_kind}{#binds})
+        INSERT INTO discord_{#id_kind} (id) VALUES ({used_setting_kind})
         ON CONFLICT (id) DO UPDATE SET id={used_setting_kind} RETURNING id
-        ",
-        #(id_kind, args, binds) = match kind {
-            SettingKind::Guild => ("guild", "", ""),
-            SettingKind::Channel => ("channel", "", ""),
-            SettingKind::User => ("user", "", "")
-        },
+        "
     )
     .fetch_one(&mut *tx)
     .await?;
@@ -47,18 +53,13 @@ pub async fn add(
     let [inserted_guild, inserted_channel, inserted_user] =
         get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
-    let booru_setting_insertion = sqlx_conditional_queries::conditional_query_as!(
+    let booru_setting_insertion = conditional_id_kind_query!(
         ID,
         "
         INSERT INTO booru_setting AS s (guild_id, channel_id, user_id)
         VALUES ({inserted_guild}, {inserted_channel}, {inserted_user})
         ON CONFLICT ({#id_kind}_id) DO UPDATE SET id=s.id RETURNING id 
-        ",
-        #(id_kind) = match kind {
-            SettingKind::Guild => "guild",
-            SettingKind::Channel => "channel",
-            SettingKind::User => "user"
-        }
+        "
     )
     .fetch_one(&mut *tx)
     .await?;

@@ -1416,6 +1416,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "sqlx-conditional-queries",
+ "sqlx-conditional-queries-layering",
  "strum",
  "thiserror",
  "tokio",
@@ -2211,6 +2212,12 @@ dependencies = [
  "syn 1.0.109",
  "thiserror",
 ]
+
+[[package]]
+name = "sqlx-conditional-queries-layering"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f0b283da1257f4f50c8c1f2afb93edae930e9e8e33c57fd57c262a5c0e957a0"
 
 [[package]]
 name = "sqlx-conditional-queries-macros"
