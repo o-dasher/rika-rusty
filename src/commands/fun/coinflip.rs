@@ -20,7 +20,7 @@ enum PossiblePlay {
 #[command(slash_command)]
 pub async fn coinflip(ctx: OsakaContext<'_>) -> OsakaResult {
     let i18n = ctx.i18n();
-    t_prefix!($, i18n.fun.coinflip);
+    t_prefix!($i18n.fun.coinflip);
 
     let possible_plays = PossiblePlay::iter().collect_vec();
     let flip_result = possible_plays

@@ -1,5 +1,3 @@
-use paste::paste;
-
 use crate::{
     commands::booru::{
         self, autocomplete_tag_single,

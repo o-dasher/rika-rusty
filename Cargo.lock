@@ -1903,9 +1903,9 @@ dependencies = [
 
 [[package]]
 name = "rusty18n"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f406d4aeb79b0352bcc3756846f38e1ef7c48b0ed470db443b0e205ae5f555c1"
+checksum = "7cd3292b250542bef1497d9363660dc52036030c10a33b1697d65fd27aee584c"
 dependencies = [
  "bevy_reflect",
 ]
