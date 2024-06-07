@@ -1,16 +1,16 @@
 pub mod add;
-pub mod clear;
 pub mod list;
-pub mod remove;
+pub mod delete;
 
 use crate::{
     create_command_group,
     error::{NotifyError, OsakaError},
 };
+
 use add::add;
-use clear::clear;
 use list::list;
-use remove::remove;
+use delete::clear::clear;
+use delete::remove::remove;
 use sqlx::types::BigDecimal;
 
 use super::{get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind};

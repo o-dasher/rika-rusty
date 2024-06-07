@@ -1,7 +1,11 @@
 use std::{str::FromStr, vec};
 
 use crate::{
-    commands::booru::{self, get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind},
+    commands::booru::{
+        self,
+        blacklist::{delete::provide_delete_feedback, query_blacklisted_tags},
+        get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
+    },
     error::{NotifyError, OsakaError},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -9,8 +13,6 @@ use crate::{
 use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
-
-use super::query_blacklisted_tags;
 
 pub async fn autocomplete_tag_remove<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
@@ -96,12 +98,14 @@ pub async fn remove(
     .execute(pool)
     .await?;
 
-    if result.rows_affected() < 1 {
-        Err(NotifyError::Warn(t!(failed).with(mono(tag.clone()))))?;
-    }
-
-    ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(removed).with(mono(tag))))
-        .await?;
+    provide_delete_feedback(ctx, result, |cleared| {
+        if cleared {
+            t!(failed).with(mono(tag.clone()))
+        } else {
+            t!(removed).with(mono(tag.clone()))
+        }
+    })
+    .await?;
 
     Ok(())
 }

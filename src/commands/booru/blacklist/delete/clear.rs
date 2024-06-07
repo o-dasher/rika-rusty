@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::{
-    commands::booru::{self, SettingKind},
+    commands::booru::{self, blacklist::delete::provide_delete_feedback, SettingKind},
     error::NotifyError,
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -20,7 +20,6 @@ pub async fn clear(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
     let [inserted_guild, inserted_channel, inserted_user] =
         booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
-    // Possible conditional query?
     let result = sqlx::query!(
         "
         DELETE FROM booru_blacklisted_tag t
@@ -34,12 +33,14 @@ pub async fn clear(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
     .execute(pool)
     .await?;
 
-    if result.rows_affected() < 1 {
-        Err(NotifyError::Warn(t!(failed).to_string()))?;
-    }
-
-    ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(cleared).to_string()))
-        .await?;
+    provide_delete_feedback(ctx, result, |cleared| {
+        if cleared {
+            t!(cleared).to_string()
+        } else {
+            t!(failed).to_string()
+        }
+    })
+    .await?;
 
     Ok(())
 }
