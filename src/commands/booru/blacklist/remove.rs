@@ -21,7 +21,7 @@ pub async fn autocomplete_tag_remove<'a>(
         .iter()
         .find(|v| v.name == "kind")
         .map(|v| {
-            <SettingKind as FromStr>::from_str(
+            SettingKind::from_str(
                 v.value
                     .as_ref()
                     .map(|v| v.to_string())
@@ -74,8 +74,8 @@ pub async fn remove(
 ) -> OsakaResult {
     let tag = tag.trim().to_lowercase();
     let i18n = ctx.i18n();
-
     t_prefix!($i18n.booru.blacklist.remove);
+
     let OsakaData { pool, .. } = ctx.data();
 
     let [inserted_guild, inserted_channel, inserted_user] =
@@ -97,9 +97,7 @@ pub async fn remove(
     .await?;
 
     if result.rows_affected() < 1 {
-        Err(NotifyError::Warn(
-            t!(failed).with(mono(tag.clone())),
-        ))?;
+        Err(NotifyError::Warn(t!(failed).with(mono(tag.clone()))))?;
     }
 
     ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(removed).with(mono(tag))))
