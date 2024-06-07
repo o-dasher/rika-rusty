@@ -1,4 +1,5 @@
 pub mod add;
+pub mod clear;
 pub mod list;
 pub mod remove;
 
@@ -7,13 +8,14 @@ use crate::{
     error::{NotifyError, OsakaError},
 };
 use add::add;
+use clear::clear;
 use list::list;
 use remove::remove;
 use sqlx::types::BigDecimal;
 
 use super::{get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind};
 
-create_command_group!(blacklist, ["add", "remove", "list"]);
+create_command_group!(blacklist, ["add", "remove", "list", "clear"]);
 
 pub struct ID<T> {
     pub id: T,

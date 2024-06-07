@@ -8,7 +8,7 @@ use crate::{
 };
 use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::t;
+use rusty18n::t_prefix;
 
 use super::query_blacklisted_tags;
 
@@ -73,8 +73,9 @@ pub async fn remove(
     #[autocomplete = "autocomplete_tag_remove"] tag: String,
 ) -> OsakaResult {
     let tag = tag.trim().to_lowercase();
-
     let i18n = ctx.i18n();
+
+    t_prefix!($i18n.booru.blacklist.remove);
     let OsakaData { pool, .. } = ctx.data();
 
     let [inserted_guild, inserted_channel, inserted_user] =
@@ -97,15 +98,12 @@ pub async fn remove(
 
     if result.rows_affected() < 1 {
         Err(NotifyError::Warn(
-            t!(i18n.booru.blacklist.remove.failed).with(mono(tag.clone())),
+            t!(failed).with(mono(tag.clone())),
         ))?;
     }
 
-    ctx.say(cool_text(
-        OsakaMoji::ZanyFace,
-        &t!(i18n.booru.blacklist.remove.removed).with(mono(tag)),
-    ))
-    .await?;
+    ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(removed).with(mono(tag))))
+        .await?;
 
     Ok(())
 }

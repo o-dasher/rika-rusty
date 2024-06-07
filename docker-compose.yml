@@ -10,4 +10,3 @@ services:
       - "5432:5432"
     volumes:
       - ./docker_volume:/var/lib/psql
-    network_mode: host

@@ -32,6 +32,10 @@ nestruct::nest!(
                 remove: {
                     failed: rusty18n::DR<String>?,
                     removed: rusty18n::DR<String>?
+                },
+                clear: {
+                    cleared: rusty18n::R?,
+                    failed: rusty18n::R?
                 }
             }
         }
