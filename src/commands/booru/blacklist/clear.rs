@@ -40,7 +40,7 @@ pub async fn clear(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
         Err(NotifyError::Warn(t!(failed).to_string()))?;
     }
 
-    ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(cleared)))
+    ctx.say(cool_text(OsakaMoji::ZanyFace, &t!(cleared).to_string()))
         .await?;
 
     Ok(())
