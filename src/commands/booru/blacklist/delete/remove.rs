@@ -6,8 +6,8 @@ use crate::{
         blacklist::{delete::provide_delete_feedback, query_blacklisted_tags},
         get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
     },
-    error::{NotifyError, OsakaError},
-    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
+    error::OsakaError,
+    responses::markdown::mono,
     OsakaContext, OsakaData, OsakaResult,
 };
 use poise::{command, ApplicationContext};

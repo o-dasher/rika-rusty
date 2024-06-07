@@ -2,8 +2,6 @@ use std::vec;
 
 use crate::{
     commands::booru::{self, blacklist::delete::provide_delete_feedback, SettingKind},
-    error::NotifyError,
-    responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
 use poise::command;
