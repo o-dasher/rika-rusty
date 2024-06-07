@@ -1,16 +1,14 @@
-use std::{str::FromStr, vec};
+use std::vec;
 
 use crate::{
-    commands::booru::{self, get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind},
-    error::{NotifyError, OsakaError},
-    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
+    commands::booru::{self, SettingKind},
+    error::NotifyError,
+    responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
-use poise::{command, ApplicationContext};
+use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
-
-use super::query_blacklisted_tags;
 
 #[command(slash_command)]
 pub async fn clear(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
