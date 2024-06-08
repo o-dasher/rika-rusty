@@ -3,7 +3,10 @@ use std::{str::FromStr, vec};
 use crate::{
     commands::booru::{
         self,
-        blacklist::{delete::provide_delete_feedback, query_blacklisted_tags},
+        blacklist::{
+            delete::{provide_delete_feedback, DeleteOperation},
+            query_blacklisted_tags,
+        },
         get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
     },
     error::OsakaError,
@@ -76,33 +79,15 @@ pub async fn remove(
 ) -> OsakaResult {
     let tag = tag.trim().to_lowercase();
     let i18n = ctx.i18n();
+
     t_prefix!($i18n.booru.blacklist.remove);
 
-    let OsakaData { pool, .. } = ctx.data();
-
-    let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
-
-    let result = sqlx::query!(
-        "
-        DELETE FROM booru_blacklisted_tag t
-        USING booru_setting s
-        WHERE t.blacklisted=$1 AND s.id=t.booru_setting_id
-        AND s.guild_id=$2 OR s.channel_id=$3 OR s.user_id=$4
-        ",
-        tag,
-        inserted_guild,
-        inserted_channel,
-        inserted_user
-    )
-    .execute(pool)
-    .await?;
-
-    provide_delete_feedback(ctx, result, |cleared| {
+    provide_delete_feedback(ctx, kind, DeleteOperation::Remove(tag.clone()), |cleared| {
+        let tag = tag.clone();
         if cleared {
-            t!(failed).with(mono(tag.clone()))
+            t!(failed).with(mono(tag))
         } else {
-            t!(removed).with(mono(tag.clone()))
+            t!(removed).with(mono(tag))
         }
     })
     .await?;
