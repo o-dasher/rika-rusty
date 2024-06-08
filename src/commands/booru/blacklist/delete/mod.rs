@@ -1,8 +1,7 @@
-use sqlx::postgres::PgQueryResult;
 use sqlx_conditional_queries::conditional_query_as;
 
 use crate::{
-    commands::booru::{self, blacklist::BigID, booru, SettingKind},
+    commands::booru::{self, blacklist::BigID, SettingKind},
     error::NotifyError,
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,

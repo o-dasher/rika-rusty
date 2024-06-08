@@ -2,11 +2,10 @@ use std::vec;
 
 use crate::{
     commands::booru::{
-        self,
         blacklist::delete::{provide_delete_feedback, DeleteOperation},
         SettingKind,
     },
-    OsakaContext, OsakaData, OsakaResult,
+    OsakaContext, OsakaResult,
 };
 use poise::command;
 use poise_i18n::PoiseI18NTrait;

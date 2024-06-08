@@ -2,7 +2,6 @@ use std::{str::FromStr, vec};
 
 use crate::{
     commands::booru::{
-        self,
         blacklist::{
             delete::{provide_delete_feedback, DeleteOperation},
             query_blacklisted_tags,
