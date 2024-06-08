@@ -45,13 +45,13 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
     .fetch_all(pool)
     .await?;
 
-    let success = result.is_empty();
+    let success = !result.is_empty();
     let message = provide_message(success);
 
     if success {
-        Err(NotifyError::Warn(message))?;
-    } else {
         ctx.say(cool_text(OsakaMoji::ZanyFace, &message)).await?;
+    } else {
+        Err(NotifyError::Warn(message))?;
     }
 
     Ok(())
