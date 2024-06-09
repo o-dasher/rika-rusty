@@ -9,13 +9,14 @@ in
     nixfmt-rfc-style
   ];
 
+  dotenv.enable = true;
   env.DATABASE_URL = "postgres:///${name}";
 
-  dotenv.enable = true;
   languages.rust = {
     enable = true;
     channel = "nightly";
   };
+
   services.postgres = {
     enable = true;
     initialDatabases = [ { name = name; } ];

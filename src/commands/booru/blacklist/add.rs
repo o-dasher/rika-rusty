@@ -2,7 +2,7 @@ use crate::{
     commands::booru::{
         self, autocomplete_tag_single,
         blacklist::{self, BigID, ID},
-        get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
+        SettingKind,
     },
     error::NotifyError,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
@@ -12,6 +12,19 @@ use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t;
+
+macro_rules! get_conditional_id_kind_query {
+    ($kind:ident) => {
+        sqlx_conditional_queries_layering::create_conditional_query_as!(
+            $conditional_id_kind_query,
+            #id_kind = match $kind {
+                SettingKind::Guild => "guild",
+                SettingKind::Channel => "channel",
+                SettingKind::User => "user"
+            }
+        );
+    };
+}
 
 #[command(slash_command)]
 pub async fn add(
@@ -28,19 +41,8 @@ pub async fn add(
     let mut tx = pool.begin().await?;
 
     let used_setting_kind = booru::get_setting_kind_db_id(ctx, kind)?;
-    let [inserted_guild, inserted_channel, inserted_user] =
-        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
-
-    sqlx_conditional_queries_layering::create_conditional_query_as!(
-        $conditional_id_kind_query,
-        #id_kind = match kind {
-            SettingKind::Guild => "guild",
-            SettingKind::Channel => "channel",
-            SettingKind::User => "user"
-        }
-    );
-
+    get_conditional_id_kind_query!(kind);
     conditional_id_kind_query!(
         BigID,
         "
@@ -54,8 +56,8 @@ pub async fn add(
     let booru_setting_insertion = conditional_id_kind_query!(
         ID,
         "
-        INSERT INTO booru_setting (guild_id, channel_id, user_id)
-        VALUES ({inserted_guild}, {inserted_channel}, {inserted_user})
+        INSERT INTO booru_setting ({#id_kind}_id)
+        VALUES ({used_setting_kind})
         ON CONFLICT ({#id_kind}_id) DO UPDATE
             SET {#id_kind}_id=EXCLUDED.{#id_kind}_id
         RETURNING id 

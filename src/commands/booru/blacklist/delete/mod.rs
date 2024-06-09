@@ -1,8 +1,7 @@
-use sqlx_conditional_queries::conditional_query_as;
-
 use crate::{
-    commands::booru::{self, blacklist::BigID, SettingKind},
+    commands::booru::{self, blacklist::BigID, get_setting_kind_db_id, SettingKind},
     error::NotifyError,
+    get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -22,19 +21,17 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
     provide_message: F,
 ) -> OsakaResult {
     let OsakaData { pool, .. } = ctx.data();
-    let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)?;
 
-    let result = conditional_query_as!(
+    let inserted_discord_id = get_setting_kind_db_id(ctx, kind)?;
+
+    get_conditional_id_kind_query!(kind);
+    let result = conditional_id_kind_query!(
         BigID,
         "
         DELETE FROM booru_blacklisted_tag t
         USING booru_setting s
         WHERE {#extra_query} s.id=t.booru_setting_id
-        AND 
-            s.guild_id={inserted_guild} OR
-            s.channel_id={inserted_channel} OR
-            s.user_id={inserted_user}
+        AND s.{#id_kind}_id={inserted_discord_id}
         RETURNING id
         ",
         #extra_query = match operation {

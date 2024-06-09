@@ -1,19 +1,21 @@
 pub mod add;
-pub mod list;
 pub mod delete;
+pub mod list;
 
 use crate::{
+    commands::booru::get_setting_kind_db_id,
     create_command_group,
     error::{NotifyError, OsakaError},
+    get_conditional_id_kind_query,
 };
 
 use add::add;
-use list::list;
 use delete::clear::clear;
 use delete::remove::remove;
+use list::list;
 use sqlx::types::BigDecimal;
 
-use super::{get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind};
+use super::SettingKind;
 
 create_command_group!(blacklist, ["add", "remove", "list", "clear"]);
 
@@ -23,31 +25,23 @@ pub struct ID<T> {
 
 pub type BigID = ID<BigDecimal>;
 
-pub fn as_some_if<T>(value: T, condition: impl FnOnce(&T) -> bool) -> Option<T> {
-    if condition(&value) {
-        Some(value)
-    } else {
-        None
-    }
+pub struct BooruBlacklistedTag {
+    booru_setting_id: i32,
+    blacklisted: String,
 }
 
 pub async fn query_blacklisted_tags(ctx: OsakaContext<'_>, kind: SettingKind) -> Vec<String> {
-    let Ok([inserted_guild, inserted_channel, inserted_user]) =
-        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)
-    else {
-        return Default::default();
-    };
+    let inserted_discord_id = get_setting_kind_db_id(ctx, kind).unwrap_or_default();
 
-    sqlx::query!(
+    get_conditional_id_kind_query!(kind);
+    conditional_id_kind_query!(
+        BooruBlacklistedTag,
         "
-        SELECT * FROM booru_blacklisted_tag t
+        SELECT t.* FROM booru_blacklisted_tag t
         JOIN booru_setting s ON s.id = t.booru_setting_id
         WHERE s.id=t.booru_setting_id
-        AND s.guild_id=$1 OR s.channel_id=$2 OR s.user_id=$3
-        ",
-        inserted_guild,
-        inserted_channel,
-        inserted_user
+        AND s.{#id_kind}_id={inserted_discord_id}
+        "
     )
     .fetch_all(&ctx.data().pool)
     .await

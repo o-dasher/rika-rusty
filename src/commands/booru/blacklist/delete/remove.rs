@@ -3,18 +3,21 @@ use std::{str::FromStr, vec};
 use crate::{
     commands::booru::{
         blacklist::{
+            BooruBlacklistedTag,
             delete::{provide_delete_feedback, DeleteOperation},
             query_blacklisted_tags,
         },
-        get_all_setting_kind_db_ids_only_allowing_this_kind, SettingKind,
+        get_setting_kind_db_id, SettingKind,
     },
     error::OsakaError,
+    get_conditional_id_kind_query,
     responses::markdown::mono,
     OsakaContext, OsakaData, OsakaResult,
 };
 use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
+
 
 pub async fn autocomplete_tag_remove<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
@@ -42,24 +45,18 @@ pub async fn autocomplete_tag_remove<'a>(
         return query_blacklisted_tags(ctx, kind).await;
     }
 
-    let Ok([inserted_guild, inserted_channel, inserted_user]) =
-        get_all_setting_kind_db_ids_only_allowing_this_kind(ctx, kind)
-    else {
-        return Default::default();
-    };
+    let inserted_discord_id = get_setting_kind_db_id(ctx, kind).unwrap_or_default();
 
-    let Ok(completions) = sqlx::query!(
+    get_conditional_id_kind_query!(kind);
+    let Ok(completions) = conditional_id_kind_query!(
+        BooruBlacklistedTag,
         "
-        SELECT * FROM booru_blacklisted_tag t
-        JOIN booru_setting s ON s.id = t.booru_setting_id
+        SELECT t.* FROM booru_blacklisted_tag t
+        JOIN booru_setting s ON s.id=t.booru_setting_id
         WHERE s.id=t.booru_setting_id
-        AND t.blacklisted ILIKE CONCAT('%', $1::TEXT, '%')
-        AND s.guild_id=$2 OR s.channel_id=$3 OR s.user_id=$4
+        AND t.blacklisted ILIKE CONCAT('%', {searching}::TEXT, '%')
+        AND s.{#id_kind}_id={inserted_discord_id}
         ",
-        searching,
-        inserted_guild,
-        inserted_channel,
-        inserted_user
     )
     .fetch_all(&ctx.data().pool)
     .await

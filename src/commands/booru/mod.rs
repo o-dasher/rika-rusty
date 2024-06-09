@@ -11,8 +11,6 @@ use serde::{Deserialize, Serialize};
 use sqlx::types::BigDecimal;
 use strum::{EnumIter, IntoStaticStr};
 
-use self::blacklist::as_some_if;
-
 create_command_group!(booru, ["search", "blacklist"]);
 
 #[derive(IntoStaticStr, ChoiceParameter, Debug, Serialize, Deserialize, Default, Clone)]
@@ -70,14 +68,18 @@ pub fn get_all_setting_kind_db_ids(ctx: OsakaContext) -> OwnerInsertOptions {
     )
 }
 
-pub fn get_all_setting_kind_db_ids_only_allowing_this_kind(
-    ctx: OsakaContext,
-    operation_kind: SettingKind,
-) -> OwnerInsertOptions {
-    let owner_id = get_setting_kind_db_id(ctx, operation_kind)?;
-
-    get_all_setting_kind_db_ids(ctx)
-        .map(|v| v.map(|v| as_some_if(v, |v| v.as_ref().is_some_and(|v| *v == owner_id)).flatten()))
+#[macro_export]
+macro_rules! get_conditional_id_kind_query {
+    ($kind:ident) => {
+        sqlx_conditional_queries_layering::create_conditional_query_as!(
+            $conditional_id_kind_query,
+            #id_kind = match $kind {
+                SettingKind::Guild => "guild",
+                SettingKind::Channel => "channel",
+                SettingKind::User => "user"
+            }
+        );
+    };
 }
 
 pub async fn autocomplete_tag_single<'a>(
