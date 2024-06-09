@@ -51,7 +51,7 @@ pub async fn autocomplete_tag_remove<'a>(
     let Ok(completions) = conditional_id_kind_query!(
         BooruBlacklistedTag,
         "
-        SELECT t.* FROM booru_blacklisted_tag t
+        SELECT t.blacklisted FROM booru_blacklisted_tag t
         JOIN booru_setting s ON s.id=t.booru_setting_id
         WHERE s.id=t.booru_setting_id
         AND t.blacklisted ILIKE CONCAT('%', {searching}::TEXT, '%')

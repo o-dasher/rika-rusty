@@ -26,7 +26,6 @@ pub struct ID<T> {
 pub type BigID = ID<BigDecimal>;
 
 pub struct BooruBlacklistedTag {
-    booru_setting_id: i32,
     blacklisted: String,
 }
 
@@ -37,7 +36,7 @@ pub async fn query_blacklisted_tags(ctx: OsakaContext<'_>, kind: SettingKind) ->
     conditional_id_kind_query!(
         BooruBlacklistedTag,
         "
-        SELECT t.* FROM booru_blacklisted_tag t
+        SELECT t.blacklisted FROM booru_blacklisted_tag t
         JOIN booru_setting s ON s.id = t.booru_setting_id
         WHERE s.id=t.booru_setting_id
         AND s.{#id_kind}_id={inserted_discord_id}

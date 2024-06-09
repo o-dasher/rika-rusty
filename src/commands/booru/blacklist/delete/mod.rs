@@ -1,5 +1,5 @@
 use crate::{
-    commands::booru::{self, blacklist::BigID, get_setting_kind_db_id, SettingKind},
+    commands::booru::{blacklist::BigID, get_setting_kind_db_id, SettingKind},
     error::NotifyError,
     get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, templates::cool_text},
