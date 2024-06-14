@@ -10,8 +10,7 @@ use crate::{
 };
 
 use add::add;
-use delete::clear::clear;
-use delete::remove::remove;
+use delete::{clear::clear, remove::remove};
 use list::list;
 use sqlx::types::BigDecimal;
 

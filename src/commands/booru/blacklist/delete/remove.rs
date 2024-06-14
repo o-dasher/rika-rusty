@@ -3,9 +3,8 @@ use std::{str::FromStr, vec};
 use crate::{
     commands::booru::{
         blacklist::{
-            BooruBlacklistedTag,
             delete::{provide_delete_feedback, DeleteOperation},
-            query_blacklisted_tags,
+            query_blacklisted_tags, BooruBlacklistedTag,
         },
         get_setting_kind_db_id, SettingKind,
     },
@@ -17,7 +16,6 @@ use crate::{
 use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
-
 
 pub async fn autocomplete_tag_remove<'a>(
     ctx: ApplicationContext<'a, OsakaData, OsakaError>,
