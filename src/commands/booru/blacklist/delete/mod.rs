@@ -1,5 +1,8 @@
 use crate::{
-    commands::booru::{blacklist::BigID, SettingKind},
+    commands::booru::{
+        blacklist::{self, BigID},
+        SettingKind,
+    },
     error::NotifyError,
     get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, templates::cool_text},
@@ -20,8 +23,9 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
     operation: DeleteOperation,
     provide_message: F,
 ) -> OsakaResult {
-    let OsakaData { pool, .. } = ctx.data();
+    blacklist::check_permissions(ctx, kind).await?;
 
+    let OsakaData { pool, .. } = ctx.data();
     let inserted_discord_id = kind.get_sqlx_id(ctx)?;
 
     get_conditional_id_kind_query!(kind);
