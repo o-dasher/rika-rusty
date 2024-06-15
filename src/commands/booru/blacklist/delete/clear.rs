@@ -1,10 +1,8 @@
 use std::vec;
 
 use crate::{
-    commands::booru::{
-        blacklist::delete::{provide_delete_feedback, DeleteOperation},
-        SettingKind,
-    },
+    commands::booru::blacklist::delete::{provide_delete_feedback, DeleteOperation},
+    osaka_sqlx::booru_setting::SettingKind,
     OsakaContext, OsakaResult,
 };
 use poise::command;

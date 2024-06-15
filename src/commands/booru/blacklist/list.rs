@@ -2,8 +2,10 @@ use itertools::Itertools;
 use poise::command;
 
 use crate::{
-    commands::booru::SettingKind, osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
-    responses::markdown::mono, utils::pagination::Paginator, OsakaContext, OsakaResult,
+    osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind},
+    responses::markdown::mono,
+    utils::pagination::Paginator,
+    OsakaContext, OsakaResult,
 };
 
 #[command(slash_command)]

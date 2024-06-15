@@ -1,8 +1,10 @@
-use crate::{commands::booru::SettingKind, osaka_sqlx::Jib, OsakaContext};
+use crate::{osaka_sqlx::Jib, OsakaContext};
 use sqlx::types::BigDecimal;
 use sqlx_conditional_queries_layering::create_conditional_query_as;
 
 use crate::get_conditional_id_kind_query;
+
+use super::booru_setting::SettingKind;
 
 pub struct BooruBlacklistedTag {
     pub blacklisted: String,

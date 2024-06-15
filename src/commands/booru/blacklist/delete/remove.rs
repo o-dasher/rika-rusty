@@ -1,4 +1,6 @@
-use crate::osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, Jib};
+use crate::osaka_sqlx::{
+    booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind, Jib,
+};
 use sqlx_conditional_queries_layering::create_conditional_query_as;
 use std::{str::FromStr, vec};
 
@@ -6,7 +8,6 @@ use crate::{
     commands::booru::{
         blacklist::delete::{provide_delete_feedback, DeleteOperation},
         utils::poise::OsakaBooruTag,
-        SettingKind,
     },
     error::OsakaError,
     get_blacklist_for_kind_query, get_blacklist_query, get_conditional_id_kind_query,

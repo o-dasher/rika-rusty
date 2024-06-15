@@ -1,12 +1,11 @@
 use crate::{
     commands::booru::{
-        blacklist::{self},
+        blacklist,
         utils::{autocompletes::autocomplete_tag_single, poise::OsakaBooruTag},
-        SettingKind,
     },
     error::NotifyError,
     get_conditional_id_kind_query,
-    osaka_sqlx::{BigID, ID},
+    osaka_sqlx::{booru_setting::SettingKind, BigID, ID},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
