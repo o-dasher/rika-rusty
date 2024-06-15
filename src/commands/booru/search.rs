@@ -1,4 +1,6 @@
-use crate::commands::booru::{self, utils::autocompletes::autocomplete_tag, BooruChoice};
+use crate::commands::booru::{
+    self, utils::autocompletes::autocomplete_tag, BooruChoice, SettingKind,
+};
 use std::{collections::HashSet, vec};
 
 use crate::{
@@ -31,8 +33,7 @@ pub async fn search(
     let OsakaData { pool, .. } = ctx.data();
     let mut query = GenericClient::query();
 
-    let [inserted_guild, inserted_channel, inserted_user] =
-        booru::get_all_setting_kind_db_ids(ctx)?;
+    let [inserted_guild, inserted_channel, inserted_user] = SettingKind::get_all_sqlx_ids(ctx)?;
 
     let all_blacklists = sqlx::query!(
         "

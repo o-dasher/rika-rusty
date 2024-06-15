@@ -6,7 +6,7 @@ use crate::{
             delete::{provide_delete_feedback, DeleteOperation},
             query_blacklisted_tags, BooruBlacklistedTag,
         },
-        get_setting_kind_db_id, SettingKind,
+        SettingKind,
     },
     error::OsakaError,
     get_conditional_id_kind_query,
@@ -43,7 +43,7 @@ pub async fn autocomplete_tag_remove<'a>(
         return query_blacklisted_tags(ctx, kind).await;
     }
 
-    let inserted_discord_id = get_setting_kind_db_id(ctx, kind).unwrap_or_default();
+    let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
     get_conditional_id_kind_query!(kind);
     let Ok(completions) = conditional_id_kind_query!(

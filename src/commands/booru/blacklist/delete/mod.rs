@@ -1,5 +1,5 @@
 use crate::{
-    commands::booru::{blacklist::BigID, get_setting_kind_db_id, SettingKind},
+    commands::booru::{blacklist::BigID, SettingKind},
     error::NotifyError,
     get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, templates::cool_text},
@@ -22,7 +22,7 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
 ) -> OsakaResult {
     let OsakaData { pool, .. } = ctx.data();
 
-    let inserted_discord_id = get_setting_kind_db_id(ctx, kind)?;
+    let inserted_discord_id = kind.get_sqlx_id(ctx)?;
 
     get_conditional_id_kind_query!(kind);
     let result = conditional_id_kind_query!(

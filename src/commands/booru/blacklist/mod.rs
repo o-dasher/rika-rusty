@@ -3,7 +3,6 @@ pub mod delete;
 pub mod list;
 
 use crate::{
-    commands::booru::get_setting_kind_db_id,
     create_command_group,
     error::{NotifyError, OsakaError},
     get_conditional_id_kind_query,
@@ -29,7 +28,7 @@ pub struct BooruBlacklistedTag {
 }
 
 pub async fn query_blacklisted_tags(ctx: OsakaContext<'_>, kind: SettingKind) -> Vec<String> {
-    let inserted_discord_id = get_setting_kind_db_id(ctx, kind).unwrap_or_default();
+    let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
     get_conditional_id_kind_query!(kind);
     conditional_id_kind_query!(

@@ -29,7 +29,7 @@ pub async fn add(
 
     let mut tx = pool.begin().await?;
 
-    let used_setting_kind = booru::get_setting_kind_db_id(ctx, kind)?;
+    let used_setting_kind = kind.get_sqlx_id(ctx)?;
 
     get_conditional_id_kind_query!(kind);
     conditional_id_kind_query!(
