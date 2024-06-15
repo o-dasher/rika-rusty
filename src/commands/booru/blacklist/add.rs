@@ -1,6 +1,5 @@
 use crate::{
     commands::booru::{
-        self,
         blacklist::{self, BigID, ID},
         utils::autocompletes::autocomplete_tag_single,
         SettingKind,

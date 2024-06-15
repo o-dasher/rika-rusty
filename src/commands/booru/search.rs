@@ -1,5 +1,5 @@
 use crate::commands::booru::{
-    self, utils::autocompletes::autocomplete_tag, BooruChoice, SettingKind,
+    utils::autocompletes::autocomplete_tag, BooruChoice, SettingKind,
 };
 use std::{collections::HashSet, vec};
 
