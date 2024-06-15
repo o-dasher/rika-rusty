@@ -1,6 +1,7 @@
 use crate::{
     commands::booru::{
         blacklist::{self, BigID},
+        utils::poise::OsakaBooruTag,
         SettingKind,
     },
     error::NotifyError,

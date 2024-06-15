@@ -1,5 +1,6 @@
 use crate::commands::booru::{
-    utils::autocompletes::autocomplete_tag, BooruChoice, SettingKind,
+    utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
+    BooruChoice, SettingKind,
 };
 use std::{collections::HashSet, vec};
 
@@ -23,7 +24,7 @@ const CLAMP_TAGS_LEN: usize = 75;
 pub async fn search(
     ctx: OsakaContext<'_>,
     booru: Option<BooruChoice>,
-    #[autocomplete = "autocomplete_tag"] tags: String,
+    #[autocomplete = "autocomplete_tag"] tag: OsakaBooruTag,
     ephemeral: Option<bool>,
 ) -> OsakaResult {
     ctx.defer().await?;
@@ -48,13 +49,7 @@ pub async fn search(
     .fetch_all(pool)
     .await?;
 
-    let built_tags = tags
-        .trim()
-        .to_lowercase()
-        .split(' ')
-        .map(str::to_string)
-        .collect_vec();
-
+    let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
     let blacklisted_tags = all_blacklists
         .iter()
         .map(|v| v.blacklisted.clone())

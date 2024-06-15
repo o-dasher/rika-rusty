@@ -1,7 +1,7 @@
 use crate::{
     commands::booru::{
         blacklist::{self, BigID, ID},
-        utils::autocompletes::autocomplete_tag_single,
+        utils::{autocompletes::autocomplete_tag_single, poise::OsakaBooruTag},
         SettingKind,
     },
     error::NotifyError,
@@ -18,9 +18,8 @@ use rusty18n::t;
 pub async fn add(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    #[autocomplete = "autocomplete_tag_single"] tag: String,
+    #[autocomplete = "autocomplete_tag_single"] tag: OsakaBooruTag,
 ) -> OsakaResult {
-    let tag = tag.trim().to_lowercase();
     blacklist::check_permissions(ctx, kind).await?;
 
     let OsakaData { pool, .. } = ctx.data();
@@ -54,7 +53,7 @@ pub async fn add(
     .fetch_one(&mut *tx)
     .await?;
 
-    let split_tags = tag.split(' ').collect_vec();
+    let split_tags = tag.0.split(' ').collect_vec();
     let inserted_tag: Result<_, sqlx::Error> = sqlx::query!(
         "
         INSERT INTO booru_blacklisted_tag

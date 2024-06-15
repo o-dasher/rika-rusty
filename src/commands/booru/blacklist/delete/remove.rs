@@ -6,6 +6,7 @@ use crate::{
             delete::{provide_delete_feedback, DeleteOperation},
             query_blacklisted_tags, BooruBlacklistedTag,
         },
+        utils::poise::OsakaBooruTag,
         SettingKind,
     },
     error::OsakaError,
@@ -69,22 +70,23 @@ pub async fn autocomplete_tag_remove<'a>(
 pub async fn remove(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    #[autocomplete = "autocomplete_tag_remove"] tag: String,
+    #[autocomplete = "autocomplete_tag_remove"] tag: OsakaBooruTag,
 ) -> OsakaResult {
-    let tag = tag.trim().to_lowercase();
-    let i18n = ctx.i18n();
+    provide_delete_feedback(
+        ctx,
+        kind,
+        DeleteOperation::Remove(tag.0.clone()),
+        |cleared| {
+            let i18n = ctx.i18n();
+            t_prefix!($i18n.booru.blacklist.remove);
 
-    t_prefix!($i18n.booru.blacklist.remove);
-
-    provide_delete_feedback(ctx, kind, DeleteOperation::Remove(tag.clone()), |cleared| {
-        let tag = tag.clone();
-        if cleared {
-            t!(failed).with(mono(tag))
-        } else {
-            t!(removed).with(mono(tag))
-        }
-    })
-    .await?;
-
-    Ok(())
+            let tag = tag.0.clone();
+            if cleared {
+                t!(failed).with(mono(tag))
+            } else {
+                t!(removed).with(mono(tag))
+            }
+        },
+    )
+    .await
 }
