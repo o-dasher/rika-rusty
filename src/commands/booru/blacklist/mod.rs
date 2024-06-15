@@ -12,6 +12,7 @@ use add::add;
 use delete::{clear::clear, remove::remove};
 use list::list;
 use sqlx::types::BigDecimal;
+use sqlx_conditional_queries_layering::create_conditional_query_as;
 
 use super::SettingKind;
 
@@ -27,6 +28,20 @@ pub struct BooruBlacklistedTag {
     blacklisted: String,
 }
 
+enum Yap {
+    No,
+}
+
+create_conditional_query_as!(
+    blacklist_query,
+    #blacklist_query = match Yap::No {
+    No => "
+    SELECT t.blacklisted FROM booru_blacklisted_tag t
+    JOIN booru_setting s ON s.id = t.booru_setting_id
+    WHERE s.id=t.booru_setting_id
+    "
+});
+
 pub async fn query_blacklisted_tags(
     ctx: OsakaContext<'_>,
     kind: Option<SettingKind>,
@@ -38,12 +53,15 @@ pub async fn query_blacklisted_tags(
             let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
             get_conditional_id_kind_query!(kind);
-            conditional_id_kind_query!(
+            blacklist_query_feed_existing_query!(
+                feed_conditional_id_kind_query,
+                blacklist_with_id_kind
+            );
+
+            blacklist_with_id_kind!(
                 BooruBlacklistedTag,
                 "
-                SELECT t.blacklisted FROM booru_blacklisted_tag t
-                JOIN booru_setting s ON s.id = t.booru_setting_id
-                WHERE s.id=t.booru_setting_id
+                {#blacklist_query}
                 AND s.{#id_kind}_id={inserted_discord_id}
                 ",
             )
@@ -51,16 +69,9 @@ pub async fn query_blacklisted_tags(
             .await
         }
         None => {
-            sqlx::query_as!(
-                BooruBlacklistedTag,
-                "
-                SELECT t.blacklisted FROM booru_blacklisted_tag t
-                JOIN booru_setting s ON s.id = t.booru_setting_id
-                WHERE s.id=t.booru_setting_id
-                "
-            )
-            .fetch_all(&pool)
-            .await
+            blacklist_query!(BooruBlacklistedTag, "{#blacklist_query}")
+                .fetch_all(&pool)
+                .await
         }
     };
 
