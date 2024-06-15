@@ -1,7 +1,9 @@
-use crate::commands::booru::{
-    blacklist::query_blacklisted_tags,
-    utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
-    BooruChoice,
+use crate::{
+    commands::booru::{
+        utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
+        BooruChoice,
+    },
+    osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
 };
 use std::vec;
 
@@ -33,7 +35,7 @@ pub async fn search(
 
     let mut query = GenericClient::query();
 
-    let blacklisted_tags = query_blacklisted_tags(ctx, None).await;
+    let blacklisted_tags = BooruBlacklistedTag::fetch_all(ctx).await;
     let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
 
     if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklisted_tags.contains(v)) {

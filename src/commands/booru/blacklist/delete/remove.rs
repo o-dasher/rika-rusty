@@ -1,13 +1,10 @@
-use crate::{commands::booru::blacklist::BooruBlacklistedTag, utils::sqlx::Jib};
+use crate::osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, Jib};
 use sqlx_conditional_queries_layering::create_conditional_query_as;
 use std::{str::FromStr, vec};
 
 use crate::{
     commands::booru::{
-        blacklist::{
-            delete::{provide_delete_feedback, DeleteOperation},
-            query_blacklisted_tags,
-        },
+        blacklist::delete::{provide_delete_feedback, DeleteOperation},
         utils::poise::OsakaBooruTag,
         SettingKind,
     },
@@ -41,9 +38,8 @@ pub async fn autocomplete_tag_remove<'a>(
         .unwrap_or(Default::default());
 
     let ctx = poise::Context::Application(ctx);
-
     if searching.is_empty() {
-        return query_blacklisted_tags(ctx, Some(kind)).await;
+        return BooruBlacklistedTag::fetch_all_for_kind(ctx, kind).await;
     }
 
     let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();

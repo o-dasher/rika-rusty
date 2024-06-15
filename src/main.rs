@@ -14,6 +14,7 @@ use sqlx::{pool::PoolOptions, Pool, Postgres};
 pub mod commands;
 pub mod error;
 pub mod i18n;
+pub mod osaka_sqlx;
 pub mod responses;
 pub mod setup;
 pub mod utils;

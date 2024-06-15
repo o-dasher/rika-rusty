@@ -2,15 +2,13 @@ use itertools::Itertools;
 use poise::command;
 
 use crate::{
-    commands::booru::{blacklist::query_blacklisted_tags, SettingKind},
-    responses::markdown::mono,
-    utils::pagination::Paginator,
-    OsakaContext, OsakaResult,
+    commands::booru::SettingKind, osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
+    responses::markdown::mono, utils::pagination::Paginator, OsakaContext, OsakaResult,
 };
 
 #[command(slash_command)]
 pub async fn list(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
-    let result = query_blacklisted_tags(ctx, Some(kind)).await;
+    let result = BooruBlacklistedTag::fetch_all_for_kind(ctx, kind).await;
     let chunk_result = result
         .iter()
         .chunks(64)

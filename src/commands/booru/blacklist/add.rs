@@ -6,8 +6,8 @@ use crate::{
     },
     error::NotifyError,
     get_conditional_id_kind_query,
+    osaka_sqlx::{BigID, ID},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
-    utils::sqlx::{BigID, ID},
     OsakaContext, OsakaData, OsakaResult,
 };
 use itertools::Itertools;

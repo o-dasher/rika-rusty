@@ -1,3 +1,5 @@
+pub mod booru_blacklisted_tag;
+
 use sqlx::types::BigDecimal;
 
 pub enum Jib {
