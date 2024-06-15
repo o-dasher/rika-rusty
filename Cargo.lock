@@ -492,15 +492,15 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.17"
+version = "0.99.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fb810d30a7c1953f91334de7244731fc3f3c10d7fe163338a35b9f640960321"
+checksum = "5f33878137e4dafd7fa914ad4e259e18a4e8e532b9617a2d0150262bf53abfce"
 dependencies = [
  "convert_case 0.4.0",
  "proc-macro2",
  "quote 1.0.36",
  "rustc_version",
- "syn 1.0.109",
+ "syn 2.0.66",
 ]
 
 [[package]]
@@ -1552,6 +1552,7 @@ dependencies = [
  "tokio",
  "tracing-subscriber",
  "url",
+ "with_builtin_macros",
 ]
 
 [[package]]
@@ -2344,9 +2345,12 @@ dependencies = [
 
 [[package]]
 name = "sqlx-conditional-queries-layering"
-version = "0.1.4"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9119e0c3f2a12e4b80cd8c4e41c0ea9c84663b7254830722d3e17dbb0e8a7678"
+checksum = "80dc919c2a7e69a7b3a7f109a88a1dc9fca23e4dca8dae17ff66d83d2c73c2f9"
+dependencies = [
+ "with_builtin_macros",
+]
 
 [[package]]
 name = "sqlx-conditional-queries-macros"
@@ -3440,6 +3444,26 @@ checksum = "524e57b2c537c0f9b1e69f1965311ec12182b4122e45035b1508cd24d2adadb1"
 dependencies = [
  "cfg-if",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "with_builtin_macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24deb3cd6e530e7617b12b1f0f1ce160a3a71d92feb351c4db5156d1d10e398a"
+dependencies = [
+ "with_builtin_macros-proc_macros",
+]
+
+[[package]]
+name = "with_builtin_macros-proc_macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2259ae9b1285596f1ee52ce8f627013c65853d4d7f271cb10bfe2d048769804a"
+dependencies = [
+ "proc-macro2",
+ "quote 1.0.36",
+ "syn 1.0.109",
 ]
 
 [[package]]

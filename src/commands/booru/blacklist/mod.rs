@@ -1,11 +1,13 @@
 pub mod add;
 pub mod delete;
 pub mod list;
+pub mod utils;
 
 use crate::{
     create_command_group,
     error::{NotifyError, OsakaError},
     get_conditional_id_kind_query,
+    utils::sqlx::Jib,
 };
 
 use add::add;
@@ -18,29 +20,32 @@ use super::SettingKind;
 
 create_command_group!(blacklist, ["add", "remove", "list", "clear"]);
 
-pub struct ID<T> {
-    pub id: T,
-}
-
-pub type BigID = ID<BigDecimal>;
-
 pub struct BooruBlacklistedTag {
-    blacklisted: String,
+    pub blacklisted: String,
+    pub booru_setting_id: BigDecimal,
 }
 
-enum Yap {
-    No,
+#[macro_export]
+macro_rules! get_blacklist_query {
+    () => {
+        create_conditional_query_as!(
+            blacklist_query,
+            #blacklist_query = match Jib::Jab { Jab =>
+            "
+            SELECT t.* FROM booru_blacklisted_tag t
+            JOIN booru_setting s ON s.id = t.booru_setting_id
+            WHERE s.id=t.booru_setting_id
+            "
+        });
+    };
 }
 
-create_conditional_query_as!(
-    blacklist_query,
-    #blacklist_query = match Yap::No {
-    No => "
-    SELECT t.blacklisted FROM booru_blacklisted_tag t
-    JOIN booru_setting s ON s.id = t.booru_setting_id
-    WHERE s.id=t.booru_setting_id
-    "
-});
+#[macro_export]
+macro_rules! get_blacklist_for_kind_query {
+    () => {
+        blacklist_query_feed_existing_query!(conditional_id_kind_query, blacklist_for_kind_query);
+    };
+}
 
 pub async fn query_blacklisted_tags(
     ctx: OsakaContext<'_>,
@@ -48,17 +53,15 @@ pub async fn query_blacklisted_tags(
 ) -> Vec<String> {
     let pool = ctx.data().pool.clone();
 
+    get_blacklist_query!();
     let tags = match kind {
         Some(kind) => {
             let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
             get_conditional_id_kind_query!(kind);
-            blacklist_query_feed_existing_query!(
-                feed_conditional_id_kind_query,
-                blacklist_with_id_kind
-            );
+            get_blacklist_for_kind_query!();
 
-            blacklist_with_id_kind!(
+            blacklist_for_kind_query!(
                 BooruBlacklistedTag,
                 "
                 {#blacklist_query}

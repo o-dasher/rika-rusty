@@ -1,16 +1,18 @@
+use crate::{commands::booru::blacklist::BooruBlacklistedTag, utils::sqlx::Jib};
+use sqlx_conditional_queries_layering::create_conditional_query_as;
 use std::{str::FromStr, vec};
 
 use crate::{
     commands::booru::{
         blacklist::{
             delete::{provide_delete_feedback, DeleteOperation},
-            query_blacklisted_tags, BooruBlacklistedTag,
+            query_blacklisted_tags,
         },
         utils::poise::OsakaBooruTag,
         SettingKind,
     },
     error::OsakaError,
-    get_conditional_id_kind_query,
+    get_blacklist_for_kind_query, get_blacklist_query, get_conditional_id_kind_query,
     responses::markdown::mono,
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -46,13 +48,14 @@ pub async fn autocomplete_tag_remove<'a>(
 
     let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
+    get_blacklist_query!();
     get_conditional_id_kind_query!(kind);
-    let Ok(completions) = conditional_id_kind_query!(
+    get_blacklist_for_kind_query!();
+
+    let Ok(completions) = blacklist_for_kind_query!(
         BooruBlacklistedTag,
         "
-        SELECT t.blacklisted FROM booru_blacklisted_tag t
-        JOIN booru_setting s ON s.id=t.booru_setting_id
-        WHERE s.id=t.booru_setting_id
+        {#blacklist_query}
         AND t.blacklisted ILIKE CONCAT('%', {searching}::TEXT, '%')
         AND s.{#id_kind}_id={inserted_discord_id}
         ",

@@ -1,11 +1,9 @@
 use crate::{
-    commands::booru::{
-        blacklist::{self, BigID},
-        SettingKind,
-    },
+    commands::booru::{blacklist, SettingKind},
     error::NotifyError,
     get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, templates::cool_text},
+    utils::sqlx::BigID,
     OsakaContext, OsakaData, OsakaResult,
 };
 

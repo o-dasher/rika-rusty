@@ -1,12 +1,13 @@
 use crate::{
     commands::booru::{
-        blacklist::{self, BigID, ID},
+        blacklist::{self},
         utils::{autocompletes::autocomplete_tag_single, poise::OsakaBooruTag},
         SettingKind,
     },
     error::NotifyError,
     get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
+    utils::sqlx::{BigID, ID},
     OsakaContext, OsakaData, OsakaResult,
 };
 use itertools::Itertools;
