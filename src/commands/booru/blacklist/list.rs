@@ -10,7 +10,7 @@ use crate::{
 
 #[command(slash_command)]
 pub async fn list(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
-    let result = query_blacklisted_tags(ctx, kind).await;
+    let result = query_blacklisted_tags(ctx, Some(kind)).await;
     let chunk_result = result
         .iter()
         .chunks(64)

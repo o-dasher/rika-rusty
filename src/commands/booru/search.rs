@@ -1,8 +1,9 @@
 use crate::commands::booru::{
+    blacklist::query_blacklisted_tags,
     utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
-    BooruChoice, SettingKind,
+    BooruChoice,
 };
-use std::{collections::HashSet, vec};
+use std::vec;
 
 use crate::{
     default_args,
@@ -12,7 +13,7 @@ use crate::{
         templates::something_wrong,
     },
     utils::pagination::Paginator,
-    OsakaContext, OsakaData, OsakaResult,
+    OsakaContext, OsakaResult,
 };
 use itertools::Itertools;
 use poise::{command, serenity_prelude::ButtonStyle};
@@ -28,34 +29,14 @@ pub async fn search(
     ephemeral: Option<bool>,
 ) -> OsakaResult {
     ctx.defer().await?;
-
     default_args!(booru, ephemeral);
 
-    let OsakaData { pool, .. } = ctx.data();
     let mut query = GenericClient::query();
 
-    let [inserted_guild, inserted_channel, inserted_user] = SettingKind::get_all_sqlx_ids(ctx)?;
-
-    let all_blacklists = sqlx::query!(
-        "
-        SELECT blacklisted FROM booru_blacklisted_tag t
-        JOIN booru_setting s ON t.booru_setting_id = s.id
-        WHERE s.guild_id=$1 OR s.channel_id=$2 OR s.user_id=$3
-        ",
-        inserted_guild,
-        inserted_channel,
-        inserted_user,
-    )
-    .fetch_all(pool)
-    .await?;
-
+    let blacklisted_tags = query_blacklisted_tags(ctx, None).await;
     let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
-    let blacklisted_tags = all_blacklists
-        .iter()
-        .map(|v| v.blacklisted.clone())
-        .collect::<HashSet<_>>();
 
-    if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklisted_tags.contains(*v)) {
+    if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklisted_tags.contains(v)) {
         Err(NotifyError::Warn(format!(
             "The tag {} is being blacklisted by either yourself, the channel or this server.",
             mono(blacklisted_tag)
@@ -106,7 +87,11 @@ pub async fn search(
 
     let mapped_result = query_res
         .iter()
-        .filter(|v| !v.tags.split(' ').any(|v| blacklisted_tags.contains(v)))
+        .filter(|v| {
+            !v.tags
+                .split(' ')
+                .any(|v| blacklisted_tags.contains(&v.to_string()))
+        })
         .filter_map(|v| v.file_url.as_ref().map(|file_url| (file_url, v)))
         .collect_vec();
 

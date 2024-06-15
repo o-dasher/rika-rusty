@@ -41,7 +41,7 @@ pub async fn autocomplete_tag_remove<'a>(
     let ctx = poise::Context::Application(ctx);
 
     if searching.is_empty() {
-        return query_blacklisted_tags(ctx, kind).await;
+        return query_blacklisted_tags(ctx, Some(kind)).await;
     }
 
     let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();

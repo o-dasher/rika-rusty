@@ -27,23 +27,45 @@ pub struct BooruBlacklistedTag {
     blacklisted: String,
 }
 
-pub async fn query_blacklisted_tags(ctx: OsakaContext<'_>, kind: SettingKind) -> Vec<String> {
-    let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
+pub async fn query_blacklisted_tags(
+    ctx: OsakaContext<'_>,
+    kind: Option<SettingKind>,
+) -> Vec<String> {
+    let pool = ctx.data().pool.clone();
 
-    get_conditional_id_kind_query!(kind);
-    conditional_id_kind_query!(
-        BooruBlacklistedTag,
-        "
-        SELECT t.blacklisted FROM booru_blacklisted_tag t
-        JOIN booru_setting s ON s.id = t.booru_setting_id
-        WHERE s.id=t.booru_setting_id
-        AND s.{#id_kind}_id={inserted_discord_id}
-        "
-    )
-    .fetch_all(&ctx.data().pool)
-    .await
-    .map(|v| v.iter().map(|v| v.blacklisted.clone()).collect())
-    .unwrap_or_default()
+    let tags = match kind {
+        Some(kind) => {
+            let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
+
+            get_conditional_id_kind_query!(kind);
+            conditional_id_kind_query!(
+                BooruBlacklistedTag,
+                "
+                SELECT t.blacklisted FROM booru_blacklisted_tag t
+                JOIN booru_setting s ON s.id = t.booru_setting_id
+                WHERE s.id=t.booru_setting_id
+                AND s.{#id_kind}_id={inserted_discord_id}
+                ",
+            )
+            .fetch_all(&pool)
+            .await
+        }
+        None => {
+            sqlx::query_as!(
+                BooruBlacklistedTag,
+                "
+                SELECT t.blacklisted FROM booru_blacklisted_tag t
+                JOIN booru_setting s ON s.id = t.booru_setting_id
+                WHERE s.id=t.booru_setting_id
+                "
+            )
+            .fetch_all(&pool)
+            .await
+        }
+    };
+
+    tags.map(|v| v.iter().map(|v| v.blacklisted.clone()).collect())
+        .unwrap_or_default()
 }
 
 pub async fn check_permissions(ctx: OsakaContext<'_>, operation_kind: SettingKind) -> OsakaResult {

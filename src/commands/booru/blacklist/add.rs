@@ -69,10 +69,10 @@ pub async fn add(
 
     let response = if inserted_tag.is_err() {
         Err(NotifyError::Warn(
-            t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag)),
+            t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag.0)),
         ))?
     } else {
-        t!(i18n.booru.blacklist.blacklisted).with(mono(tag))
+        t!(i18n.booru.blacklist.blacklisted).with(mono(tag.0))
     };
 
     ctx.say(cool_text(OsakaMoji::ZanyFace, &response)).await?;
