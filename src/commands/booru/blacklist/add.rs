@@ -1,10 +1,12 @@
 use crate::{
     commands::booru::{
-        self, autocomplete_tag_single,
+        self,
         blacklist::{self, BigID, ID},
+        utils::autocompletes::autocomplete_tag_single,
         SettingKind,
     },
     error::NotifyError,
+    get_conditional_id_kind_query,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -12,19 +14,6 @@ use itertools::Itertools;
 use poise::command;
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t;
-
-macro_rules! get_conditional_id_kind_query {
-    ($kind:ident) => {
-        sqlx_conditional_queries_layering::create_conditional_query_as!(
-            $conditional_id_kind_query,
-            #id_kind = match $kind {
-                SettingKind::Guild => "guild",
-                SettingKind::Channel => "channel",
-                SettingKind::User => "user"
-            }
-        );
-    };
-}
 
 #[command(slash_command)]
 pub async fn add(

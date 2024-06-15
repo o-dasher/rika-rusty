@@ -1,7 +1,4 @@
-use crate::commands::{
-    booru,
-    booru::{autocomplete_tag, BooruChoice},
-};
+use crate::commands::booru::{self, utils::autocompletes::autocomplete_tag, BooruChoice};
 use std::{collections::HashSet, vec};
 
 use crate::{
