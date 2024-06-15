@@ -1,9 +1,12 @@
+use std::collections::HashSet;
+
 use itertools::Itertools;
 use rusty_booru::generic::client::GenericClient;
 
 use crate::{
     commands::booru::{ApplicationContext, BooruChoice},
     error::OsakaError,
+    osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
     OsakaData,
 };
 
@@ -42,13 +45,20 @@ pub async fn autocomplete_tag<'a>(
     let prefix_search = search_iter.by_ref().take(search_vec.len() - 1).join(" ");
 
     match search_iter.next() {
-        Some(last_term) => GenericClient::query()
-            .get_autocomplete(booru_choice.into(), *last_term)
-            .await
-            .unwrap_or_default()
-            .iter()
-            .map(|v| [prefix_search.clone(), v.value.clone()].join(" "))
-            .collect_vec(),
+        Some(last_term) => {
+            let blacklisted_tags = HashSet::<String>::from_iter(
+                BooruBlacklistedTag::fetch_all(poise::Context::Application(ctx)).await,
+            );
+
+            GenericClient::query()
+                .get_autocomplete(booru_choice.into(), *last_term)
+                .await
+                .unwrap_or_default()
+                .iter()
+                .filter(|v| !blacklisted_tags.contains(&v.value))
+                .map(|v| [prefix_search.clone(), v.value.clone()].join(" "))
+                .collect_vec()
+        }
         None => vec![prefix_search],
     }
 }
