@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod booru;
 pub mod fun;
 pub mod gif;
