@@ -3,8 +3,8 @@ pub mod booru_setting;
 
 use sqlx::types::BigDecimal;
 
-pub enum Jib {
-    Jab,
+pub enum Fall {
+    Through,
 }
 
 pub struct ID<T> {

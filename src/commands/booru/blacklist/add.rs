@@ -4,7 +4,7 @@ use crate::{
         utils::{autocompletes::autocomplete_tag_single, poise::OsakaBooruTag},
     },
     error::NotifyError,
-    get_conditional_id_kind_query,
+    get_id_kind_query,
     osaka_sqlx::{booru_setting::SettingKind, BigID, ID},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -29,36 +29,36 @@ pub async fn add(
 
     let used_setting_kind = kind.get_sqlx_id(ctx)?;
 
-    get_conditional_id_kind_query!(kind);
-    conditional_id_kind_query!(
+    get_id_kind_query!(kind);
+    id_kind_query!(
         BigID,
-        "
+        r#"
         INSERT INTO discord_{#id_kind} (id) VALUES ({used_setting_kind})
         ON CONFLICT (id) DO UPDATE SET id=EXCLUDED.id RETURNING id
-        "
+        "#
     )
     .fetch_one(&mut *tx)
     .await?;
 
-    let booru_setting_insertion = conditional_id_kind_query!(
+    let booru_setting_insertion = id_kind_query!(
         ID,
-        "
+        r#"
         INSERT INTO booru_setting ({#id_kind}_id)
         VALUES ({used_setting_kind})
         ON CONFLICT ({#id_kind}_id) DO UPDATE
             SET {#id_kind}_id=EXCLUDED.{#id_kind}_id
         RETURNING id 
-        ",
+        "#,
     )
     .fetch_one(&mut *tx)
     .await?;
 
     let split_tags = tag.0.split(' ').collect_vec();
     let inserted_tag: Result<_, sqlx::Error> = sqlx::query!(
-        "
+        r#"
         INSERT INTO booru_blacklisted_tag
         (booru_setting_id, blacklisted) VALUES ($1, $2)
-        ",
+        "#,
         booru_setting_insertion.id,
         split_tags.first()
     )

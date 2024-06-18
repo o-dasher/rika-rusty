@@ -1,7 +1,7 @@
 use crate::{
     commands::booru::blacklist,
     error::NotifyError,
-    get_conditional_id_kind_query,
+    get_id_kind_query,
     osaka_sqlx::{booru_setting::SettingKind, BigID},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -26,16 +26,16 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
     let OsakaData { pool, .. } = ctx.data();
     let inserted_discord_id = kind.get_sqlx_id(ctx)?;
 
-    get_conditional_id_kind_query!(kind);
-    let result = conditional_id_kind_query!(
+    get_id_kind_query!(kind);
+    let result = id_kind_query!(
         BigID,
-        "
+        r#"
         DELETE FROM booru_blacklisted_tag t
         USING booru_setting s
         WHERE {#extra_query} s.id=t.booru_setting_id
         AND s.{#id_kind}_id={inserted_discord_id}
         RETURNING id
-        ",
+        "#,
         #extra_query = match operation {
             DeleteOperation::Remove(tag) => "t.blacklisted={tag} AND",
             DeleteOperation::Clear => ""

@@ -1,7 +1,4 @@
-use crate::osaka_sqlx::{
-    booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind, Jib,
-};
-use sqlx_conditional_queries_layering::create_conditional_query_as;
+use crate::osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind};
 use std::{str::FromStr, vec};
 
 use crate::{
@@ -10,7 +7,6 @@ use crate::{
         utils::poise::OsakaBooruTag,
     },
     error::OsakaError,
-    get_blacklist_for_kind_query, get_blacklist_query, get_conditional_id_kind_query,
     responses::markdown::mono,
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -43,27 +39,7 @@ pub async fn autocomplete_tag_remove<'a>(
         return BooruBlacklistedTag::fetch_all_for_kind(ctx, kind).await;
     }
 
-    let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
-
-    get_blacklist_query!();
-    get_conditional_id_kind_query!(kind);
-    get_blacklist_for_kind_query!();
-
-    let Ok(completions) = blacklist_for_kind_query!(
-        BooruBlacklistedTag,
-        "
-        {#blacklist_query}
-        AND t.blacklisted ILIKE CONCAT('%', {searching}::TEXT, '%')
-        AND s.{#id_kind}_id={inserted_discord_id}
-        ",
-    )
-    .fetch_all(&ctx.data().pool)
-    .await
-    else {
-        return Default::default();
-    };
-
-    completions.iter().map(|v| v.blacklisted.clone()).collect()
+    BooruBlacklistedTag::query_autocomplete_for_kind(ctx, kind, searching).await
 }
 
 #[command(slash_command)]

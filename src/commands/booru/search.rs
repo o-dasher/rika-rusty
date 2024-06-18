@@ -26,8 +26,8 @@ const CLAMP_TAGS_LEN: usize = 75;
 #[command(slash_command)]
 pub async fn search(
     ctx: OsakaContext<'_>,
-    booru: Option<BooruChoice>,
     #[autocomplete = "autocomplete_tag"] tag: OsakaBooruTag,
+    booru: Option<BooruChoice>,
     ephemeral: Option<bool>,
 ) -> OsakaResult {
     ctx.defer().await?;
