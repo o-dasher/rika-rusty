@@ -61,8 +61,9 @@ pub async fn search(
     if !ctx
         .guild_channel()
         .await
-        .ok_or(OsakaError::SimplyUnexpected)?
-        .nsfw
+        .map(|c| c.nsfw)
+        // We want to allow nsfw search on dm.
+        .unwrap_or_default()
     {
         query.rating(Rating::Safe);
     }
