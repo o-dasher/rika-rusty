@@ -5,6 +5,7 @@ use crate::{
     },
     osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
 };
+use poise_default_slash_argument::DefaultSlash;
 use std::vec;
 
 use crate::{
@@ -30,6 +31,7 @@ pub async fn search(
     booru: Option<BooruChoice>,
     ephemeral: Option<bool>,
 ) -> OsakaResult {
+    log::debug!("{}", ephemeral);
     ctx.defer().await?;
     default_args!(booru, ephemeral);
 

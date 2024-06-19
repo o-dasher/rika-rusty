@@ -1,6 +1,6 @@
 use crate::{osaka_sqlx::Fall, OsakaContext};
 use sqlx::types::BigDecimal;
-use sqlx_conditional_queries_layering::create_conditional_query_as;
+use sqlx_conditional_queries_layering::{create_conditional_query_as, merge_sql_query_as};
 
 use crate::get_id_kind_query;
 
@@ -23,7 +23,7 @@ create_conditional_query_as!(
 
 macro_rules! get_blacklist_for_kind_query {
     () => {
-        blacklist_query_feed_existing_query!(id_kind_query, blacklist_for_kind_query);
+        merge_sql_query_as!((blacklist_query, id_kind_query) as blacklist_for_kind_query)
     };
 }
 

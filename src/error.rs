@@ -1,6 +1,5 @@
 use crate::{responses, OsakaData};
 use chrono::OutOfRangeError;
-use log::error;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t;
