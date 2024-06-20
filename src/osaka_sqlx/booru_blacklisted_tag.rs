@@ -21,12 +21,6 @@ create_conditional_query_as!(
     "#
 });
 
-macro_rules! get_blacklist_for_kind_query {
-    () => {
-        merge_sql_query_as!((blacklist_query, id_kind_query) as blacklist_for_kind_query)
-    };
-}
-
 impl BooruBlacklistedTag {
     fn map_to_string(tags: Result<Vec<BooruBlacklistedTag>, sqlx::Error>) -> Vec<String> {
         tags.map(|v| v.iter().map(|v| v.blacklisted.clone()).collect())
@@ -41,10 +35,10 @@ impl BooruBlacklistedTag {
         let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
         get_id_kind_query!(kind);
-        get_blacklist_for_kind_query!();
+        merge_sql_query_as!(blacklist, id_kind);
 
         Self::map_to_string(
-            blacklist_for_kind_query!(
+            blacklist_with_id_kind_query!(
                 BooruBlacklistedTag,
                 r#"
                 {#blacklist_query}
@@ -69,10 +63,10 @@ impl BooruBlacklistedTag {
         let inserted_discord_id = kind.get_sqlx_id(ctx).unwrap_or_default();
 
         get_id_kind_query!(kind);
-        get_blacklist_for_kind_query!();
+        merge_sql_query_as!(blacklist, id_kind);
 
         Self::map_to_string(
-            blacklist_for_kind_query!(
+            blacklist_with_id_kind_query!(
                 BooruBlacklistedTag,
                 r#"
                 {#blacklist_query}

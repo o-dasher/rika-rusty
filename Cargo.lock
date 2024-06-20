@@ -2521,9 +2521,9 @@ dependencies = [
 
 [[package]]
 name = "sqlx-conditional-queries-layering"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18aa820fe79745e5eaf20e62fede262c3976687b86226a765d46542c8d5ea903"
+checksum = "26d165b7b4ee2dba647b82fe814907e419af43fec09df112ff46f1f5766d5234"
 
 [[package]]
 name = "sqlx-conditional-queries-macros"
@@ -2768,9 +2768,9 @@ dependencies = [
 
 [[package]]
 name = "subtle"
-version = "2.5.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81cdd64d312baedb58e21336b31bc043b77e01cc99033ce76ef539f78e965ebc"
+checksum = "0d0208408ba0c3df17ed26eb06992cb1a1268d41b2c0e12e65203fbe3972cee5"
 
 [[package]]
 name = "syn"
