@@ -14,6 +14,7 @@ use sqlx::{pool::PoolOptions, Pool, Postgres};
 pub mod commands;
 pub mod error;
 pub mod i18n;
+pub mod managers;
 pub mod osaka_sqlx;
 pub mod responses;
 pub mod setup;
@@ -32,6 +33,7 @@ pub struct OsakaConfig {
 
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
+    pub config: OsakaConfig,
     pub pool: Pool<Postgres>,
 }
 

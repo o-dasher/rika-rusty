@@ -1,4 +1,4 @@
-use crate::{responses, OsakaData};
+use crate::{managers::register_command_manager::RegisterError, responses, OsakaData};
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
@@ -34,6 +34,9 @@ pub enum OsakaError {
     #[error(transparent)]
     Notify(NotifyError),
 
+    #[error(transparent)]
+    RegisterCommand(RegisterError),
+
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
 }
@@ -68,6 +71,11 @@ pub async fn on_error(
                     log::error!("{error}");
                     ErrorResponse::Say(t!(i18n.errors.unexpected).clone())
                 }
+                OsakaError::RegisterCommand(e) => match e {
+                    RegisterError::NoDevelopmentGuildSet => ErrorResponse::Say(
+                        "Failed to register commands no development guild set".to_string(),
+                    ),
+                },
                 OsakaError::Notify(e) => match e {
                     NotifyError::Warn(warn) => ErrorResponse::Say(warn),
                     NotifyError::MissingPermissions => {
