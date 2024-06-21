@@ -1,9 +1,9 @@
 use crate::{
+    default_args,
     managers::register_command_manager::{RegisterCommandManager, RegisterError, RegisterKind},
     OsakaContext, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
-use poise_default_slash_argument::DefaultSlash;
 
 #[derive(ChoiceParameter, Default)]
 enum RegisterChoice {
@@ -14,12 +14,14 @@ enum RegisterChoice {
 }
 
 #[command(slash_command)]
-pub async fn register(ctx: OsakaContext<'_>, on: DefaultSlash<RegisterChoice>) -> OsakaResult {
+pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> OsakaResult {
+    default_args!(on);
+
     RegisterCommandManager::register_commands(
         ctx.serenity_context(),
         &ctx.data().config,
         &ctx.framework().options().commands,
-        match on.0 {
+        match on {
             RegisterChoice::Development => RegisterKind::Development,
             RegisterChoice::Local => match ctx.guild_id() {
                 Some(guild_id) => RegisterKind::Local(guild_id),

@@ -62,6 +62,7 @@ async fn main() -> OsakaResult {
         commands::user::user(),
         commands::fun::fun(),
         commands::gif::gif(),
+        commands::admin::admin(),
     ];
 
     let i18n =
