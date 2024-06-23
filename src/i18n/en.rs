@@ -17,7 +17,8 @@ impl I18NFallback for OsakaI18N {
         Self {
             errors: Errors {
                 unexpected: r!("Heh? Something unexpected happened with my brain."),
-                user_missing_permissions: r!("You don't have the required permissions to execute this command at this level of privilege.")
+                user_missing_permissions: r!("You don't have the required permissions to execute this command at this level of privilege."),
+                must_be_used_on_guild: r!("This command must be used on a server!")
             },
             user: osaka_i_18_n::user::User {
                 avatar: Avatar {

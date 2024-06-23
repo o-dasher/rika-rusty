@@ -1,9 +1,12 @@
 use crate::{
     default_args,
-    managers::register_command_manager::{RegisterCommandManager, RegisterError, RegisterKind},
+    error::NotifyError,
+    managers::register_command_manager::{RegisterCommandManager,  RegisterKind},
     OsakaContext, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
+use poise_i18n::PoiseI18NTrait;
+use rusty18n::t;
 
 #[derive(ChoiceParameter, Default)]
 enum RegisterChoice {
@@ -15,6 +18,7 @@ enum RegisterChoice {
 
 #[command(slash_command)]
 pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> OsakaResult {
+    let i18n = ctx.i18n();
     default_args!(on);
 
     RegisterCommandManager::register_commands(
@@ -25,10 +29,14 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
             RegisterChoice::Development => RegisterKind::Development,
             RegisterChoice::Local => match ctx.guild_id() {
                 Some(guild_id) => RegisterKind::Local(guild_id),
-                None => Err(RegisterError::NoDevelopmentGuildSet)?,
+                None => Err(NotifyError::Warn(
+                    t!(i18n.errors.must_be_used_on_guild).clone(),
+                ))?,
             },
             RegisterChoice::Global => RegisterKind::Global,
         },
     )
-    .await
+    .await?;
+
+    Ok(())
 }

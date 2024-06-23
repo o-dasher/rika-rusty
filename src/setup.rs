@@ -16,7 +16,7 @@ pub async fn setup(
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
 ) -> Result<OsakaData, OsakaError> {
-    RegisterCommandManager::register_commands(
+    Ok(RegisterCommandManager::register_commands(
         ctx,
         &config,
         &framework.options().commands,
@@ -26,5 +26,5 @@ pub async fn setup(
         },
     )
     .await
-    .map(|_| OsakaData { i18n, pool, config })
+    .map(|_| OsakaData { i18n, pool, config })?)
 }

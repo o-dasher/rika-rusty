@@ -8,7 +8,8 @@ nestruct::nest!(
     OsakaI18N {
         errors: {
             unexpected: rusty18n::R?,
-            user_missing_permissions: rusty18n::R?
+            user_missing_permissions: rusty18n::R?,
+            must_be_used_on_guild: rusty18n::R?
         },
         fun: {
             coinflip: {
