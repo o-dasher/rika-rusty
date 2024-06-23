@@ -13,26 +13,6 @@ impl<'a> Paginator<'a> {
         Self { ctx, amount_pages }
     }
 
-    fn forward_reply<'b>(
-        base: CreateReply<'a>,
-        r: &'b mut CreateReply<'a>,
-        [prev_button, close_button, next_button]: &[String; 3],
-    ) -> &'b mut CreateReply<'a> {
-        r.clone_from(&base);
-        r.components = r
-            .components
-            .clone()
-            .unwrap_or_default()
-            .create_action_row(|b| {
-                b.create_button(|b| b.custom_id(prev_button).emoji(OsakaMoji::ArrowBackward))
-                    .create_button(|b| b.custom_id(close_button).emoji(OsakaMoji::X))
-                    .create_button(|b| b.custom_id(next_button).emoji(OsakaMoji::ArrowForward))
-            })
-            .clone()
-            .into();
-        r
-    }
-
     pub async fn paginate(
         &self,
         create_reply: impl Fn(usize, &mut CreateReply<'a>) -> Result<CreateReply<'a>, OsakaError>,
@@ -45,14 +25,31 @@ impl<'a> Paginator<'a> {
         let [prev_button, close_button, next_button] = &all_buttons;
 
         let mut current_idx = 0;
-        let create_reply_inner = |idx: usize| -> Result<CreateReply<'a>, OsakaError> {
+
+        let create_base_reply = |idx: usize| -> Result<CreateReply<'a>, OsakaError> {
             create_reply(idx, &mut CreateReply::default())
         };
 
-        let response = create_reply_inner(current_idx)?;
-        let sent = ctx
-            .send(|b| Self::forward_reply(response, b, &all_buttons))
-            .await?;
+        let forward_reply = for<'b> |base: CreateReply<'a>,
+                                     r: &'b mut CreateReply<'a>|
+                 -> &'b mut CreateReply<'a> {
+            r.clone_from(&base);
+            r.components = r
+                .components
+                .clone()
+                .unwrap_or_default()
+                .create_action_row(|b| {
+                    b.create_button(|b| b.custom_id(prev_button).emoji(OsakaMoji::ArrowBackward))
+                        .create_button(|b| b.custom_id(close_button).emoji(OsakaMoji::X))
+                        .create_button(|b| b.custom_id(next_button).emoji(OsakaMoji::ArrowForward))
+                })
+                .clone()
+                .into();
+            r
+        };
+
+        let response = create_base_reply(current_idx)?;
+        let sent = ctx.send(|b| forward_reply(response, b)).await?;
 
         while let Some(press) = CollectComponentInteraction::new(ctx)
             .filter(move |press| {
@@ -78,16 +75,13 @@ impl<'a> Paginator<'a> {
 
             press.defer(self.ctx).await?;
 
-            let response = create_reply_inner(current_idx)?;
-            sent.edit(ctx, |b| Self::forward_reply(response, b, &all_buttons))
-                .await?;
+            let response = create_base_reply(current_idx)?;
+            sent.edit(ctx, |b| forward_reply(response, b)).await?;
         }
 
-        let response = create_reply_inner(current_idx)?;
-        sent.edit(ctx, |b| {
-            Self::forward_reply(response, b, &all_buttons).components(|b| b)
-        })
-        .await?;
+        let response = create_base_reply(current_idx)?;
+        sent.edit(ctx, |b| forward_reply(response, b).components(|b| b))
+            .await?;
 
         Ok(())
     }

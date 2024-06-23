@@ -1,4 +1,4 @@
-#![feature(let_chains, macro_metavar_expr)]
+#![feature(let_chains, macro_metavar_expr, closure_lifetime_binder)]
 
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
