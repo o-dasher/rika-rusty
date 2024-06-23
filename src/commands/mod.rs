@@ -1,4 +1,4 @@
-pub mod admin;
+pub mod owner;
 pub mod booru;
 pub mod fun;
 pub mod gif;

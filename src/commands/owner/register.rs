@@ -1,7 +1,7 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::register_command_manager::{RegisterCommandManager,  RegisterKind},
+    managers::register_command_manager::{RegisterCommandManager, RegisterKind},
     OsakaContext, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
