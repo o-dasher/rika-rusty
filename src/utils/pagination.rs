@@ -19,21 +19,17 @@ impl<'a> Paginator<'a> {
         [prev_button, close_button, next_button]: &[String; 3],
     ) -> &'b mut CreateReply<'a> {
         r.clone_from(&base);
-
-        let existing_components = r.components.clone();
-
-        r.components(|b| {
-            if let Some(existing) = &existing_components {
-                b.clone_from(existing)
-            }
-
-            b.create_action_row(|b| {
+        r.components = r
+            .components
+            .clone()
+            .unwrap_or_default()
+            .create_action_row(|b| {
                 b.create_button(|b| b.custom_id(prev_button).emoji(OsakaMoji::ArrowBackward))
                     .create_button(|b| b.custom_id(close_button).emoji(OsakaMoji::X))
                     .create_button(|b| b.custom_id(next_button).emoji(OsakaMoji::ArrowForward))
             })
-        });
-
+            .clone()
+            .into();
         r
     }
 
