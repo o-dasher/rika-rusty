@@ -2,6 +2,7 @@ use crate::{
     default_args,
     error::NotifyError,
     managers::register_command_manager::{RegisterCommandManager, RegisterKind},
+    responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
@@ -36,6 +37,12 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
             RegisterChoice::Global => RegisterKind::Global,
         },
     )
+    .await?;
+
+    ctx.reply(cool_text(
+        OsakaMoji::ZanyFace,
+        &t!(i18n.owner.register.success),
+    ))
     .await?;
 
     Ok(())

@@ -1,11 +1,10 @@
 use crate::{
-    managers::register_command_manager::RegisterError, responses, OsakaContext,
-    OsakaData,
+    managers::register_command_manager::RegisterError, responses, OsakaContext, OsakaData,
 };
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::{t,};
+use rusty18n::t_prefix;
 use strum::Display;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
@@ -52,6 +51,7 @@ pub enum NotifyError {
 
 fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
     let i18n = ctx.i18n();
+    t_prefix!($i18n.errors);
 
     match error {
         OsakaError::Serenity(..)
@@ -62,16 +62,14 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
         | OsakaError::Booru(..)
         | OsakaError::Reqwest(..)
         | OsakaError::DurationOutOfRange(..)
-        | OsakaError::SimplyUnexpected => t!(i18n.errors.unexpected).clone(),
+        | OsakaError::SimplyUnexpected => t!(unexpected).clone(),
         OsakaError::RegisterCommand(e) => match e {
             RegisterError::Serenity(e) => get_error_response(ctx, e.into()),
-            RegisterError::NoDevelopmentGuildSet => {
-                "Failed to register commands no development guild set".to_string()
-            }
+            RegisterError::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
         },
         OsakaError::Notify(e) => match e {
             NotifyError::Warn(warn) => warn.to_string(),
-            NotifyError::MissingPermissions => t!(i18n.errors.user_missing_permissions).clone(),
+            NotifyError::MissingPermissions => t!(user_missing_permissions).clone(),
         },
     }
 }

@@ -9,7 +9,10 @@ nestruct::nest!(
         errors: {
             unexpected: rusty18n::R?,
             user_missing_permissions: rusty18n::R?,
-            must_be_used_on_guild: rusty18n::R?
+            must_be_used_on_guild: rusty18n::R?,
+            register: {
+                no_development_guild_set: rusty18n::R?
+            }
         },
         fun: {
             coinflip: {
@@ -38,6 +41,11 @@ nestruct::nest!(
                     cleared: rusty18n::R?,
                     failed: rusty18n::R?
                 }
+            }
+        },
+        owner: {
+            register: {
+                success: rusty18n::R?
             }
         }
     }

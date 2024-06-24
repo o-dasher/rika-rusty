@@ -6,8 +6,9 @@ use super::osaka_i_18_n::{
         blacklist::{clear::Clear, remove::Remove, Blacklist},
         Booru,
     },
-    errors::Errors,
+    errors::{self, Errors},
     fun::{coinflip::Coinflip, Fun},
+    owner::{self, Owner},
     user::avatar::{footer::Footer, Avatar},
     OsakaI18N,
 };
@@ -18,7 +19,10 @@ impl I18NFallback for OsakaI18N {
             errors: Errors {
                 unexpected: r!("Heh? Something unexpected happened with my brain."),
                 user_missing_permissions: r!("You don't have the required permissions to execute this command at this level of privilege."),
-                must_be_used_on_guild: r!("This command must be used on a server!")
+                must_be_used_on_guild: r!("This command must be used on a server!"),
+                register: errors::register::Register {
+                    no_development_guild_set: r!("Failed to register, no development guild is set!"),
+                }
             },
             user: osaka_i_18_n::user::User {
                 avatar: Avatar {
@@ -49,6 +53,11 @@ impl I18NFallback for OsakaI18N {
                     }
                 },
             },
+            owner: Owner {
+                register: owner::register::Register {
+                    success: r!("Registered commands successfully!")
+                },
+            }
         }
     }
 }
