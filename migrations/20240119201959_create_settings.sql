@@ -7,7 +7,12 @@ CREATE TABLE discord_channel (
 );
 
 CREATE TABLE discord_user (
-    id NUMERIC PRIMARY KEY
+    id NUMERIC PRIMARY KEY,
+    osu_user_id BIGINT 
+);
+
+CREATE TABLE osu_user (
+    id BIGINT PRIMARY KEY
 );
 
 CREATE TABLE booru_setting (

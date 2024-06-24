@@ -41,7 +41,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
 
     ctx.reply(cool_text(
         OsakaMoji::ZanyFace,
-        &t!(i18n.owner.register.success),
+        t!(i18n.owner.register.success).as_ref(),
     ))
     .await?;
 

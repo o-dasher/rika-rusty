@@ -3,6 +3,7 @@ pub mod booru;
 pub mod fun;
 pub mod gif;
 pub mod user;
+pub mod osu;
 
 #[macro_export]
 macro_rules! create_command_group {

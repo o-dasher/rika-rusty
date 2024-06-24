@@ -16,6 +16,12 @@ pub async fn setup(
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
 ) -> Result<OsakaData, OsakaError> {
+    let rosu = rosu_v2::Osu::builder()
+        .client_id(config.osu_client_id)
+        .client_secret(&config.osu_client_secret)
+        .build()
+        .await?;
+
     Ok(RegisterCommandManager::register_commands(
         ctx,
         &config,
@@ -26,5 +32,10 @@ pub async fn setup(
         },
     )
     .await
-    .map(|_| OsakaData { i18n, pool, config })?)
+    .map(|_| OsakaData {
+        i18n,
+        pool,
+        config,
+        rosu,
+    })?)
 }

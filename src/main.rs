@@ -28,11 +28,15 @@ pub struct OsakaConfig {
     pub bot_token: String,
     pub development_guild: Option<u64>,
 
+    pub osu_client_id: u64,
+    pub osu_client_secret: String,
+
     pub database_url: String,
 }
 
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
+    pub rosu: rosu_v2::Osu,
     pub config: OsakaConfig,
     pub pool: Pool<Postgres>,
 }

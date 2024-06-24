@@ -7,6 +7,7 @@ use super::osaka_i_18_n::{
     },
     errors::{self, Errors},
     fun::{coinflip::Coinflip, Fun},
+    osu::{link::Link, Osu},
     owner::{self, Owner},
     user::{
         avatar::{footer::Footer, Avatar},
@@ -59,7 +60,12 @@ impl I18NFallback for OsakaI18N {
                 register: owner::register::Register {
                     success: r!("Registered commands successfully!")
                 },
-            }
+            },
+            osu: Osu {
+                link:  Link {
+                failed: r!(|u| "Failed to link your osu! profile to {u}"),
+                linked: r!(|u| "Alright linked your osu! profile to {u}"),
+            } }
         }
     }
 }

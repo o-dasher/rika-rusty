@@ -34,6 +34,9 @@ pub enum OsakaError {
     Reqwest(reqwest::Error),
 
     #[error(transparent)]
+    Rosu(rosu_v2::error::OsuError),
+
+    #[error(transparent)]
     Notify(NotifyError),
 
     #[error(transparent)]
@@ -62,7 +65,10 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
         | OsakaError::Booru(..)
         | OsakaError::Reqwest(..)
         | OsakaError::DurationOutOfRange(..)
-        | OsakaError::SimplyUnexpected => t!(unexpected).clone(),
+        | OsakaError::Rosu(..)
+        | OsakaError::SimplyUnexpected => {
+            log::error!("{}", error);
+            t!(unexpected).clone()},
         OsakaError::RegisterCommand(e) => match e {
             RegisterError::Serenity(e) => get_error_response(ctx, e.into()),
             RegisterError::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
