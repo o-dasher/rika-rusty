@@ -9,16 +9,16 @@ use rusty18n::t_prefix;
 use crate::{responses::emojis::OsakaMoji, OsakaContext, OsakaData, OsakaResult};
 
 #[poise::command(slash_command)]
-pub async fn link(ctx: OsakaContext<'_>, name: String) -> OsakaResult {
+pub async fn link(ctx: OsakaContext<'_>, username: String) -> OsakaResult {
     let i18n = ctx.i18n();
     t_prefix!($i18n.osu.link);
 
     let OsakaData { pool, rosu, .. } = ctx.data();
 
     let osu_user = rosu
-        .user(&name)
+        .user(&username)
         .await
-        .map_err(|_| NotifyError::Warn(t!(failed).with(mono(name))))?;
+        .map_err(|_| NotifyError::Warn(t!(failed).with(mono(username))))?;
 
     let osu_user_id = i64::from(osu_user.user_id);
     let insertion = SettingKind::User.get_sqlx_id(ctx)?;
