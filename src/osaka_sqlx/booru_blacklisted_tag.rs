@@ -1,5 +1,4 @@
 use crate::{osaka_sqlx::Fall, OsakaContext};
-use sqlx::types::BigDecimal;
 use sqlx_conditional_queries_layering::{create_conditional_query_as, merge_sql_query_as};
 
 use crate::get_id_kind_query;
@@ -8,7 +7,7 @@ use super::booru_setting::SettingKind;
 
 pub struct BooruBlacklistedTag {
     pub blacklisted: String,
-    pub booru_setting_id: BigDecimal,
+    pub booru_setting_id: i64,
 }
 
 create_conditional_query_as!(

@@ -63,9 +63,10 @@ impl I18NFallback for OsakaI18N {
             },
             osu: Osu {
                 link:  Link {
-                failed: r!(|u| "Failed to link your osu! profile to {u}"),
-                linked: r!(|u| "Alright linked your osu! profile to {u}"),
-            } }
+                    failed: r!(|u| "Failed to link your osu! profile to {u}"),
+                    linked: r!(|u| "Alright linked your osu! profile to {u}"),
+                }
+            }
         }
     }
 }

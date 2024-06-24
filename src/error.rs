@@ -68,7 +68,8 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
         | OsakaError::Rosu(..)
         | OsakaError::SimplyUnexpected => {
             log::error!("{}", error);
-            t!(unexpected).clone()},
+            t!(unexpected).clone()
+        }
         OsakaError::RegisterCommand(e) => match e {
             RegisterError::Serenity(e) => get_error_response(ctx, e.into()),
             RegisterError::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),

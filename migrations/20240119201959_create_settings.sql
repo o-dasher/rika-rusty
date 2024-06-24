@@ -1,13 +1,13 @@
 CREATE TABLE discord_guild (
-    id NUMERIC PRIMARY KEY
+    id BIGINT PRIMARY KEY
 );
 
 CREATE TABLE discord_channel (
-    id NUMERIC PRIMARY KEY
+    id BIGINT PRIMARY KEY
 );
 
 CREATE TABLE discord_user (
-    id NUMERIC PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     osu_user_id BIGINT 
 );
 
@@ -18,9 +18,9 @@ CREATE TABLE osu_user (
 CREATE TABLE booru_setting (
     id SERIAL PRIMARY KEY,
 
-    guild_id NUMERIC UNIQUE,
-    user_id NUMERIC UNIQUE,
-    channel_id NUMERIC UNIQUE,
+    guild_id BIGINT UNIQUE,
+    user_id BIGINT UNIQUE,
+    channel_id BIGINT UNIQUE,
 
     FOREIGN KEY (guild_id) REFERENCES discord_guild (id) ON DELETE CASCADE,
     FOREIGN KEY (channel_id) REFERENCES discord_channel (id) ON DELETE CASCADE,
