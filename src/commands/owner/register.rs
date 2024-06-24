@@ -1,9 +1,9 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::register_command_manager::{RegisterCommandManager, RegisterKind},
+    managers::register_command_manager::{RegisterContext, RegisterKind},
     responses::{emojis::OsakaMoji, templates::cool_text},
-    OsakaContext, OsakaResult,
+    OsakaContext, OsakaData, OsakaManagers, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
 use poise_i18n::PoiseI18NTrait;
@@ -22,22 +22,27 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
     let i18n = ctx.i18n();
     default_args!(on);
 
-    RegisterCommandManager::register_commands(
-        ctx.serenity_context(),
-        &ctx.data().config,
-        &ctx.framework().options().commands,
-        match on {
-            RegisterChoice::Development => RegisterKind::Development,
-            RegisterChoice::Local => match ctx.guild_id() {
-                Some(guild_id) => RegisterKind::Local(guild_id),
-                None => Err(NotifyError::Warn(
-                    t!(i18n.errors.must_be_used_on_guild).clone(),
-                ))?,
+    let OsakaData { managers, .. } = ctx.data();
+    let OsakaManagers {
+        register_command_manager,
+        ..
+    } = managers;
+
+    register_command_manager
+        .register_commands(
+            RegisterContext::Poise(&ctx),
+            match on {
+                RegisterChoice::Development => RegisterKind::Development,
+                RegisterChoice::Local => match ctx.guild_id() {
+                    Some(guild_id) => RegisterKind::Local(guild_id),
+                    None => Err(NotifyError::Warn(
+                        t!(i18n.errors.must_be_used_on_guild).clone(),
+                    ))?,
+                },
+                RegisterChoice::Global => RegisterKind::Global,
             },
-            RegisterChoice::Global => RegisterKind::Global,
-        },
-    )
-    .await?;
+        )
+        .await?;
 
     ctx.reply(cool_text(
         OsakaMoji::ZanyFace,

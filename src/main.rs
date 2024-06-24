@@ -1,7 +1,10 @@
 #![feature(let_chains, macro_metavar_expr, closure_lifetime_binder)]
 
+use std::sync::Arc;
+
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
+use managers::register_command_manager::RegisterCommandManager;
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,
@@ -34,11 +37,16 @@ pub struct OsakaConfig {
     pub database_url: String,
 }
 
+pub struct OsakaManagers {
+    pub register_command_manager: RegisterCommandManager,
+}
+
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pub rosu: rosu_v2::Osu,
-    pub config: OsakaConfig,
+    pub config: Arc<OsakaConfig>,
     pub pool: Pool<Postgres>,
+    pub managers: OsakaManagers,
 }
 
 impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {
@@ -67,7 +75,7 @@ async fn main() -> OsakaResult {
         commands::fun::fun(),
         commands::gif::gif(),
         commands::owner::owner(),
-        commands::osu::osu()
+        commands::osu::osu(),
     ];
 
     let i18n =

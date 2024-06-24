@@ -16,7 +16,6 @@ create_conditional_query_as!(
     r#"
     SELECT t.* FROM booru_blacklisted_tag t
     JOIN booru_setting s ON s.id=t.booru_setting_id
-    WHERE s.id=t.booru_setting_id
     "#
 });
 
