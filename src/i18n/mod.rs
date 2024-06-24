@@ -4,7 +4,7 @@ pub mod pt_br;
 use strum::{Display, EnumString};
 
 nestruct::nest!(
-    #[derive(bevy_reflect::Reflect)]
+    #[derive(bevy_reflect::Reflect, Default)]
     OsakaI18N {
         errors: {
             unexpected: rusty18n::R?,

@@ -1,7 +1,6 @@
 use rusty18n::{r, I18NDynamicResource, I18NFallback};
 
 use super::osaka_i_18_n::{
-    self,
     booru::{
         blacklist::{clear::Clear, remove::Remove, Blacklist},
         Booru,
@@ -9,7 +8,10 @@ use super::osaka_i_18_n::{
     errors::{self, Errors},
     fun::{coinflip::Coinflip, Fun},
     owner::{self, Owner},
-    user::avatar::{footer::Footer, Avatar},
+    user::{
+        avatar::{footer::Footer, Avatar},
+        User,
+    },
     OsakaI18N,
 };
 
@@ -24,7 +26,7 @@ impl I18NFallback for OsakaI18N {
                     no_development_guild_set: r!("Failed to register, no development guild is set!"),
                 }
             },
-            user: osaka_i_18_n::user::User {
+            user: User {
                 avatar: Avatar {
                     footer: Footer {
                         eq: r!("Nice, yourself!"),
