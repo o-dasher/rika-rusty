@@ -1,4 +1,4 @@
-use poise::{ ChoiceParameter};
+use poise::ChoiceParameter;
 use strum::EnumIter;
 
 use crate::{error::OsakaError, OsakaContext};
