@@ -1431,6 +1431,7 @@ dependencies = [
  "poise-i18n",
  "rand",
  "reqwest",
+ "rosu-pp",
  "rosu-v2",
  "rusty-booru",
  "rusty18n",
@@ -1802,6 +1803,21 @@ dependencies = [
  "spin 0.9.8",
  "untrusted 0.9.0",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "rosu-map"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c55926c8f0fed1db12fbe96f7a6083a2c4186443dd32532ab34e6902467a4f3"
+
+[[package]]
+name = "rosu-pp"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26f146c66bed5900ee1fa2b55ef5cc5dd2dbd45e6cac0f7bee5cae535980afbc"
+dependencies = [
+ "rosu-map",
 ]
 
 [[package]]

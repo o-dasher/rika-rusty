@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 #[derive(Debug)]
 pub struct BeatmapCacheManager {
     pub client: reqwest::Client,
-    pub cache: Arc<Mutex<FcHashMap<u32, Arc<[u8]>, 256>>>,
+    pub cache: Arc<Mutex<FcHashMap<u32, Arc<Vec<u8>>, 256>>>,
 }
 
 #[derive(thiserror::Error, Display, Debug, derive_more::From)]
@@ -29,7 +29,10 @@ impl BeatmapCacheManager {
         }
     }
 
-    pub async fn get_beatmap_file(&self, beatmap_id: u32) -> Result<Arc<[u8]>, BeatmapCacheError> {
+    pub async fn get_beatmap_file(
+        &self,
+        beatmap_id: u32,
+    ) -> Result<Arc<Vec<u8>>, BeatmapCacheError> {
         if let Some(cached) = self.cache.lock().await.get(&beatmap_id) {
             return Ok(cached.clone());
         };
@@ -40,10 +43,7 @@ impl BeatmapCacheManager {
             .send()
             .await?;
 
-        let map_bytes: Arc<[u8]> = response
-            .bytes()
-            .await
-            .map(|bytes| Vec::<u8>::from(bytes).into())?;
+        let map_bytes = Arc::new(response.bytes().await.map(|b| b.to_vec())?);
 
         let _ = self
             .cache
@@ -51,6 +51,6 @@ impl BeatmapCacheManager {
             .await
             .insert(beatmap_id, map_bytes.clone());
 
-        Ok(map_bytes)
+        Ok(map_bytes.clone())
     }
 }

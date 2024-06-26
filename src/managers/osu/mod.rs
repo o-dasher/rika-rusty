@@ -1,6 +1,7 @@
 use beatmap::BeatmapCacheManager;
 
 pub mod beatmap;
+pub mod submit;
 
 pub struct OsuManager {
     pub beatmap_cache_manager: BeatmapCacheManager,
