@@ -48,3 +48,4 @@ CREATE TABLE mania_performance (
     CHECK (mode = 3)
 ) INHERITS (osu_performance_base);
 
+

@@ -8,7 +8,9 @@ CREATE TABLE discord_channel (
 
 CREATE TABLE discord_user (
     id BIGINT PRIMARY KEY,
-    osu_user_id BIGINT 
+    osu_user_id BIGINT,
+
+    FOREIGN KEY (osu_user_id) REFERENCES osu_user (id)
 );
 
 CREATE TABLE booru_setting (
@@ -32,3 +34,4 @@ CREATE TABLE booru_blacklisted_tag (
     ) ON DELETE CASCADE,
     PRIMARY KEY (blacklisted, booru_setting_id)
 );
+
