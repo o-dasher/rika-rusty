@@ -1,7 +1,7 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::register_command_manager::{RegisterContext, RegisterKind},
+    managers::register::{RegisterContext, RegisterKind},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaManagers, OsakaResult,
 };

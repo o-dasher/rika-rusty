@@ -1,1 +1,1 @@
-pub mod register_command_manager;
+pub mod register;

@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
-use managers::register_command_manager::RegisterCommandManager;
+use managers::register::RegisterCommandManager;
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,

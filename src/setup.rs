@@ -7,7 +7,7 @@ use sqlx::{Pool, Postgres};
 use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
-    managers::register_command_manager::{RegisterCommandManager, RegisterContext, RegisterKind},
+    managers::register::{RegisterCommandManager, RegisterContext, RegisterKind},
     OsakaConfig, OsakaData, OsakaManagers,
 };
 

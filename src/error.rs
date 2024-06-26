@@ -1,11 +1,14 @@
 use crate::{
-    managers::register_command_manager::RegisterError, responses, OsakaContext, OsakaData,
+    responses::{self},
+    OsakaContext, OsakaData,
 };
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 use strum::Display;
+
+use crate::managers::register::RegisterError;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
 pub enum OsakaError {
