@@ -2,7 +2,7 @@ use crate::{
     commands::booru::blacklist,
     error::NotifyError,
     get_id_kind_query,
-    osaka_sqlx::{booru_setting::SettingKind, BigID},
+    osaka_sqlx::{booru_setting::SettingKind, I64ID},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -28,7 +28,7 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
 
     get_id_kind_query!(kind);
     let result = id_kind_query!(
-        BigID,
+        I64ID,
         r#"
         DELETE FROM booru_blacklisted_tag t
         USING booru_setting s

@@ -11,7 +11,10 @@ use tokio::sync::{
 };
 
 use crate::{
-    managers::osu::OsuManager, osaka_sqlx::BigDecimalID, utils::id_locked::{IDLocker, IDLockerError}, OsakaData, OsakaManagers
+    managers::osu::OsuManager,
+    osaka_sqlx::BigDecimalID,
+    utils::id_locked::{IDLocker, IDLockerError},
+    OsakaData, OsakaManagers,
 };
 
 use super::beatmap::BeatmapCacheError;
@@ -28,6 +31,7 @@ pub enum SubmittableMode {
     Osu,
     Taiko,
     Mania,
+    Catch,
 }
 
 impl TryFrom<GameMode> for SubmittableMode {
@@ -49,6 +53,7 @@ impl From<SubmittableMode> for GameMode {
             SubmittableMode::Osu => Self::Osu,
             SubmittableMode::Taiko => Self::Taiko,
             SubmittableMode::Mania => Self::Mania,
+            SubmittableMode::Catch => Self::Catch,
         }
     }
 }
@@ -215,11 +220,12 @@ impl ReadyScoreSubmitter {
         );
 
         QueryBuilder::<Postgres>::new(format!(
-            "INSERT INTO {submit_mode}_performance (score_id, overall, {})",
+            "INSERT INTO {submit_mode}_performance (score_id, overall{})",
             match submit_mode {
-                SubmittableMode::Osu => "aim, speed, flashlight, accuracy",
-                SubmittableMode::Taiko => "accuracy, difficulty",
-                SubmittableMode::Mania => "difficulty",
+                SubmittableMode::Osu => ", aim, speed, flashlight, accuracy",
+                SubmittableMode::Taiko => ", accuracy, difficulty",
+                SubmittableMode::Mania => ", difficulty",
+                SubmittableMode::Catch => "",
             }
         ))
         .push_values(
@@ -237,8 +243,8 @@ impl ReadyScoreSubmitter {
                     PerformanceAttributes::Taiko(t) => {
                         b.push_bind(t.pp_acc).push_bind(t.pp_difficulty)
                     }
-                    PerformanceAttributes::Mania(c) => b.push_bind(c.pp_difficulty),
-                    PerformanceAttributes::Catch(_) => todo!(),
+                    PerformanceAttributes::Mania(m) => b.push_bind(m.pp_difficulty),
+                    PerformanceAttributes::Catch(..) => &mut b,
                 };
             },
         )
