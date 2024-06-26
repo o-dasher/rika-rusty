@@ -207,13 +207,14 @@ impl ReadyScoreSubmitter {
             let _ = self.sender.send((i + 1, new_scores.len())).await;
         }
 
-        let mut scores_query_builder = QueryBuilder::<Postgres>::new(
+        let mut tx = pool.begin().await?;
+
+        QueryBuilder::<Postgres>::new(
             "
 			INSERT INTO osu_score (id, osu_user_id, map_id, mods, mode)
 			",
-        );
-
-        scores_query_builder.push_values(
+        )
+        .push_values(
             &performance_information,
             |mut b, (.., (score, score_id))| {
                 b.push_bind(**score_id as i64)
@@ -224,19 +225,15 @@ impl ReadyScoreSubmitter {
             },
         );
 
-        let base_pp_query = |to_insert: &str| {
-            format!("INSERT INTO {submit_mode}_performance (score_id, overall, {to_insert})")
-        };
-
-        let base_performance_query = match submit_mode {
-            SubmittableMode::Osu => base_pp_query("aim, speed, flashlight, accuracy"),
-            SubmittableMode::Taiko => base_pp_query("accuracy, difficulty"),
-            SubmittableMode::Mania => base_pp_query("difficulty"),
-        };
-
-        let mut performance_query_builder = QueryBuilder::<Postgres>::new(base_performance_query);
-
-        performance_query_builder.push_values(
+        QueryBuilder::<Postgres>::new(format!(
+            "INSERT INTO {submit_mode}_performance (score_id, overall, {})",
+            match submit_mode {
+                SubmittableMode::Osu => "aim, speed, flashlight, accuracy",
+                SubmittableMode::Taiko => "accuracy, difficulty",
+                SubmittableMode::Mania => "difficulty",
+            }
+        ))
+        .push_values(
             &performance_information,
             |mut b, (performance, (.., score_id))| {
                 b.push_bind(**score_id as i64);
@@ -255,15 +252,12 @@ impl ReadyScoreSubmitter {
                     PerformanceAttributes::Catch(_) => todo!(),
                 };
             },
-        );
-
-        let mut tx = pool.begin().await?;
-
-        scores_query_builder.build().execute(&mut *tx).await?;
-        performance_query_builder.build().execute(&mut *tx).await?;
+        )
+        .build()
+        .execute(&mut *tx)
+        .await?;
 
         tx.commit().await?;
-
         locker_guard.unlock().await?;
 
         Ok(())
