@@ -40,6 +40,10 @@ CREATE TABLE taiko_performance (
     CHECK (mode = 1)
 ) INHERITS (osu_performance_base);
 
+CREATE TABLE catch_performance (
+    CHECK (mode = 2)
+) INHERITS (osu_performance_base);
+
 CREATE TABLE mania_performance (
     difficulty FLOAT NOT NULL,
 
