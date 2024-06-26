@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
-use sqlx::{types::BigDecimal, Postgres, QueryBuilder};
+use sqlx::{types::BigDecimal, Pool, Postgres, QueryBuilder};
 use std::{collections::HashSet, sync::Arc};
 
 use rosu_v2::model::{score::Score, GameMode};
@@ -11,13 +11,11 @@ use tokio::sync::{
 };
 
 use crate::{
-    managers::osu::OsuManager,
     osaka_sqlx::BigDecimalID,
     utils::id_locked::{IDLocker, IDLockerError},
-    OsakaData, OsakaManagers,
 };
 
-use super::beatmap::BeatmapCacheError;
+use super::beatmap::{BeatmapCacheError, BeatmapCacheManager};
 
 #[derive(derive_more::From)]
 pub enum SubmissionID {
@@ -59,7 +57,9 @@ impl From<SubmittableMode> for GameMode {
 }
 
 pub struct ScoreSubmitter {
-    data: Arc<OsakaData>,
+    beatmap_cache: Arc<BeatmapCacheManager>,
+    pool: Pool<Postgres>,
+    rosu: Arc<rosu_v2::Osu>,
     locker: IDLocker<String>,
 }
 
@@ -93,10 +93,16 @@ pub enum SubmissionError {
 }
 
 impl ScoreSubmitter {
-    pub fn new(data: Arc<OsakaData>) -> Self {
+    pub fn new(
+        beatmap_cache: Arc<BeatmapCacheManager>,
+        pool: Pool<Postgres>,
+        rosu: Arc<rosu_v2::Osu>,
+    ) -> Self {
         Self {
             locker: IDLocker::new(),
-            data,
+            beatmap_cache,
+            pool,
+            rosu,
         }
     }
 
@@ -124,30 +130,21 @@ impl ReadyScoreSubmitter {
         let submit_mode = SubmittableMode::try_from(mode)?;
         let submitter = self.submitter.read().await;
 
-        let OsakaData {
-            pool,
-            rosu,
-            managers,
-            ..
-        } = submitter.data.as_ref();
-
-        let OsakaManagers { osu_manager, .. } = managers;
-        let OsuManager {
-            beatmap_cache_manager,
-            ..
-        } = osu_manager;
-
         // This cast should be safe
         let mode_bits = mode as i16;
 
         let osu_id = match osu_id.into() {
             SubmissionID::ByStoredID(id) => id,
-            SubmissionID::ByUsername(username) => rosu.user(username).await?.user_id,
+            SubmissionID::ByUsername(username) => submitter.rosu.user(username).await?.user_id,
         };
 
         let locker_guard = submitter.locker.lock(osu_id.to_string()).await?;
-
-        let osu_scores = rosu.user_scores(osu_id).limit(100).mode(mode).await?;
+        let osu_scores = submitter
+            .rosu
+            .user_scores(osu_id)
+            .limit(100)
+            .mode(mode)
+            .await?;
 
         let rika_osu_scores: Vec<BigDecimalID> = sqlx::query_as(&format!(
             "
@@ -157,7 +154,7 @@ impl ReadyScoreSubmitter {
 			"
         ))
         .bind(i64::from(osu_id))
-        .fetch_all(pool)
+        .fetch_all(&submitter.pool)
         .await?;
 
         let existing_scores: HashSet<_> = rika_osu_scores.into_iter().map(|s| s.id).collect();
@@ -186,7 +183,10 @@ impl ReadyScoreSubmitter {
                     rosu_pp::Difficulty::new()
                         .mods(score.mods.bits())
                         .calculate(&rosu_pp::Beatmap::from_bytes(
-                            &beatmap_cache_manager.get_beatmap_file(score.map_id).await?,
+                            &submitter
+                                .beatmap_cache
+                                .get_beatmap_file(score.map_id)
+                                .await?,
                         )?),
                 )
                 .n300(ss.count_300)
@@ -201,7 +201,7 @@ impl ReadyScoreSubmitter {
             let _ = self.sender.send((i + 1, new_scores.len())).await;
         }
 
-        let mut tx = pool.begin().await?;
+        let mut tx = submitter.pool.begin().await?;
 
         QueryBuilder::<Postgres>::new(
             "

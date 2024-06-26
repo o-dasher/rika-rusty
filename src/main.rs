@@ -44,10 +44,10 @@ pub struct OsakaManagers {
 
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
-    pub rosu: rosu_v2::Osu,
+    pub rosu: Arc<rosu_v2::Osu>,
     pub config: Arc<OsakaConfig>,
     pub pool: Pool<Postgres>,
-    pub managers: OsakaManagers,
+    pub managers: Arc<OsakaManagers>,
 }
 
 impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {

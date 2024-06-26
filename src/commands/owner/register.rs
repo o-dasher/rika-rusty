@@ -26,7 +26,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
     let OsakaManagers {
         register_command_manager,
         ..
-    } = managers;
+    } = managers.as_ref();
 
     register_command_manager
         .register_commands(
