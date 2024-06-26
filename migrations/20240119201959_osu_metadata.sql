@@ -20,6 +20,7 @@ CREATE TABLE osu_score (
 ) INHERITS (osu_score_identifier);
 
 CREATE TABLE osu_performance_base (
+    overall FLOAT NOT NULL,
     FOREIGN KEY (score_id, mode) REFERENCES osu_score (score_id, mode) ON DELETE CASCADE
 ) INHERITS (osu_score_identifier);
 
@@ -28,7 +29,6 @@ CREATE TABLE osu_performance (
     speed FLOAT NOT NULL,
     accuracy FLOAT NOT NULL,
     flashlight FLOAT NOT NULL,
-    overall FLOAT NOT NULL,
 
     CHECK (mode = 0)
 ) INHERITS (osu_performance_base);
@@ -36,14 +36,12 @@ CREATE TABLE osu_performance (
 CREATE TABLE taiko_performance (
     accuracy FLOAT NOT NULL,
     difficulty FLOAT NOT NULL,
-    overall FLOAT NOT NULL,
 
     CHECK (mode = 1)
 ) INHERITS (osu_performance_base);
 
 CREATE TABLE mania_performance (
     difficulty FLOAT NOT NULL,
-    overall FLOAT NOT NULL,
 
     CHECK (mode = 3)
 ) INHERITS (osu_performance_base);
