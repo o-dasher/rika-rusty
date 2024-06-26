@@ -5,7 +5,7 @@ use crate::{
     },
     error::NotifyError,
     get_id_kind_query,
-    osaka_sqlx::{booru_setting::SettingKind, BigID, ID},
+    osaka_sqlx::{booru_setting::SettingKind, I64ID, ID},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -31,7 +31,7 @@ pub async fn add(
 
     get_id_kind_query!(kind);
     id_kind_query!(
-        BigID,
+        I64ID,
         r#"
         INSERT INTO discord_{#id_kind} (id) VALUES ({used_setting_kind})
         ON CONFLICT (id) DO UPDATE SET id=EXCLUDED.id RETURNING id

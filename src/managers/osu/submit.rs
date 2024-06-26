@@ -11,9 +11,7 @@ use tokio::sync::{
 };
 
 use crate::{
-    managers::osu::OsuManager,
-    utils::id_locked::{IDLocker, IDLockerError},
-    OsakaData, OsakaManagers,
+    managers::osu::OsuManager, osaka_sqlx::BigDecimalID, utils::id_locked::{IDLocker, IDLockerError}, OsakaData, OsakaManagers
 };
 
 use super::beatmap::BeatmapCacheError;
@@ -146,12 +144,7 @@ impl ReadyScoreSubmitter {
 
         let osu_scores = rosu.user_scores(osu_id).limit(100).mode(mode).await?;
 
-        #[derive(sqlx::FromRow)]
-        struct ExistingScore {
-            id: BigDecimal,
-        }
-
-        let rika_osu_scores: Vec<ExistingScore> = sqlx::query_as(&format!(
+        let rika_osu_scores: Vec<BigDecimalID> = sqlx::query_as(&format!(
             "
 			SELECT s.score_id FROM osu_score s
 			JOIN {submit_mode}_performance pp ON s.id = pp.score_id
