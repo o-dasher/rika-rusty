@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
-use sqlx::{Postgres, QueryBuilder};
+use sqlx::{types::BigDecimal, Postgres, QueryBuilder};
 use std::{collections::HashSet, sync::Arc};
 
 use rosu_v2::model::{score::Score, GameMode};
@@ -139,6 +139,7 @@ impl ReadyScoreSubmitter {
             ..
         } = osu_manager;
 
+        // This cast should be safe
         let mode_bits = mode as i16;
 
         let osu_id = match osu_id.into() {
@@ -152,12 +153,12 @@ impl ReadyScoreSubmitter {
 
         #[derive(sqlx::FromRow)]
         struct ExistingScore {
-            id: i64,
+            id: BigDecimal,
         }
 
         let rika_osu_scores: Vec<ExistingScore> = sqlx::query_as(&format!(
             "
-			SELECT s.id FROM osu_score s
+			SELECT s.score_id FROM osu_score s
 			JOIN {submit_mode}_performance pp ON s.id = pp.score_id
 			WHERE s.osu_user_id = ?
 			"
@@ -172,7 +173,7 @@ impl ReadyScoreSubmitter {
             .iter()
             .filter_map(|s| {
                 s.score_id.and_then(|score_id| {
-                    let is_new = !existing_scores.contains(&(score_id as i64));
+                    let is_new = !existing_scores.contains(&score_id.into());
 
                     is_new.then_some((score_id, s))
                 })
@@ -211,13 +212,13 @@ impl ReadyScoreSubmitter {
 
         QueryBuilder::<Postgres>::new(
             "
-			INSERT INTO osu_score (id, osu_user_id, map_id, mods, mode)
+			INSERT INTO osu_score (score_id, osu_user_id, map_id, mods, mode)
 			",
         )
         .push_values(
             &performance_information,
             |mut b, (.., (score, score_id))| {
-                b.push_bind(**score_id as i64)
+                b.push_bind(BigDecimal::from(**score_id))
                     .push_bind(i64::from(osu_id))
                     .push_bind(i64::from(score.map_id))
                     .push_bind(i64::from(score.mods.bits()))
@@ -236,8 +237,8 @@ impl ReadyScoreSubmitter {
         .push_values(
             &performance_information,
             |mut b, (performance, (.., score_id))| {
-                b.push_bind(**score_id as i64);
-                b.push_bind(performance.pp());
+                b.push_bind(BigDecimal::from(**score_id))
+                    .push_bind(performance.pp());
 
                 match performance {
                     PerformanceAttributes::Osu(o) => b

@@ -3,7 +3,7 @@ CREATE TABLE osu_user (
 );
 
 CREATE TABLE osu_score_identifier (
-    score_id BIGINT NOT NULL,
+    score_id NUMERIC NOT NULL,
     mode SMALLINT NOT NULL,
 
     PRIMARY KEY (score_id, mode)
