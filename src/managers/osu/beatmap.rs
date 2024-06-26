@@ -5,7 +5,7 @@ use strum::Display;
 use tokio::sync::Mutex;
 
 #[derive(Debug)]
-pub struct BeatmapCache {
+pub struct BeatmapCacheManager {
     pub client: reqwest::Client,
     pub cache: Arc<Mutex<FcHashMap<u32, Arc<[u8]>, 256>>>,
 }
@@ -15,13 +15,13 @@ pub enum BeatmapCacheError {
     Client(reqwest::Error),
 }
 
-impl Default for BeatmapCache {
+impl Default for BeatmapCacheManager {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl BeatmapCache {
+impl BeatmapCacheManager {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),

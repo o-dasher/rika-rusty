@@ -7,7 +7,10 @@ use sqlx::{Pool, Postgres};
 use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
-    managers::register::{RegisterCommandManager, RegisterContext, RegisterKind},
+    managers::{
+        osu::OsuManager,
+        register::{RegisterCommandManager, RegisterContext, RegisterKind},
+    },
     OsakaConfig, OsakaData, OsakaManagers,
 };
 
@@ -45,6 +48,7 @@ pub async fn setup(
             rosu,
             managers: OsakaManagers {
                 register_command_manager,
+                osu_manager: OsuManager::new(),
             },
         })?)
 }

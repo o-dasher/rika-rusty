@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
-use managers::register::RegisterCommandManager;
+use managers::{osu::OsuManager, register::RegisterCommandManager};
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,
@@ -39,6 +39,7 @@ pub struct OsakaConfig {
 
 pub struct OsakaManagers {
     pub register_command_manager: RegisterCommandManager,
+    pub osu_manager: OsuManager,
 }
 
 pub struct OsakaData {
