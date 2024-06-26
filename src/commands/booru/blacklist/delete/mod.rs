@@ -23,7 +23,7 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
 ) -> OsakaResult {
     blacklist::check_permissions(ctx, kind).await?;
 
-    let OsakaData { pool, .. } = ctx.data();
+    let OsakaData { pool, .. } = ctx.data().as_ref();
     let inserted_discord_id = kind.get_sqlx_id(ctx)?;
 
     get_id_kind_query!(kind);

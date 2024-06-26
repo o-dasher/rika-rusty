@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 use itertools::Itertools;
 use rusty_booru::generic::client::GenericClient;
@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub async fn autocomplete_tag_single<'a>(
-    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
     searching: &str,
 ) -> Vec<String> {
     autocomplete_tag(
@@ -22,7 +22,7 @@ pub async fn autocomplete_tag_single<'a>(
 }
 
 pub async fn autocomplete_tag<'a>(
-    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
     searching: &str,
 ) -> Vec<String> {
     if searching.is_empty() {

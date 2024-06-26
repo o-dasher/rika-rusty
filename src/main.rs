@@ -23,7 +23,7 @@ pub mod responses;
 pub mod setup;
 pub mod utils;
 
-pub type OsakaContext<'a> = Context<'a, OsakaData, OsakaError>;
+pub type OsakaContext<'a> = Context<'a, Arc<OsakaData>, OsakaError>;
 pub type OsakaResult = Result<(), OsakaError>;
 
 #[derive(Serialize, Deserialize)]

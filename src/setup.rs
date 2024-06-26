@@ -16,11 +16,11 @@ use crate::{
 
 pub async fn setup(
     ctx: &poise::serenity_prelude::Context,
-    framework: &framework::Framework<OsakaData, OsakaError>,
+    framework: &framework::Framework<Arc<OsakaData>, OsakaError>,
     config: OsakaConfig,
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
-) -> Result<OsakaData, OsakaError> {
+) -> Result<Arc<OsakaData>, OsakaError> {
     let rosu = rosu_v2::Osu::builder()
         .client_id(config.osu_client_id)
         .client_secret(&config.osu_client_secret)
@@ -41,14 +41,16 @@ pub async fn setup(
             },
         )
         .await
-        .map(|_| OsakaData {
-            i18n,
-            pool,
-            config,
-            rosu,
-            managers: OsakaManagers {
-                register_command_manager,
-                osu_manager: OsuManager::new(),
-            },
+        .map(|_| {
+            Arc::new(OsakaData {
+                i18n,
+                pool,
+                config,
+                rosu,
+                managers: OsakaManagers {
+                    register_command_manager,
+                    osu_manager: OsuManager::new(),
+                },
+            })
         })?)
 }

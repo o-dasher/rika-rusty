@@ -22,7 +22,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
     let i18n = ctx.i18n();
     default_args!(on);
 
-    let OsakaData { managers, .. } = ctx.data();
+    let OsakaData { managers, .. } = ctx.data().as_ref();
     let OsakaManagers {
         register_command_manager,
         ..

@@ -24,7 +24,7 @@ pub struct RegisterCommandManager {
 pub enum RegisterContext<'a> {
     Serenity(
         &'a poise::serenity_prelude::Context,
-        &'a [poise::Command<OsakaData, OsakaError>],
+        &'a [poise::Command<Arc<OsakaData>, OsakaError>],
     ),
     Poise(&'a OsakaContext<'a>),
 }

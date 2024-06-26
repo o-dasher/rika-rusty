@@ -1,5 +1,5 @@
 use crate::osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind};
-use std::{str::FromStr, vec};
+use std::{str::FromStr, sync::Arc, vec};
 
 use crate::{
     commands::booru::{
@@ -15,7 +15,7 @@ use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 
 pub async fn autocomplete_tag_remove<'a>(
-    ctx: ApplicationContext<'a, OsakaData, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
     searching: &str,
 ) -> Vec<String> {
     let kind = ctx

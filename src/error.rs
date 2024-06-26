@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{
     responses::{self},
     OsakaContext, OsakaData,
@@ -85,7 +87,7 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
 }
 
 pub async fn on_error(
-    err: poise::FrameworkError<'_, OsakaData, OsakaError>,
+    err: poise::FrameworkError<'_, Arc<OsakaData>, OsakaError>,
 ) -> Result<(), OsakaError> {
     match err {
         FrameworkError::Command { error, ctx } => {
