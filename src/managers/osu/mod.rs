@@ -14,3 +14,9 @@ impl OsuManager {
         }
     }
 }
+
+impl Default for OsuManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
