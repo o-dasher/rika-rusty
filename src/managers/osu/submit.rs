@@ -56,18 +56,13 @@ impl From<SubmittableMode> for GameMode {
 }
 
 pub struct ScoreSubmitter {
+    data: Arc<OsakaData>,
     locker: IDLocker<String>,
 }
 
 pub struct ReadyScoreSubmitter {
     submitter: Arc<RwLock<ScoreSubmitter>>,
     sender: Sender<(usize, usize)>,
-}
-
-impl Default for ScoreSubmitter {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 #[derive(thiserror::Error, Debug, derive_more::From)]
@@ -95,9 +90,10 @@ pub enum SubmissionError {
 }
 
 impl ScoreSubmitter {
-    pub fn new() -> Self {
+    pub fn new(data: Arc<OsakaData>) -> Self {
         Self {
             locker: IDLocker::new(),
+            data,
         }
     }
 
@@ -121,7 +117,6 @@ impl ReadyScoreSubmitter {
         &self,
         osu_id: impl Into<SubmissionID>,
         mode: GameMode,
-        data: OsakaData,
     ) -> Result<(), SubmissionError> {
         let submit_mode = SubmittableMode::try_from(mode)?;
         let submitter = self.submitter.read().await;
@@ -131,7 +126,7 @@ impl ReadyScoreSubmitter {
             rosu,
             managers,
             ..
-        } = data;
+        } = submitter.data.as_ref();
 
         let OsakaManagers { osu_manager, .. } = managers;
         let OsuManager {
@@ -164,7 +159,7 @@ impl ReadyScoreSubmitter {
 			"
         ))
         .bind(i64::from(osu_id))
-        .fetch_all(&pool)
+        .fetch_all(pool)
         .await?;
 
         let existing_scores: HashSet<_> = rika_osu_scores.into_iter().map(|s| s.id).collect();
