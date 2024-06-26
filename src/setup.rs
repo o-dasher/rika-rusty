@@ -8,7 +8,7 @@ use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
     managers::{
-        osu::{beatmap::BeatmapCacheManager, OsuManager},
+        osu::OsuManager,
         register::{RegisterCommandManager, RegisterContext, RegisterKind},
     },
     OsakaConfig, OsakaData, OsakaManagers,
@@ -44,11 +44,9 @@ pub async fn setup(
         )
         .await
         .map(|_| {
-            let beatmap_cache_manager = Arc::new(BeatmapCacheManager::new());
-
             let managers = Arc::new(OsakaManagers {
                 register_command_manager,
-                osu_manager: OsuManager::new(beatmap_cache_manager, pool.clone(), rosu.clone()),
+                osu_manager: OsuManager::new(pool.clone(), rosu.clone()),
             });
 
             Arc::new(OsakaData {
