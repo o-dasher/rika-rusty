@@ -3,10 +3,7 @@ use std::sync::Arc;
 use poise::serenity_prelude::{self, GuildId};
 use strum::Display;
 
-use crate::{
-    error::{self, Osaka},
-    OsakaConfig, OsakaContext, OsakaData,
-};
+use crate::{error, OsakaConfig, OsakaContext, OsakaData};
 
 pub enum Kind {
     Development,

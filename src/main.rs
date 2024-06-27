@@ -1,5 +1,5 @@
 #![feature(let_chains, macro_metavar_expr, closure_lifetime_binder)]
-#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
+#![warn(clippy::all, clippy::nursery)]
 
 use std::sync::Arc;
 

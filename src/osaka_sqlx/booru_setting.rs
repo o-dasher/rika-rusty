@@ -1,10 +1,7 @@
 use poise::ChoiceParameter;
 use strum::EnumIter;
 
-use crate::{
-    error::{self, Osaka},
-    OsakaContext,
-};
+use crate::{error, OsakaContext};
 
 #[macro_export]
 macro_rules! get_id_kind_query {
