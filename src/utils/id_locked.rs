@@ -16,12 +16,12 @@ pub enum IDLockerError {
 pub type IDLockerResult = Result<(), IDLockerError>;
 
 #[derive(Debug)]
-pub struct IDLockGuard<'a, T: Hash + Eq + Clone> {
+pub struct IDLockGuard<'a, T: Hash + Eq + Clone + Send> {
     locker: &'a IDLocker<T>,
     locking: T,
 }
 
-impl<T: Hash + Eq + Clone> IDLockGuard<'_, T> {
+impl<T: Hash + Eq + Clone + Send> IDLockGuard<'_, T> {
     pub async fn unlock(self) -> IDLockerResult {
         self.locker
             .0
@@ -33,7 +33,7 @@ impl<T: Hash + Eq + Clone> IDLockGuard<'_, T> {
     }
 }
 
-impl<T: Hash + Eq + Clone> IDLocker<T> {
+impl<T: Hash + Eq + Clone + Send> IDLocker<T> {
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(HashSet::new())))
     }
