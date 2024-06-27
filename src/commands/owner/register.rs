@@ -1,7 +1,7 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::{self, register_command, OsakaManagers},
+    managers::{self, register_command},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -23,7 +23,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
     default_args!(on);
 
     let OsakaData { managers, .. } = ctx.data().as_ref();
-    let OsakaManagers {
+    let managers::Osaka {
         register_command_manager,
         ..
     } = managers.as_ref();

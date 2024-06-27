@@ -23,9 +23,9 @@ enum BooruChoice {
 impl From<BooruChoice> for BooruOption {
     fn from(value: BooruChoice) -> Self {
         match value {
-            BooruChoice::Danbooru => BooruOption::Danbooru,
-            BooruChoice::Gelbooru => BooruOption::Gelbooru,
-            BooruChoice::Safebooru => BooruOption::Safebooru,
+            BooruChoice::Danbooru => Self::Danbooru,
+            BooruChoice::Gelbooru => Self::Gelbooru,
+            BooruChoice::Safebooru => Self::Safebooru,
         }
     }
 }

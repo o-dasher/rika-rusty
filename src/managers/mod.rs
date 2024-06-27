@@ -9,12 +9,12 @@ use crate::OsakaConfig;
 pub mod osu;
 pub mod register_command;
 
-pub struct OsakaManagers {
+pub struct Osaka {
     pub register_command_manager: register_command::Manager,
     pub osu_manager: OsuManager,
 }
 
-impl OsakaManagers {
+impl Osaka {
     pub fn new(config: Arc<OsakaConfig>, pool: Pool<Postgres>, rosu: Arc<rosu_v2::Osu>) -> Self {
         Self {
             register_command_manager: register_command::Manager::new(config),

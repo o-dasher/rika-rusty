@@ -10,15 +10,15 @@ use crate::{
 pub mod clear;
 pub mod remove;
 
-pub enum DeleteOperation {
+pub enum Operation {
     Remove(String),
     Clear,
 }
 
-pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
+pub async fn provide_delete_feedback<F: (Fn(bool) -> String) + Send>(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    operation: DeleteOperation,
+    operation: Operation,
     provide_message: F,
 ) -> OsakaResult {
     blacklist::check_permissions(ctx, kind).await?;
@@ -37,8 +37,8 @@ pub async fn provide_delete_feedback<F: Fn(bool) -> String>(
         RETURNING id
         "#,
         #extra_query = match operation {
-            DeleteOperation::Remove(tag) => "t.blacklisted={tag} AND",
-            DeleteOperation::Clear => ""
+            Operation::Remove(tag) => "t.blacklisted={tag} AND",
+            Operation::Clear => ""
         }
     )
     .fetch_all(pool)

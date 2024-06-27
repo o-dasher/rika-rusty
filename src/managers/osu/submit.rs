@@ -107,7 +107,7 @@ impl ScoreSubmitter {
     }
 
     pub fn begin_submission(
-        submitter: &Arc<RwLock<ScoreSubmitter>>,
+        submitter: &Arc<RwLock<Self>>,
     ) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>) {
         let (sender, receiver) = tokio::sync::mpsc::channel(100);
 
@@ -254,6 +254,8 @@ impl ReadyScoreSubmitter {
 
         tx.commit().await?;
         locker_guard.unlock().await?;
+
+        drop(submitter);
 
         Ok(())
     }

@@ -23,8 +23,7 @@ pub async fn check_permissions(ctx: OsakaContext<'_>, operation_kind: SettingKin
         .ok_or(OsakaError::SimplyUnexpected)?;
 
     let authorized = match operation_kind {
-        SettingKind::Guild => perms.administrator(),
-        SettingKind::Channel => perms.administrator(),
+        SettingKind::Guild | SettingKind::Channel => perms.administrator(),
         SettingKind::User => true,
     };
 

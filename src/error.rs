@@ -80,7 +80,7 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
             Error::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
         },
         OsakaError::Notify(e) => match e {
-            NotifyError::Warn(warn) => warn.to_string(),
+            NotifyError::Warn(warn) => warn,
             NotifyError::MissingPermissions => t!(user_missing_permissions).clone(),
         },
     }

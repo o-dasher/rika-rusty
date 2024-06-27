@@ -14,7 +14,7 @@ impl SlashArgument for OsakaBooruTag {
         value: &json::Value,
     ) -> Result<Self, SlashArgError>
 where {
-        Ok(OsakaBooruTag(
+        Ok(Self(
             poise::extract_slash_argument!(String, ctx, interaction, value)
                 .await?
                 .trim()
@@ -23,6 +23,6 @@ where {
     }
 
     fn create(builder: &mut CreateApplicationCommandOption) {
-        poise::create_slash_argument!(String, builder)
+        poise::create_slash_argument!(String, builder);
     }
 }

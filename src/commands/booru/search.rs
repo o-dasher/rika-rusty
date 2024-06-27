@@ -58,13 +58,7 @@ pub async fn search(
         })
     };
 
-    if !ctx
-        .guild_channel()
-        .await
-        .map(|c| c.nsfw)
-        // We want to allow nsfw search on dm.
-        .unwrap_or_default()
-    {
+    if !ctx.guild_channel().await.is_some_and(|c| c.nsfw) {
         query.rating(Rating::Safe);
     }
 

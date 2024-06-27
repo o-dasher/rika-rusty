@@ -5,7 +5,6 @@ use std::sync::Arc;
 
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
-use managers::{register_command::Manager, OsakaManagers};
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,
@@ -43,7 +42,7 @@ pub struct OsakaData {
     pub rosu: Arc<rosu_v2::Osu>,
     pub config: Arc<OsakaConfig>,
     pub pool: Pool<Postgres>,
-    pub managers: Arc<OsakaManagers>,
+    pub managers: Arc<managers::Osaka>,
 }
 
 impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {

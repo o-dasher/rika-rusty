@@ -16,7 +16,7 @@ pub async fn autocomplete_tag_single<'a>(
 ) -> Vec<String> {
     autocomplete_tag(
         ctx,
-        searching.split(" ").collect_vec().first().unwrap_or(&""),
+        searching.split(' ').collect_vec().first().unwrap_or(&""),
     )
     .await
 }

@@ -3,7 +3,7 @@ use std::{str::FromStr, sync::Arc, vec};
 
 use crate::{
     commands::booru::{
-        blacklist::delete::{provide_delete_feedback, DeleteOperation},
+        blacklist::delete::{provide_delete_feedback, Operation},
         utils::poise::OsakaBooruTag,
     },
     error::OsakaError,
@@ -22,17 +22,19 @@ pub async fn autocomplete_tag_remove<'a>(
         .args
         .iter()
         .find(|v| v.name == "kind")
-        .map(|v| {
-            SettingKind::from_str(
-                v.value
-                    .as_ref()
-                    .map(|v| v.to_string())
-                    .unwrap_or_default()
-                    .as_str(),
-            )
-        })
-        .unwrap_or(Ok(Default::default()))
-        .unwrap_or(Default::default());
+        .map_or_else(
+            || Ok(SettingKind::default()),
+            |v| {
+                SettingKind::from_str(
+                    v.value
+                        .as_ref()
+                        .map(ToString::to_string)
+                        .unwrap_or_default()
+                        .as_str(),
+                )
+            },
+        )
+        .unwrap_or_else(|_| SettingKind::default());
 
     let ctx = poise::Context::Application(ctx);
     if searching.is_empty() {
@@ -48,21 +50,16 @@ pub async fn remove(
     kind: SettingKind,
     #[autocomplete = "autocomplete_tag_remove"] tag: OsakaBooruTag,
 ) -> OsakaResult {
-    provide_delete_feedback(
-        ctx,
-        kind,
-        DeleteOperation::Remove(tag.0.clone()),
-        |cleared| {
-            let i18n = ctx.i18n();
-            t_prefix!($i18n.booru.blacklist.remove);
+    provide_delete_feedback(ctx, kind, Operation::Remove(tag.0.clone()), |cleared| {
+        let i18n = ctx.i18n();
+        t_prefix!($i18n.booru.blacklist.remove);
 
-            let tag = tag.0.clone();
-            if cleared {
-                t!(failed).with(mono(tag))
-            } else {
-                t!(removed).with(mono(tag))
-            }
-        },
-    )
+        let tag = tag.0.clone();
+        if cleared {
+            t!(failed).with(mono(tag))
+        } else {
+            t!(removed).with(mono(tag))
+        }
+    })
     .await
 }

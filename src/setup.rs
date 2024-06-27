@@ -7,10 +7,7 @@ use sqlx::{Pool, Postgres};
 use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
-    managers::{
-        register_command::{self},
-        OsakaManagers,
-    },
+    managers::{self, register_command},
     OsakaConfig, OsakaData,
 };
 
@@ -44,7 +41,7 @@ pub async fn setup(
         )
         .await
         .map(|()| {
-            let managers = Arc::new(OsakaManagers::new(
+            let managers = Arc::new(managers::Osaka::new(
                 config.clone(),
                 pool.clone(),
                 rosu.clone(),

@@ -9,7 +9,7 @@ pub struct Paginator<'a> {
 }
 
 impl<'a> Paginator<'a> {
-    pub fn new(ctx: OsakaContext<'a>, amount_pages: usize) -> Self {
+    pub const fn new(ctx: OsakaContext<'a>, amount_pages: usize) -> Self {
         Self { ctx, amount_pages }
     }
 
