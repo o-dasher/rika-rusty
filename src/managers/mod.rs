@@ -1,8 +1,6 @@
-use sqlx::Pool;
+use osu::Manager;
+use sqlx::{Pool, Postgres};
 use std::sync::Arc;
-
-use osu::OsuManager;
-use sqlx::Postgres;
 
 use crate::OsakaConfig;
 
@@ -11,14 +9,15 @@ pub mod register_command;
 
 pub struct Osaka {
     pub register_command_manager: register_command::Manager,
-    pub osu_manager: OsuManager,
+    pub osu_manager: Manager,
 }
 
 impl Osaka {
+    #[must_use]
     pub fn new(config: Arc<OsakaConfig>, pool: Pool<Postgres>, rosu: Arc<rosu_v2::Osu>) -> Self {
         Self {
             register_command_manager: register_command::Manager::new(config),
-            osu_manager: OsuManager::new(pool, rosu),
+            osu_manager: osu::Manager::new(pool, rosu),
         }
     }
 }

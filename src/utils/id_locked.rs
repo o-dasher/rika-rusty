@@ -34,6 +34,7 @@ impl<T: Hash + Eq + Clone + Send> IDLockGuard<'_, T> {
 }
 
 impl<T: Hash + Eq + Clone + Send> IDLocker<T> {
+    #[must_use]
     pub fn new() -> Self {
         Self(Arc::new(Mutex::new(HashSet::new())))
     }

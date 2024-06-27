@@ -15,13 +15,8 @@ pub enum Error {
     Client(reqwest::Error),
 }
 
-impl Default for Manager {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Manager {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -49,5 +44,11 @@ impl Manager {
             .insert(beatmap_id, map_bytes.clone());
 
         Ok(map_bytes.clone())
+    }
+}
+
+impl Default for Manager {
+    fn default() -> Self {
+        Self::new()
     }
 }

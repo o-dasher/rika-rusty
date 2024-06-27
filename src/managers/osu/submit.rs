@@ -93,6 +93,7 @@ pub enum SubmissionError {
 }
 
 impl ScoreSubmitter {
+    #[must_use]
     pub fn new(
         beatmap_cache: Arc<beatmap_cache::Manager>,
         pool: Pool<Postgres>,

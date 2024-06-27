@@ -5,12 +5,13 @@ use submit::ScoreSubmitter;
 pub mod beatmap_cache;
 pub mod submit;
 
-pub struct OsuManager {
+pub struct Manager {
     pub beatmap_cache_manager: Arc<beatmap_cache::Manager>,
     pub submit_manager: ScoreSubmitter,
 }
 
-impl OsuManager {
+impl Manager {
+    #[must_use]
     pub fn new(pool: Pool<Postgres>, rosu: Arc<rosu_v2::Osu>) -> Self {
         let beatmap_cache = Arc::new(beatmap_cache::Manager::new());
 

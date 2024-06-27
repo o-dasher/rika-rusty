@@ -1,6 +1,6 @@
-use crate::commands::osu::link::link;
-use crate::create_command_group;
+use crate::{commands::osu::link::link, create_command_group};
 
 pub mod link;
+pub mod submit;
 
 create_command_group!(osu, ["link"]);
