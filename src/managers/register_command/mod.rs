@@ -5,29 +5,29 @@ use strum::Display;
 
 use crate::{error::OsakaError, OsakaConfig, OsakaContext, OsakaData};
 
-pub enum RegisterKind {
+pub enum Kind {
     Development,
     Local(GuildId),
     Global,
 }
 
 #[derive(Debug, Display, thiserror::Error, derive_more::From)]
-pub enum RegisterError {
+pub enum Error {
     Serenity(serenity_prelude::Error),
     NoDevelopmentGuildSet,
 }
 
-pub struct RegisterCommandManager {
+pub struct Manager {
     pub config: Arc<OsakaConfig>,
 }
 
-impl RegisterCommandManager {
+impl Manager {
     pub fn new(config: Arc<OsakaConfig>) -> Self {
         Self { config }
     }
 }
 
-pub enum RegisterContext<'a> {
+pub enum Context<'a> {
     Serenity(
         &'a poise::serenity_prelude::Context,
         &'a [poise::Command<Arc<OsakaData>, OsakaError>],
@@ -35,31 +35,31 @@ pub enum RegisterContext<'a> {
     Poise(&'a OsakaContext<'a>),
 }
 
-impl RegisterCommandManager {
+impl Manager {
     pub async fn register_commands<'a>(
         &self,
-        ctx: RegisterContext<'a>,
-        register_kind: RegisterKind,
-    ) -> Result<(), RegisterError> {
+        ctx: Context<'a>,
+        register_kind: Kind,
+    ) -> Result<(), Error> {
         let (http, commands) = match ctx {
-            RegisterContext::Serenity(ctx, commands) => (ctx, commands),
-            RegisterContext::Poise(ctx) => (
+            Context::Serenity(ctx, commands) => (ctx, commands),
+            Context::Poise(ctx) => (
                 ctx.serenity_context(),
                 ctx.framework().options().commands.as_slice(),
             ),
         };
 
         match register_kind {
-            RegisterKind::Development => match self.config.development_guild {
+            Kind::Development => match self.config.development_guild {
                 Some(guild_id) => {
-                    poise::builtins::register_in_guild(http, commands, GuildId(guild_id)).await?
+                    poise::builtins::register_in_guild(http, commands, GuildId(guild_id)).await?;
                 }
-                None => return Err(RegisterError::NoDevelopmentGuildSet),
+                None => return Err(Error::NoDevelopmentGuildSet),
             },
-            RegisterKind::Local(guild_id) => {
-                poise::builtins::register_in_guild(http, commands, guild_id).await?
+            Kind::Local(guild_id) => {
+                poise::builtins::register_in_guild(http, commands, guild_id).await?;
             }
-            RegisterKind::Global => poise::builtins::register_globally(http, commands).await?,
+            Kind::Global => poise::builtins::register_globally(http, commands).await?,
         }
 
         Ok(())

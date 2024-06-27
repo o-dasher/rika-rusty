@@ -1,10 +1,7 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::{
-        register::{RegisterContext, RegisterKind},
-        OsakaManagers,
-    },
+    managers::{self, register_command, OsakaManagers},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -33,16 +30,16 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
 
     register_command_manager
         .register_commands(
-            RegisterContext::Poise(&ctx),
+            managers::register_command::Context::Poise(&ctx),
             match on {
-                RegisterChoice::Development => RegisterKind::Development,
+                RegisterChoice::Development => register_command::Kind::Development,
                 RegisterChoice::Local => match ctx.guild_id() {
-                    Some(guild_id) => RegisterKind::Local(guild_id),
+                    Some(guild_id) => register_command::Kind::Local(guild_id),
                     None => Err(NotifyError::Warn(
                         t!(i18n.errors.must_be_used_on_guild).clone(),
                     ))?,
                 },
-                RegisterChoice::Global => RegisterKind::Global,
+                RegisterChoice::Global => register_command::Kind::Global,
             },
         )
         .await?;

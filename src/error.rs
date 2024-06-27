@@ -10,7 +10,7 @@ use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 use strum::Display;
 
-use crate::managers::register::RegisterError;
+use crate::managers::register_command::Error;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
 pub enum OsakaError {
@@ -45,7 +45,7 @@ pub enum OsakaError {
     Notify(NotifyError),
 
     #[error(transparent)]
-    RegisterCommand(RegisterError),
+    RegisterCommand(Error),
 
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
@@ -76,8 +76,8 @@ fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
             t!(unexpected).clone()
         }
         OsakaError::RegisterCommand(e) => match e {
-            RegisterError::Serenity(e) => get_error_response(ctx, e.into()),
-            RegisterError::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
+            Error::Serenity(e) => get_error_response(ctx, e.into()),
+            Error::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
         },
         OsakaError::Notify(e) => match e {
             NotifyError::Warn(warn) => warn.to_string(),

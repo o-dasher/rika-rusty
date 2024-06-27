@@ -15,7 +15,7 @@ use crate::{
     utils::id_locked::{IDLocker, IDLockerError},
 };
 
-use super::beatmap::{BeatmapCacheError, BeatmapCacheManager};
+use super::beatmap_cache;
 
 #[derive(derive_more::From)]
 pub enum SubmissionID {
@@ -57,7 +57,7 @@ impl From<SubmittableMode> for GameMode {
 }
 
 pub struct ScoreSubmitter {
-    beatmap_cache: Arc<BeatmapCacheManager>,
+    beatmap_cache: Arc<beatmap_cache::Manager>,
     pool: Pool<Postgres>,
     rosu: Arc<rosu_v2::Osu>,
     locker: IDLocker<String>,
@@ -86,7 +86,7 @@ pub enum SubmissionError {
     RosuV2(rosu_v2::error::OsuError),
 
     #[error(transparent)]
-    FetchBeatmap(BeatmapCacheError),
+    FetchBeatmap(beatmap_cache::Error),
 
     #[error(transparent)]
     Io(std::io::Error),
@@ -94,7 +94,7 @@ pub enum SubmissionError {
 
 impl ScoreSubmitter {
     pub fn new(
-        beatmap_cache: Arc<BeatmapCacheManager>,
+        beatmap_cache: Arc<beatmap_cache::Manager>,
         pool: Pool<Postgres>,
         rosu: Arc<rosu_v2::Osu>,
     ) -> Self {

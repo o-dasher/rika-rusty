@@ -21,7 +21,7 @@ impl<'a> Paginator<'a> {
         let amount_pages = self.amount_pages;
 
         let ctx_id = ctx.id();
-        let all_buttons = ["prev", "close", "next"].map(|v| format!("{}{v}", ctx_id));
+        let all_buttons = ["prev", "close", "next"].map(|v| format!("{ctx_id}{v}"));
         let [prev_button, close_button, next_button] = &all_buttons;
 
         let mut current_idx = 0;
@@ -48,8 +48,8 @@ impl<'a> Paginator<'a> {
             r
         };
 
-        let response = create_base_reply(current_idx)?;
-        let sent = ctx.send(|b| forward_reply(response, b)).await?;
+        let initial_response = create_base_reply(current_idx)?;
+        let sent = ctx.send(|b| forward_reply(initial_response, b)).await?;
 
         while let Some(press) = CollectComponentInteraction::new(ctx)
             .filter(move |press| {
@@ -75,12 +75,13 @@ impl<'a> Paginator<'a> {
 
             press.defer(self.ctx).await?;
 
-            let response = create_base_reply(current_idx)?;
-            sent.edit(ctx, |b| forward_reply(response, b)).await?;
+            let change_page_response = create_base_reply(current_idx)?;
+            sent.edit(ctx, |b| forward_reply(change_page_response, b))
+                .await?;
         }
 
-        let response = create_base_reply(current_idx)?;
-        sent.edit(ctx, |b| forward_reply(response, b).components(|b| b))
+        let end_response = create_base_reply(current_idx)?;
+        sent.edit(ctx, |b| forward_reply(end_response, b).components(|b| b))
             .await?;
 
         Ok(())

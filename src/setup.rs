@@ -8,7 +8,7 @@ use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
     managers::{
-        register::{RegisterCommandManager, RegisterContext, RegisterKind},
+        register_command::{self},
         OsakaManagers,
     },
     OsakaConfig, OsakaData,
@@ -30,20 +30,20 @@ pub async fn setup(
     );
 
     let config = Arc::new(config);
-    let register_command_manager = RegisterCommandManager {
+    let register_command_manager = register_command::Manager {
         config: config.clone(),
     };
 
     Ok(register_command_manager
         .register_commands(
-            RegisterContext::Serenity(ctx, &framework.options().commands),
+            register_command::Context::Serenity(ctx, &framework.options().commands),
             match config.development_guild {
-                None => RegisterKind::Global,
-                Some(..) => RegisterKind::Development,
+                None => register_command::Kind::Global,
+                Some(..) => register_command::Kind::Development,
             },
         )
         .await
-        .map(|_| {
+        .map(|()| {
             let managers = Arc::new(OsakaManagers::new(
                 config.clone(),
                 pool.clone(),
@@ -52,9 +52,9 @@ pub async fn setup(
 
             Arc::new(OsakaData {
                 i18n,
-                pool,
-                config,
                 rosu,
+                config,
+                pool,
                 managers,
             })
         })?)

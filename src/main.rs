@@ -1,10 +1,11 @@
 #![feature(let_chains, macro_metavar_expr, closure_lifetime_binder)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery, clippy::cargo)]
 
 use std::sync::Arc;
 
 use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
-use managers::{register::RegisterCommandManager, OsakaManagers};
+use managers::{register_command::Manager, OsakaManagers};
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
     Context, FrameworkOptions,
@@ -81,7 +82,9 @@ async fn main() -> OsakaResult {
     poise::Framework::builder()
         .options(FrameworkOptions {
             commands,
-            on_error: |err| Box::pin(error::on_error(err).unwrap_or_else(|e| log::error!("{}", e))),
+            on_error: |err| {
+                return Box::pin(error::on_error(err).unwrap_or_else(|e| log::error!("{}", e)));
+            },
             ..Default::default()
         })
         .token(&config.bot_token)

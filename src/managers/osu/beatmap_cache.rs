@@ -5,23 +5,23 @@ use strum::Display;
 use tokio::sync::Mutex;
 
 #[derive(Debug)]
-pub struct BeatmapCacheManager {
+pub struct Manager {
     pub client: reqwest::Client,
     pub cache: Arc<Mutex<FcHashMap<u32, Arc<Vec<u8>>, 256>>>,
 }
 
 #[derive(thiserror::Error, Display, Debug, derive_more::From)]
-pub enum BeatmapCacheError {
+pub enum Error {
     Client(reqwest::Error),
 }
 
-impl Default for BeatmapCacheManager {
+impl Default for Manager {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl BeatmapCacheManager {
+impl Manager {
     pub fn new() -> Self {
         Self {
             client: reqwest::Client::new(),
@@ -29,10 +29,7 @@ impl BeatmapCacheManager {
         }
     }
 
-    pub async fn get_beatmap_file(
-        &self,
-        beatmap_id: u32,
-    ) -> Result<Arc<Vec<u8>>, BeatmapCacheError> {
+    pub async fn get_beatmap_file(&self, beatmap_id: u32) -> Result<Arc<Vec<u8>>, Error> {
         if let Some(cached) = self.cache.lock().await.get(&beatmap_id) {
             return Ok(cached.clone());
         };
