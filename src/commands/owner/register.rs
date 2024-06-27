@@ -1,5 +1,5 @@
 use crate::{
-    default_args, error,
+    default_arguments, error,
     managers::{self, register_command},
     responses::{emojis::OsakaMoji, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -19,7 +19,7 @@ enum RegisterChoice {
 #[command(slash_command)]
 pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> OsakaResult {
     let i18n = ctx.i18n();
-    default_args!(on);
+    default_arguments!(on);
 
     let OsakaData { managers, .. } = ctx.data().as_ref();
     let managers::Osaka {

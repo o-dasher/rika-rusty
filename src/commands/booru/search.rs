@@ -3,7 +3,7 @@ use crate::{
         utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
         BooruChoice,
     },
-    default_args, error,
+    default_arguments, error,
     osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
 };
 use std::vec;
@@ -31,7 +31,7 @@ pub async fn search(
     ephemeral: Option<bool>,
 ) -> OsakaResult {
     ctx.defer().await?;
-    default_args!(booru, ephemeral);
+    default_arguments!(booru, ephemeral);
 
     let mut query = GenericClient::query();
 
