@@ -3,7 +3,6 @@
 
 use std::sync::Arc;
 
-use error::OsakaError;
 use i18n::{osaka_i_18_n::OsakaI18N, pt_br::pt_br, OsakaLocale};
 use poise::{
     serenity_prelude::{futures::TryFutureExt, GatewayIntents},
@@ -23,8 +22,8 @@ pub mod responses;
 pub mod setup;
 pub mod utils;
 
-pub type OsakaContext<'a> = Context<'a, Arc<OsakaData>, OsakaError>;
-pub type OsakaResult = Result<(), OsakaError>;
+pub type OsakaContext<'a> = Context<'a, Arc<OsakaData>, error::Osaka>;
+pub type OsakaResult = Result<(), error::Osaka>;
 
 #[derive(Serialize, Deserialize)]
 pub struct OsakaConfig {
@@ -82,7 +81,7 @@ async fn main() -> OsakaResult {
         .options(FrameworkOptions {
             commands,
             on_error: |err| {
-                return Box::pin(error::on_error(err).unwrap_or_else(|e| log::error!("{}", e)));
+                return Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e)));
             },
             ..Default::default()
         })

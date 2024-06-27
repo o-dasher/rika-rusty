@@ -5,13 +5,13 @@ use rusty_booru::generic::client::GenericClient;
 
 use crate::{
     commands::booru::{ApplicationContext, BooruChoice},
-    error::OsakaError,
+    error,
     osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
     OsakaData,
 };
 
 pub async fn autocomplete_tag_single<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     autocomplete_tag(
@@ -22,7 +22,7 @@ pub async fn autocomplete_tag_single<'a>(
 }
 
 pub async fn autocomplete_tag<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     if searching.is_empty() {

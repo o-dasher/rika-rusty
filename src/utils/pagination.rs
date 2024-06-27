@@ -1,7 +1,11 @@
 use chrono::Duration;
 use poise::{serenity_prelude::CollectComponentInteraction, CreateReply};
 
-use crate::{error::OsakaError, responses::emojis::OsakaMoji, OsakaContext, OsakaResult};
+use crate::{
+    error::{self, Osaka},
+    responses::emojis::OsakaMoji,
+    OsakaContext, OsakaResult,
+};
 
 pub struct Paginator<'a> {
     pub ctx: OsakaContext<'a>,
@@ -15,7 +19,7 @@ impl<'a> Paginator<'a> {
 
     pub async fn paginate(
         &self,
-        create_reply: impl Fn(usize, &mut CreateReply<'a>) -> Result<CreateReply<'a>, OsakaError>,
+        create_reply: impl Fn(usize, &mut CreateReply<'a>) -> Result<CreateReply<'a>, Osaka>,
     ) -> OsakaResult {
         let ctx = self.ctx;
         let amount_pages = self.amount_pages;
@@ -26,7 +30,7 @@ impl<'a> Paginator<'a> {
 
         let mut current_idx = 0;
 
-        let create_base_reply = |idx: usize| -> Result<CreateReply<'a>, OsakaError> {
+        let create_base_reply = |idx: usize| -> Result<CreateReply<'a>, error::Osaka> {
             create_reply(idx, &mut CreateReply::default())
         };
 

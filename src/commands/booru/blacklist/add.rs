@@ -3,8 +3,7 @@ use crate::{
         blacklist,
         utils::{autocompletes::autocomplete_tag_single, poise::OsakaBooruTag},
     },
-    error::NotifyError,
-    get_id_kind_query,
+    error, get_id_kind_query,
     osaka_sqlx::{booru_setting::SettingKind, I64ID, ID},
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaData, OsakaResult,
@@ -68,7 +67,7 @@ pub async fn add(
     tx.commit().await?;
 
     let response = if inserted_tag.is_err() {
-        Err(NotifyError::Warn(
+        Err(error::Notify::Warn(
             t!(i18n.booru.blacklist.everything_blacklisted_already).with(mono(tag.0)),
         ))?
     } else {

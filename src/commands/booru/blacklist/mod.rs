@@ -4,7 +4,7 @@ pub mod list;
 
 use crate::{
     create_command_group,
-    error::{NotifyError, OsakaError},
+    error::{self, Osaka},
     osaka_sqlx::booru_setting::SettingKind,
 };
 
@@ -18,9 +18,9 @@ pub async fn check_permissions(ctx: OsakaContext<'_>, operation_kind: SettingKin
     let perms = ctx
         .author_member()
         .await
-        .ok_or(OsakaError::SimplyUnexpected)?
+        .ok_or(Osaka::SimplyUnexpected)?
         .permissions
-        .ok_or(OsakaError::SimplyUnexpected)?;
+        .ok_or(Osaka::SimplyUnexpected)?;
 
     let authorized = match operation_kind {
         SettingKind::Guild | SettingKind::Channel => perms.administrator(),
@@ -28,7 +28,7 @@ pub async fn check_permissions(ctx: OsakaContext<'_>, operation_kind: SettingKin
     };
 
     if !authorized {
-        Err(NotifyError::MissingPermissions)?;
+        Err(error::Notify::MissingPermissions)?;
     };
 
     Ok(())

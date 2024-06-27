@@ -1,7 +1,10 @@
 use poise::ChoiceParameter;
 use strum::EnumIter;
 
-use crate::{error::OsakaError, OsakaContext};
+use crate::{
+    error::{self, Osaka},
+    OsakaContext,
+};
 
 #[macro_export]
 macro_rules! get_id_kind_query {
@@ -26,18 +29,18 @@ pub enum SettingKind {
 }
 
 impl SettingKind {
-    pub fn get_sqlx_id(self, ctx: OsakaContext) -> Result<i64, OsakaError> {
+    pub fn get_sqlx_id(self, ctx: OsakaContext) -> Result<i64, error::Osaka> {
         match self {
             Self::Guild => ctx
                 .guild_id()
                 .map(Into::into)
-                .ok_or(OsakaError::SimplyUnexpected),
+                .ok_or(error::Osaka::SimplyUnexpected),
             Self::Channel => Ok(ctx.channel_id().into()),
             Self::User => Ok(ctx.author().id.into()),
         }
     }
 
-    pub fn get_all_sqlx_ids(ctx: OsakaContext) -> Result<[Option<i64>; 3], OsakaError> {
+    pub fn get_all_sqlx_ids(ctx: OsakaContext) -> Result<[Option<i64>; 3], error::Osaka> {
         Ok([Self::Guild, Self::Channel, Self::User]
             .map(|s| s.get_sqlx_id(ctx))
             .map(Result::ok))

@@ -1,4 +1,7 @@
-use crate::osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind};
+use crate::{
+    error,
+    osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind},
+};
 use std::{str::FromStr, sync::Arc, vec};
 
 use crate::{
@@ -6,7 +9,6 @@ use crate::{
         blacklist::delete::{provide_delete_feedback, Operation},
         utils::poise::OsakaBooruTag,
     },
-    error::OsakaError,
     responses::markdown::mono,
     OsakaContext, OsakaData, OsakaResult,
 };
@@ -15,7 +17,7 @@ use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 
 pub async fn autocomplete_tag_remove<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, OsakaError>,
+    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     let kind = ctx

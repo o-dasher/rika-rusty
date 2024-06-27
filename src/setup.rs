@@ -5,7 +5,7 @@ use rusty18n::I18NWrapper;
 use sqlx::{Pool, Postgres};
 
 use crate::{
-    error::OsakaError,
+    error,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
     managers::{self, register_command},
     OsakaConfig, OsakaData,
@@ -13,11 +13,11 @@ use crate::{
 
 pub async fn setup(
     ctx: &poise::serenity_prelude::Context,
-    framework: &framework::Framework<Arc<OsakaData>, OsakaError>,
+    framework: &framework::Framework<Arc<OsakaData>, error::Osaka>,
     config: OsakaConfig,
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
-) -> Result<Arc<OsakaData>, OsakaError> {
+) -> Result<Arc<OsakaData>, error::Osaka> {
     let rosu = Arc::new(
         rosu_v2::Osu::builder()
             .client_id(config.osu_client_id)

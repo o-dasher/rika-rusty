@@ -6,7 +6,7 @@ use rusty18n::t_prefix;
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{
-    error::OsakaError,
+    error,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
     OsakaContext, OsakaResult,
 };
@@ -25,7 +25,7 @@ pub async fn coinflip(ctx: OsakaContext<'_>) -> OsakaResult {
     let possible_plays = PossiblePlay::iter().collect_vec();
     let flip_result = possible_plays
         .choose(&mut rand::thread_rng())
-        .ok_or(OsakaError::SimplyUnexpected)?;
+        .ok_or(error::Osaka::SimplyUnexpected)?;
 
     let coin_string = match flip_result {
         PossiblePlay::Heads => t!(heads),

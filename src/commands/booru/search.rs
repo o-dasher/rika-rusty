@@ -3,13 +3,13 @@ use crate::{
         utils::{autocompletes::autocomplete_tag, poise::OsakaBooruTag},
         BooruChoice,
     },
-    default_args,
+    default_args, error,
     osaka_sqlx::booru_blacklisted_tag::BooruBlacklistedTag,
 };
 use std::vec;
 
 use crate::{
-    error::{NotifyError, OsakaError},
+    error::Osaka,
     responses::{
         markdown::{bold, mono},
         templates::something_wrong,
@@ -39,7 +39,7 @@ pub async fn search(
     let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
 
     if let Some(blacklisted_tag) = built_tags.iter().find(|v| blacklisted_tags.contains(v)) {
-        Err(NotifyError::Warn(format!(
+        Err(error::Notify::Warn(format!(
             "The tag {} is being blacklisted by either yourself, the channel or this server.",
             mono(blacklisted_tag)
         )))?;
@@ -97,7 +97,7 @@ pub async fn search(
         .paginate(|idx, r| {
             dbg!(idx);
 
-            let indexed_res = mapped_result.get(idx).ok_or(OsakaError::SimplyUnexpected)?;
+            let indexed_res = mapped_result.get(idx).ok_or(Osaka::SimplyUnexpected)?;
             let (file_url, queried) = indexed_res;
 
             let tag_description = if queried.tags.len() < CLAMP_TAGS_LEN {

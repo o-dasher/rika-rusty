@@ -1,8 +1,6 @@
 use poise::ChoiceParameter;
 
-use crate::{
-    error::OsakaError, osaka_sqlx::booru_setting::SettingKind, OsakaContext, OsakaData, OsakaResult,
-};
+use crate::{osaka_sqlx::booru_setting::SettingKind, OsakaContext, OsakaData, OsakaResult};
 
 #[derive(ChoiceParameter, Default, Clone, Copy)]
 #[repr(u8)]
@@ -33,7 +31,7 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: OsuMode) -> OsakaResult {
     )
     .fetch_one(pool)
     .await
-    .map_err(|_| OsakaError::SimplyUnexpected)?;
+    .map_err(|_| error::Osaka::SimplyUnexpected)?;
 
     Ok(())
 }

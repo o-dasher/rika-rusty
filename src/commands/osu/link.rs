@@ -1,5 +1,5 @@
 use crate::{
-    error::NotifyError,
+    error::{self},
     osaka_sqlx::booru_setting::SettingKind,
     responses::{markdown::mono, templates::cool_text},
 };
@@ -18,7 +18,7 @@ pub async fn link(ctx: OsakaContext<'_>, username: String) -> OsakaResult {
     let osu_user = rosu
         .user(&username)
         .await
-        .map_err(|_| NotifyError::Warn(t!(failed).with(mono(username))))?;
+        .map_err(|_| error::Notify::Warn(t!(failed).with(mono(username))))?;
 
     let osu_user_id = i64::from(osu_user.user_id);
     let insertion = SettingKind::User.get_sqlx_id(ctx)?;

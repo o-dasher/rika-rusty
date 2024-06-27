@@ -13,7 +13,7 @@ use strum::Display;
 use crate::managers::register_command::Error;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
-pub enum OsakaError {
+pub enum Osaka {
     #[error(transparent)]
     Serenity(serenity_prelude::SerenityError),
 
@@ -42,7 +42,7 @@ pub enum OsakaError {
     Rosu(rosu_v2::error::OsuError),
 
     #[error(transparent)]
-    Notify(NotifyError),
+    Notify(Notify),
 
     #[error(transparent)]
     RegisterCommand(Error),
@@ -52,46 +52,44 @@ pub enum OsakaError {
 }
 
 #[derive(Debug, Display, thiserror::Error)]
-pub enum NotifyError {
+pub enum Notify {
     Warn(String),
     MissingPermissions,
 }
 
-fn get_error_response(ctx: OsakaContext, error: OsakaError) -> String {
+fn get_response(ctx: OsakaContext, error: Osaka) -> String {
     let i18n = ctx.i18n();
     t_prefix!($i18n.errors);
 
     match error {
-        OsakaError::Serenity(..)
-        | OsakaError::Sqlx(..)
-        | OsakaError::Migrate(..)
-        | OsakaError::Envy(..)
-        | OsakaError::Url(..)
-        | OsakaError::Booru(..)
-        | OsakaError::Reqwest(..)
-        | OsakaError::DurationOutOfRange(..)
-        | OsakaError::Rosu(..)
-        | OsakaError::SimplyUnexpected => {
+        Osaka::Serenity(..)
+        | Osaka::Sqlx(..)
+        | Osaka::Migrate(..)
+        | Osaka::Envy(..)
+        | Osaka::Url(..)
+        | Osaka::Booru(..)
+        | Osaka::Reqwest(..)
+        | Osaka::DurationOutOfRange(..)
+        | Osaka::Rosu(..)
+        | Osaka::SimplyUnexpected => {
             log::error!("{}", error);
             t!(unexpected).clone()
         }
-        OsakaError::RegisterCommand(e) => match e {
-            Error::Serenity(e) => get_error_response(ctx, e.into()),
+        Osaka::RegisterCommand(e) => match e {
+            Error::Serenity(e) => get_response(ctx, e.into()),
             Error::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
         },
-        OsakaError::Notify(e) => match e {
-            NotifyError::Warn(warn) => warn,
-            NotifyError::MissingPermissions => t!(user_missing_permissions).clone(),
+        Osaka::Notify(e) => match e {
+            Notify::Warn(warn) => warn,
+            Notify::MissingPermissions => t!(user_missing_permissions).clone(),
         },
     }
 }
 
-pub async fn on_error(
-    err: poise::FrameworkError<'_, Arc<OsakaData>, OsakaError>,
-) -> Result<(), OsakaError> {
+pub async fn handle(err: poise::FrameworkError<'_, Arc<OsakaData>, Osaka>) -> Result<(), Osaka> {
     match err {
         FrameworkError::Command { error, ctx } => {
-            ctx.say(&responses::templates::something_wrong(&get_error_response(
+            ctx.say(&responses::templates::something_wrong(&get_response(
                 ctx, error,
             )))
             .await?;
