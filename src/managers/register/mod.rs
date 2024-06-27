@@ -21,6 +21,12 @@ pub struct RegisterCommandManager {
     pub config: Arc<OsakaConfig>,
 }
 
+impl RegisterCommandManager {
+    pub fn new(config: Arc<OsakaConfig>) -> Self {
+        Self { config }
+    }
+}
+
 pub enum RegisterContext<'a> {
     Serenity(
         &'a poise::serenity_prelude::Context,

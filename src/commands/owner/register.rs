@@ -1,9 +1,12 @@
 use crate::{
     default_args,
     error::NotifyError,
-    managers::register::{RegisterContext, RegisterKind},
+    managers::{
+        register::{RegisterContext, RegisterKind},
+        OsakaManagers,
+    },
     responses::{emojis::OsakaMoji, templates::cool_text},
-    OsakaContext, OsakaData, OsakaManagers, OsakaResult,
+    OsakaContext, OsakaData, OsakaResult,
 };
 use poise::{command, ChoiceParameter};
 use poise_i18n::PoiseI18NTrait;

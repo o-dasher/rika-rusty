@@ -8,10 +8,10 @@ use crate::{
     error::OsakaError,
     i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
     managers::{
-        osu::OsuManager,
         register::{RegisterCommandManager, RegisterContext, RegisterKind},
+        OsakaManagers,
     },
-    OsakaConfig, OsakaData, OsakaManagers,
+    OsakaConfig, OsakaData,
 };
 
 pub async fn setup(
@@ -44,10 +44,11 @@ pub async fn setup(
         )
         .await
         .map(|_| {
-            let managers = Arc::new(OsakaManagers {
-                register_command_manager,
-                osu_manager: OsuManager::new(pool.clone(), rosu.clone()),
-            });
+            let managers = Arc::new(OsakaManagers::new(
+                config.clone(),
+                pool.clone(),
+                rosu.clone(),
+            ));
 
             Arc::new(OsakaData {
                 i18n,
