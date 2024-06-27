@@ -20,7 +20,7 @@ create_conditional_query_as!(
 });
 
 impl BooruBlacklistedTag {
-    fn map_to_string(tags: Result<Vec<BooruBlacklistedTag>, sqlx::Error>) -> Vec<String> {
+    fn map_to_string(tags: Result<Vec<Self>, sqlx::Error>) -> Vec<String> {
         tags.map(|v| v.iter().map(|v| v.blacklisted.clone()).collect())
             .unwrap_or_default()
     }

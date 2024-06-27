@@ -16,7 +16,7 @@ use poise::{command, ApplicationContext};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 
-pub async fn autocomplete_tag_remove<'a>(
+pub async fn autocomplete_tag<'a>(
     ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
@@ -50,7 +50,7 @@ pub async fn autocomplete_tag_remove<'a>(
 pub async fn remove(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    #[autocomplete = "autocomplete_tag_remove"] tag: OsakaBooruTag,
+    #[autocomplete = "autocomplete_tag"] tag: OsakaBooruTag,
 ) -> OsakaResult {
     provide_delete_feedback(ctx, kind, Operation::Remove(tag.0.clone()), |cleared| {
         let i18n = ctx.i18n();
