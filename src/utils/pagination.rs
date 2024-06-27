@@ -19,7 +19,9 @@ impl<'a> Paginator<'a> {
 
     pub async fn paginate(
         &self,
-        create_reply: impl Fn(usize, &mut CreateReply<'a>) -> Result<CreateReply<'a>, Osaka>,
+        create_reply: impl (Fn(usize, &mut CreateReply<'a>) -> Result<CreateReply<'a>, Osaka>)
+            + Send
+            + Sync,
     ) -> OsakaResult {
         let ctx = self.ctx;
         let amount_pages = self.amount_pages;

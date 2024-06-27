@@ -124,7 +124,7 @@ impl ScoreSubmitter {
 impl ReadyScoreSubmitter {
     pub async fn submit_scores(
         &self,
-        osu_id: impl Into<SubmissionID>,
+        osu_id: impl Into<SubmissionID> + Send,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
         let submit_mode = SubmittableMode::try_from(mode)?;
