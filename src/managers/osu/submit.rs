@@ -130,7 +130,7 @@ impl ReadyScoreSubmitter {
         let submit_mode = SubmittableMode::try_from(mode)?;
         let submitter = self.submitter.read().await;
 
-        // This cast should be safe
+        // This cast should be safe since all u8 values fit on i16
         let mode_bits = mode as i16;
 
         let osu_id = match osu_id.into() {
