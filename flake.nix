@@ -4,12 +4,41 @@
 
     devenv = {
       url = "github:cachix/devenv";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        cachix.follows = "cachix";
+        flake-compat.follows = "flake-compat";
+        nixpkgs.follows = "nixpkgs";
+        pre-commit-hooks.follows = "pre-commit-hooks";
+      };
     };
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
+    cachix = {
+      url = "github:cachix/cachix";
+      inputs = {
+        devenv.follows = "devenv";
+        flake-compat.follows = "flake-compat";
+        nixpkgs.follows = "nixpkgs";
+        pre-commit-hooks.follows = "pre-commit-hooks";
+      };
+    };
+
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
+
+    pre-commit-hooks = {
+      url = "github:cachix/pre-commit-hooks.nix";
+      inputs = {
+        flake-compat.follows = "flake-compat";
+        nixpkgs.follows = "nixpkgs";
+        nixpkgs-stable.follows = "nixpkgs";
+      };
     };
 
     fenix = {
