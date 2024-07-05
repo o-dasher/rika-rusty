@@ -1,0 +1,18 @@
+services:
+  psql:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: rika 
+      POSTGRES_PASSWORD: rika 
+      POSTGRES_DB: rika 
+    ports:
+      - 5432:5432
+    volumes:
+      - ./docker-volume/psql:/var/lib/psql
+    networks:
+      - rika-net
+
+networks:
+  rika-net:
+    driver: bridge

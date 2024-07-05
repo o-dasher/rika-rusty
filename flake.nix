@@ -19,7 +19,7 @@
   };
 
   outputs =
-    { devenv, self, ... }@inputs:
+    { devenv, ... }@inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -27,36 +27,24 @@
       ];
 
       perSystem =
-        { pkgs, system, ... }:
+        { pkgs, ... }:
         {
-          packages.devenv-up = self.devShells.${system}."default".config.procfileScript;
           devShells.default = devenv.lib.mkShell {
             inherit inputs pkgs;
-            modules =
-              let
-                databaseName = "osaka";
-              in
-              [
-                {
-                  packages = with pkgs; [
-                    openssl
-                    sqlx-cli
-                    nixfmt-rfc-style
-                  ];
+            modules = [
+              {
+                packages = with pkgs; [
+                  openssl
+                  sqlx-cli
+                  nixfmt-rfc-style
+                ];
 
-                  env.DATABASE_URL = "postgres:///${databaseName}";
-
-                  languages.rust = {
-                    enable = true;
-                    channel = "nightly";
-                  };
-
-                  services.postgres = {
-                    enable = true;
-                    initialDatabases = [ { name = databaseName; } ];
-                  };
-                }
-              ];
+                languages.rust = {
+                  enable = true;
+                  channel = "nightly";
+                };
+              }
+            ];
           };
         };
     };
