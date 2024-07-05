@@ -48,7 +48,7 @@
   };
 
   outputs =
-    { devenv, ... }@inputs:
+    { devenv, fenix, ... }@inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -56,8 +56,35 @@
       ];
 
       perSystem =
-        { pkgs, ... }:
+        { pkgs, system, ... }:
         {
+          packages = {
+            docker = pkgs.dockerTools.buildLayeredImage {
+              name = "rika";
+              tag = "latest";
+              config.Cmd =
+                let
+                  toolchain =
+                    with fenix.packages.${system};
+                    combine [
+                      unstable.cargo
+                      unstable.rustc
+                    ];
+                in
+                "${
+                  (pkgs.makeRustPlatform {
+                    cargo = toolchain;
+                    rustc = toolchain;
+                  }).buildRustPackage
+                    {
+                      name = "rika";
+                      src = ./.;
+                      cargoLock.lockFile = ./Cargo.lock;
+                    }
+                }/bin/rika";
+            };
+          };
+
           devShells.default = devenv.lib.mkShell {
             inherit inputs pkgs;
             modules = [
