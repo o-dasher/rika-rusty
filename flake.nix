@@ -29,54 +29,56 @@
       perSystem =
         { pkgs, system, ... }:
         let
-          DATABASE_URL = "postgres://rika:rika@localhost:5432/rika";
+          commonEnvironment = {
+            SQLX_OFFLINE = "true";
+          };
+
           toolchain = fenix.packages.${system}.complete;
           craneLib = (crane.mkLib pkgs).overrideToolchain toolchain.toolchain;
-          buildDeps = with pkgs; [
-            pkg-config
-            openssl
-            sqlx-cli
-          ];
+
+          buildInputs = with pkgs; [ openssl ];
+          nativeBuildInputs = with pkgs; [ pkg-config ];
         in
         {
           packages.default =
             let
-              src = ./.;
-              pkg = craneLib.buildPackage {
-                src = craneLib.cleanCargoSource src;
-                buildInputs = buildDeps ++ (with pkgs; [ docker-compose ]);
-
-                DATABASE_URL = DATABASE_URL;
-
-                preBuild = ''
-                  docker-compose -f ${src + /docker-compose.yaml} up -d
-                  sqlx database create
-                  sqlx migrate --source ${src + /migrations} run
-                  docker-compose down
-                '';
-              };
               pkgName = "rika";
+              pkg = craneLib.buildPackage (
+                {
+                  src = ./.;
+                  buildInputs = buildInputs;
+                  nativeBuildInputs = nativeBuildInputs;
+                }
+                // commonEnvironment
+              );
             in
             pkgs.dockerTools.buildLayeredImage {
               name = pkgName;
               tag = "latest";
               config.Cmd = "${pkg}/bin/${pkgName}";
-              config.Expose = "5432";
+              config.Expose = "3030";
             };
 
-          devShells.default = pkgs.mkShell {
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
-            DATABASE_URL = DATABASE_URL;
+          devShells.default = pkgs.mkShell (
+            {
+              DATABASE_URL = "postgres://rika:rika@localhost:5432/rika";
+              LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
 
-            packages =
-              (with pkgs; [ nixfmt-rfc-style ])
-              ++ (with toolchain; [
-                clippy
-                rustfmt
-                rust-analyzer
-              ])
-              ++ buildDeps;
-          };
+              packages =
+                (with pkgs; [
+                  nixfmt-rfc-style
+                  sqlx-cli
+                ])
+                ++ (with toolchain; [
+                  clippy
+                  rustfmt
+                  rust-analyzer
+                ])
+                ++ buildInputs
+                ++ nativeBuildInputs;
+            }
+            // commonEnvironment
+          );
         };
     };
 }
