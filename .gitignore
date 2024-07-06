@@ -1,6 +1,8 @@
 /target
 /docker_volume
 /.direnv
+/.sqlx
+
 .env
 # Devenv
 .devenv*
