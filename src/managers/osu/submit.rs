@@ -9,9 +9,7 @@ use tokio::sync::{
     RwLock,
 };
 
-use crate::{
-    utils::id_locked::{IDLocker, IDLockerError},
-};
+use crate::utils::id_locked::{IDLocker, IDLockerError};
 
 use super::beatmap_cache;
 
@@ -118,7 +116,7 @@ impl ReadyScoreSubmitter {
             .await?;
 
         pub struct MinimalStoredScore {
-            score_id: BigDecimal
+            score_id: BigDecimal,
         }
 
         let stored_osu_id = i64::from(osu_id);
@@ -140,7 +138,8 @@ impl ReadyScoreSubmitter {
         .fetch_all(&submitter.pool)
         .await?;
 
-        let existing_scores: HashSet<_> = osaka_osu_scores.into_iter().map(|s| s.score_id).collect();
+        let existing_scores: HashSet<_> =
+            osaka_osu_scores.into_iter().map(|s| s.score_id).collect();
 
         let new_scores = osu_scores
             .iter()
@@ -206,7 +205,7 @@ impl ReadyScoreSubmitter {
 
         tracing::info!("Storing performance...");
         QueryBuilder::<Postgres>::new(format!(
-            "INSERT INTO {mode}_performance (score_id, overall{})",
+            "INSERT INTO {mode}_performance (score_id, overall{}, mode)",
             match mode {
                 GameMode::Osu => ", aim, speed, flashlight, accuracy",
                 GameMode::Taiko => ", accuracy, difficulty",
@@ -225,12 +224,16 @@ impl ReadyScoreSubmitter {
                         .push_bind(o.pp_aim)
                         .push_bind(o.pp_speed)
                         .push_bind(o.pp_flashlight)
-                        .push_bind(o.pp_acc),
-                    PerformanceAttributes::Taiko(t) => {
-                        b.push_bind(t.pp_acc).push_bind(t.pp_difficulty)
+                        .push_bind(o.pp_acc)
+                        .push_bind("osu"),
+                    PerformanceAttributes::Taiko(t) => b
+                        .push_bind(t.pp_acc)
+                        .push_bind(t.pp_difficulty)
+                        .push_bind("taiko"),
+                    PerformanceAttributes::Mania(m) => {
+                        b.push_bind(m.pp_difficulty).push_bind("mania")
                     }
-                    PerformanceAttributes::Mania(m) => b.push_bind(m.pp_difficulty),
-                    PerformanceAttributes::Catch(..) => &mut b,
+                    PerformanceAttributes::Catch(..) => b.push_bind("catch"),
                 };
             },
         )
