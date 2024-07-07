@@ -37,6 +37,7 @@
         let
           commonEnvironment = {
             SQLX_OFFLINE = "true";
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
           };
 
           toolchain = fenix.packages.${system}.complete;
@@ -77,7 +78,6 @@
           devShells.default = pkgs.mkShell (
             {
               DATABASE_URL = "postgres://rika:rika@localhost:5432/rika";
-              LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
 
               packages =
                 (with pkgs; [
