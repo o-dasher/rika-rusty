@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    responses::{self},
-    OsakaContext, OsakaData,
+    managers::osu::submit::SubmissionError, responses, OsakaContext, OsakaData
 };
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
@@ -47,6 +46,9 @@ pub enum Osaka {
     #[error(transparent)]
     RegisterCommand(Error),
 
+    #[error(transparent)]
+    Submission(SubmissionError),
+
     #[error("Something really sketchy happened!")]
     SimplyUnexpected,
 }
@@ -71,6 +73,7 @@ fn get_response(ctx: OsakaContext, error: Osaka) -> String {
         | Osaka::Reqwest(..)
         | Osaka::DurationOutOfRange(..)
         | Osaka::Rosu(..)
+        | Osaka::Submission(..)
         | Osaka::SimplyUnexpected => {
             log::error!("{}", error);
             t!(unexpected).clone()

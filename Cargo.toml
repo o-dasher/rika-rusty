@@ -23,7 +23,7 @@ poise-i18n = "0.1.0"
 rand = "0.8.5"
 reqwest = "0.11.23"
 rosu-pp = "1.0.0"
-rosu-v2 = "0.8.0"
+rosu-v2 = { git = "https://github.com/MaxOhn/rosu-v2", branch = "lazer", features = ["serialize"] }
 rusty-booru = "0.2.1"
 rusty18n = "0.1.1"
 serde = { version = "1.0.193", features = ["serde_derive"] }
@@ -34,6 +34,7 @@ sqlx-conditional-queries-layering = "0.1.2"
 strum = { version = "0.25.0", features = ["strum_macros", "derive"] }
 thiserror = "1.0.52"
 tokio = { version = "1.35.1", features = ["rt-multi-thread"] }
+tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
 url = "2.5.0"
 with_builtin_macros = "0.1.0"

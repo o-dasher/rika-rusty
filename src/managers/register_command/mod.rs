@@ -23,7 +23,7 @@ pub struct Manager {
 
 impl Manager {
     #[must_use]
-    pub fn new(config: Arc<OsakaConfig>) -> Self {
+    pub const fn new(config: Arc<OsakaConfig>) -> Self {
         Self { config }
     }
 }

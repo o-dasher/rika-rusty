@@ -2,6 +2,7 @@ use sqlx::types::BigDecimal;
 
 pub mod booru_blacklisted_tag;
 pub mod booru_setting;
+pub mod discord;
 
 pub enum Fall {
     Through,

@@ -27,12 +27,9 @@ pub async fn link(ctx: OsakaContext<'_>, username: String) -> OsakaResult {
 
     sqlx::query!(
         "
-        INSERT INTO discord_user (id, osu_user_id)
-        VALUES ($1, $2)
-        ON CONFLICT (id) DO UPDATE
-            SET osu_user_id = EXCLUDED.osu_user_id
+        INSERT INTO osu_user (id) VALUES ($1)
+        ON CONFLICT DO NOTHING
         ",
-        insertion,
         osu_user_id
     )
     .execute(&mut *tx)
@@ -40,9 +37,11 @@ pub async fn link(ctx: OsakaContext<'_>, username: String) -> OsakaResult {
 
     sqlx::query!(
         "
-        INSERT INTO osu_user (id) VALUES ($1)
+        INSERT INTO discord_user (id, osu_user_id)
+        VALUES ($1, $2)
         ON CONFLICT DO NOTHING
         ",
+        insertion,
         osu_user_id
     )
     .execute(&mut *tx)

@@ -54,7 +54,11 @@ impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {
 #[tokio::main]
 async fn main() -> OsakaResult {
     dotenvy::dotenv().ok();
-    tracing_subscriber::fmt().with_target(true).pretty().init();
+    tracing_subscriber::fmt()
+        .with_target(true)
+        .with_max_level(tracing::Level::INFO)
+        .pretty()
+        .init();
 
     let config = envy::from_env::<OsakaConfig>()?;
 

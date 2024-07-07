@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n\t\t\tSELECT s.score_id FROM osu_score s\n\t\t\tJOIN taiko_performance pp ON s.score_id = pp.score_id\n\t\t\tWHERE s.osu_user_id = $1\n\t\t\t",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "score_id",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "0bfbc5457a57378d32dff49c55f520005ed5a6f7a59c5f96c0925d42f15a8f33"
+}

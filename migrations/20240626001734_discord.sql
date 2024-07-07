@@ -8,7 +8,7 @@ CREATE TABLE discord_channel (
 
 CREATE TABLE discord_user (
     id BIGINT PRIMARY KEY,
-    osu_user_id BIGINT,
+    osu_user_id BIGINT UNIQUE,
 
     FOREIGN KEY (osu_user_id) REFERENCES osu_user (id)
 );
