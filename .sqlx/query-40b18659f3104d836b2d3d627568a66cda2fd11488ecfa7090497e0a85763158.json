@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO booru_setting (channel_id)\n        VALUES ($1)\n        ON CONFLICT (channel_id) DO UPDATE\n            SET channel_id=EXCLUDED.channel_id\n        RETURNING id \n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "40b18659f3104d836b2d3d627568a66cda2fd11488ecfa7090497e0a85763158"
+}

@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO booru_setting (user_id)\n        VALUES ($1)\n        ON CONFLICT (user_id) DO UPDATE\n            SET user_id=EXCLUDED.user_id\n        RETURNING id \n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3c0f65f9b5dbbc6cc3673c5903f55653d67172495303316960e05112a72298c5"
+}

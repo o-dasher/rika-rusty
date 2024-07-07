@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DELETE FROM booru_blacklisted_tag t\n        USING booru_setting s\n        WHERE  s.id=t.booru_setting_id\n        AND s.guild_id=$1\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a21ce54c5c21040b744395f6c4122df690bd650d1a62ba34123acded02f3082e"
+}

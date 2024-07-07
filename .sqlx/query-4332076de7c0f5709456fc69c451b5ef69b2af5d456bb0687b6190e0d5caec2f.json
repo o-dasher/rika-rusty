@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO discord_channel (id) VALUES ($1)\n        ON CONFLICT (id) DO UPDATE SET id=EXCLUDED.id RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4332076de7c0f5709456fc69c451b5ef69b2af5d456bb0687b6190e0d5caec2f"
+}

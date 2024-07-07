@@ -1,6 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nix-filter.url = "github:numtide/nix-filter";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -19,7 +20,12 @@
   };
 
   outputs =
-    { fenix, crane, ... }@inputs:
+    {
+      fenix,
+      crane,
+      nix-filter,
+      ...
+    }@inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
@@ -45,7 +51,16 @@
               pkgName = "rika";
               pkg = craneLib.buildPackage (
                 {
-                  src = ./.;
+                  src = nix-filter.lib {
+                    root = ./.;
+                    include = [
+                      "Cargo.toml"
+                      "Cargo.lock"
+                      "src"
+                      "migrations"
+                      ".sqlx"
+                    ];
+                  };
                   buildInputs = buildInputs;
                   nativeBuildInputs = nativeBuildInputs;
                 }

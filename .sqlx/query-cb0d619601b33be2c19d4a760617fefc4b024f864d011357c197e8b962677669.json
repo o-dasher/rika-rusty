@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO booru_setting (guild_id)\n        VALUES ($1)\n        ON CONFLICT (guild_id) DO UPDATE\n            SET guild_id=EXCLUDED.guild_id\n        RETURNING id \n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "cb0d619601b33be2c19d4a760617fefc4b024f864d011357c197e8b962677669"
+}

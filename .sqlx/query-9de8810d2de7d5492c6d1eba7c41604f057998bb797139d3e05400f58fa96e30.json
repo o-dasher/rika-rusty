@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                \n    SELECT t.* FROM booru_blacklisted_tag t\n    JOIN booru_setting s ON s.id=t.booru_setting_id\n    \n                AND s.channel_id=$1\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "booru_setting_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "blacklisted",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9de8810d2de7d5492c6d1eba7c41604f057998bb797139d3e05400f58fa96e30"
+}

@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                \n    SELECT t.* FROM booru_blacklisted_tag t\n    JOIN booru_setting s ON s.id=t.booru_setting_id\n    \n                AND t.blacklisted ILIKE CONCAT('%', $1::TEXT, '%')\n                AND s.user_id=$2\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "booru_setting_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "blacklisted",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "3ff9c4c2442f9e59b05d90971834b74f17473c71cc9c1bea451bfc6f625bad2d"
+}
