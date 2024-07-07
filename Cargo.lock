@@ -1434,6 +1434,42 @@ dependencies = [
 ]
 
 [[package]]
+name = "osaka"
+version = "0.1.0"
+dependencies = [
+ "bevy_reflect",
+ "chrono",
+ "deep-struct-update",
+ "derive_more",
+ "dotenvy",
+ "envy",
+ "fchashmap",
+ "itertools 0.12.1",
+ "log",
+ "nestruct",
+ "paste",
+ "poise",
+ "poise-i18n",
+ "rand",
+ "reqwest",
+ "rosu-pp",
+ "rosu-v2",
+ "rusty-booru",
+ "rusty18n",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "sqlx-conditional-queries",
+ "sqlx-conditional-queries-layering",
+ "strum",
+ "thiserror",
+ "tokio",
+ "tracing-subscriber",
+ "url",
+ "with_builtin_macros",
+]
+
+[[package]]
 name = "overload"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1758,42 +1794,6 @@ dependencies = [
  "web-sys",
  "webpki-roots 0.25.4",
  "winreg",
-]
-
-[[package]]
-name = "rika"
-version = "0.1.0"
-dependencies = [
- "bevy_reflect",
- "chrono",
- "deep-struct-update",
- "derive_more",
- "dotenvy",
- "envy",
- "fchashmap",
- "itertools 0.12.1",
- "log",
- "nestruct",
- "paste",
- "poise",
- "poise-i18n",
- "rand",
- "reqwest",
- "rosu-pp",
- "rosu-v2",
- "rusty-booru",
- "rusty18n",
- "serde",
- "serde_json",
- "sqlx",
- "sqlx-conditional-queries",
- "sqlx-conditional-queries-layering",
- "strum",
- "thiserror",
- "tokio",
- "tracing-subscriber",
- "url",
- "with_builtin_macros",
 ]
 
 [[package]]

@@ -3,16 +3,16 @@ services:
     image: postgres:latest
     restart: always
     environment:
-      POSTGRES_USER: rika 
-      POSTGRES_PASSWORD: rika 
-      POSTGRES_DB: rika 
+      POSTGRES_USER: osaka 
+      POSTGRES_PASSWORD: osaka 
+      POSTGRES_DB: osaka 
     ports:
       - 5432:5432
     volumes:
       - ./docker-volume/psql:/var/lib/psql
     networks:
-      - rika-net
+      - osaka-net
 
 networks:
-  rika-net:
+  osaka-net:
     driver: bridge

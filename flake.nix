@@ -50,7 +50,7 @@
         {
           packages =
             let
-              pkgName = "rika";
+              pkgName = "osaka";
               pkg = craneLib.buildPackage (
                 {
                   buildInputs = buildInputs;
