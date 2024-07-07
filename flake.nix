@@ -37,7 +37,6 @@
         let
           commonEnvironment = {
             SQLX_OFFLINE = "true";
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.openssl ];
           };
 
           toolchain = fenix.packages.${system}.complete;
@@ -45,13 +44,18 @@
 
           buildInputs = with pkgs; [ openssl ];
           nativeBuildInputs = with pkgs; [ pkg-config ];
+
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
         in
         {
-          packages.default =
+          packages =
             let
               pkgName = "rika";
               pkg = craneLib.buildPackage (
                 {
+                  buildInputs = buildInputs;
+                  nativeBuildInputs = nativeBuildInputs ++ [ pkgs.makeWrapper ];
+
                   src = nix-filter.lib {
                     root = ./.;
                     include = [
@@ -62,22 +66,28 @@
                       ".sqlx"
                     ];
                   };
-                  buildInputs = buildInputs;
-                  nativeBuildInputs = nativeBuildInputs;
+
+                  postInstall = ''
+                    wrapProgram $out/bin/${pkgName} \
+                        --prefix LD_LIBRARY_PATH : "${LD_LIBRARY_PATH}"
+                  '';
                 }
                 // commonEnvironment
               );
             in
-            pkgs.dockerTools.buildLayeredImage {
-              name = pkgName;
-              tag = "latest";
-              config.Cmd = "${pkg}/bin/${pkgName}";
-              config.Expose = "3030";
+            {
+              default = pkg;
+              docker = pkgs.dockerTools.buildLayeredImage {
+                name = pkgName;
+                tag = "latest";
+                config.Cmd = "${pkg}/bin/${pkgName}";
+                config.Expose = "3030";
+              };
             };
 
           devShells.default = pkgs.mkShell (
             {
-              DATABASE_URL = "postgres://rika:rika@localhost:5432/rika";
+              inherit LD_LIBRARY_PATH;
 
               packages =
                 (with pkgs; [
