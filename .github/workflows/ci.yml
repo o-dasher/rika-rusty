@@ -19,14 +19,11 @@ jobs:
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       
-      - name: Enter nix develop shell
-        run: nix develop
-
       - name: Test
         run: |
-          cargo check
-          cargo clippy # -- -D warnings
-          cargo test --all
+          nix develop --command cargo check
+          nix develop --command cargo clippy # -- -D warnings
+          nix develop --command cargo test --all
 
       - name: Build Docker image
         run: nix build .#docker
