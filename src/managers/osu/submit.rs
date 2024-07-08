@@ -95,6 +95,10 @@ impl ReadyScoreSubmitter {
         osu_id: impl Into<SubmissionID> + Send,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
+        pub struct MinimalStoredScore {
+            score_id: BigDecimal,
+        }
+
         let submitter = self.submitter.read().await;
 
         // This cast should be safe since all u8 values fit on i16
@@ -114,10 +118,6 @@ impl ReadyScoreSubmitter {
             .limit(100)
             .mode(mode)
             .await?;
-
-        pub struct MinimalStoredScore {
-            score_id: BigDecimal,
-        }
 
         let stored_osu_id = i64::from(osu_id);
 
