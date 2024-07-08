@@ -12,25 +12,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Update local toolchain
-        run: |
-          rustup update
-          rustup install nightly
-          rustup default nightly
-          rustup component add clippy
-
-      - name: Toolchain info
-        run: |
-          cargo --version --verbose
-          rustc --version
-          cargo clippy --version
+      - name: Install Nix
+        uses: cachix/install-nix-action@v17
+        with:
+          # Mostly to avoid GitHub rate limiting
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
       - name: Test
         run: |
-          cargo check
+          nix develop --command cargo check
+          nix develop --command cargo clippy
+          nix develop --command cargo test --all
           # cargo clippy -- -D warnings
-          cargo clippy
-          cargo test --all
 
       - name: Build Docker image
         run: nix build .#docker
