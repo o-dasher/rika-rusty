@@ -33,7 +33,12 @@
       ];
 
       perSystem =
-        { pkgs, system, ... }:
+        {
+          pkgs,
+          system,
+          lib,
+          ...
+        }:
         let
           commonEnvironment = {
             SQLX_OFFLINE = "true";
@@ -51,29 +56,33 @@
           packages =
             let
               pkgName = "osaka";
-              pkg = craneLib.buildPackage (
-                {
-                  buildInputs = buildInputs;
-                  nativeBuildInputs = nativeBuildInputs ++ [ pkgs.makeWrapper ];
+              pkg =
+                (craneLib.buildPackage (
+                  {
+                    buildInputs = buildInputs;
+                    nativeBuildInputs = nativeBuildInputs ++ [ pkgs.makeWrapper ];
 
-                  src = nix-filter.lib {
-                    root = ./.;
-                    include = [
-                      "Cargo.toml"
-                      "Cargo.lock"
-                      "src"
-                      "migrations"
-                      ".sqlx"
-                    ];
-                  };
+                    src = nix-filter.lib {
+                      root = ./.;
+                      include = [
+                        "Cargo.toml"
+                        "Cargo.lock"
+                        "src"
+                        "migrations"
+                        ".sqlx"
+                      ];
+                    };
 
-                  postInstall = ''
-                    wrapProgram $out/bin/${pkgName} \
-                        --prefix LD_LIBRARY_PATH : "${LD_LIBRARY_PATH}"
-                  '';
-                }
-                // commonEnvironment
-              );
+                    postInstall = ''
+                      wrapProgram $out/bin/${pkgName} \
+                          --prefix LD_LIBRARY_PATH : "${LD_LIBRARY_PATH}"
+                    '';
+                  }
+                  // commonEnvironment
+                ))
+                // {
+                  meta.mainProgram = pkgName;
+                };
             in
             {
               default = pkg;
@@ -81,7 +90,7 @@
                 tag = "latest";
                 name = pkgName;
                 contents = with pkgs; [ cacert ];
-                config.Cmd = [ "${pkg}/bin/${pkgName}" ];
+                config.Cmd = [ (lib.getExe pkg) ];
               };
             };
 
