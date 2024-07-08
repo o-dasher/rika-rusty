@@ -9,6 +9,7 @@ pub enum OsakaMoji {
     ZanyFace,
     ArrowForward,
     ArrowBackward,
+    ChocolateBar,
     X,
 }
 
@@ -18,7 +19,7 @@ impl From<OsakaMoji> for char {
             OsakaMoji::ArrowForward => '▶',
             OsakaMoji::ArrowBackward => '◀',
             OsakaMoji::X => '❌',
-            OsakaMoji::ZanyFace => ' ',
+            OsakaMoji::ZanyFace | OsakaMoji::ChocolateBar => ' ',
         }
     }
 }
@@ -34,7 +35,7 @@ impl Display for OsakaMoji {
         write!(f, "{}", {
             match self {
                 Self::X => char::from(*self).to_string(),
-                Self::ZanyFace | Self::ArrowForward | Self::ArrowBackward => {
+                Self::ZanyFace | Self::ArrowForward | Self::ArrowBackward | Self::ChocolateBar => {
                     format!(":{}:", Into::<&'static str>::into(self))
                 }
             }

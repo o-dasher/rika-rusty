@@ -1,3 +1,4 @@
+use crate::responses::markdown::mono;
 use crate::{
     managers::osu::submit::ScoreSubmitterTrait,
     osaka_sqlx::discord,
@@ -65,7 +66,10 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: OsuMode) -> OsakaResult {
 
     while let Some((cur, of)) = receiver.recv().await {
         msg.edit(ctx, |b| {
-            b.content(cool_text(OsakaMoji::ZanyFace, &format!("{cur}/{of}")))
+            b.content(cool_text(
+                OsakaMoji::ChocolateBar,
+                &format!("Processing score {} out of {}", mono(cur), mono(of)),
+            ))
         })
         .await?;
     }

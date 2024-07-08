@@ -205,7 +205,7 @@ impl ReadyScoreSubmitter {
 
         tracing::info!("Storing performance...");
         QueryBuilder::<Postgres>::new(format!(
-            "INSERT INTO {mode}_performance (score_id, overall{}, mode)",
+            "INSERT INTO {mode}_performance (score_id, mode, overall{})",
             match mode {
                 GameMode::Osu => ", aim, speed, flashlight, accuracy",
                 GameMode::Taiko => ", accuracy, difficulty",
@@ -217,6 +217,7 @@ impl ReadyScoreSubmitter {
             &performance_information,
             |mut b, (performance, (.., score_id))| {
                 b.push_bind(BigDecimal::from(**score_id))
+                    .push_bind(mode_bits)
                     .push_bind(performance.pp());
 
                 match performance {
@@ -224,16 +225,12 @@ impl ReadyScoreSubmitter {
                         .push_bind(o.pp_aim)
                         .push_bind(o.pp_speed)
                         .push_bind(o.pp_flashlight)
-                        .push_bind(o.pp_acc)
-                        .push_bind("osu"),
-                    PerformanceAttributes::Taiko(t) => b
-                        .push_bind(t.pp_acc)
-                        .push_bind(t.pp_difficulty)
-                        .push_bind("taiko"),
-                    PerformanceAttributes::Mania(m) => {
-                        b.push_bind(m.pp_difficulty).push_bind("mania")
+                        .push_bind(o.pp_acc),
+                    PerformanceAttributes::Taiko(t) => {
+                        b.push_bind(t.pp_acc).push_bind(t.pp_difficulty)
                     }
-                    PerformanceAttributes::Catch(..) => b.push_bind("catch"),
+                    PerformanceAttributes::Mania(m) => b.push_bind(m.pp_difficulty),
+                    PerformanceAttributes::Catch(..) => &mut b,
                 };
             },
         )
