@@ -78,12 +78,10 @@
             {
               default = pkg;
               docker = pkgs.dockerTools.buildLayeredImage {
-                name = pkgName;
                 tag = "latest";
-                config = {
-                  Cmd = "${pkg}/bin/${pkgName}";
-                  Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
-                };
+                name = pkgName;
+                contents = with pkgs; [ cacert ];
+                config.Cmd = [ "${pkg}/bin/${pkgName}" ];
               };
             };
 
