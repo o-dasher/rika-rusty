@@ -111,6 +111,7 @@
                   clippy
                   rustfmt
                   rust-analyzer
+                  cargo
                 ])
                 ++ buildInputs
                 ++ nativeBuildInputs;
