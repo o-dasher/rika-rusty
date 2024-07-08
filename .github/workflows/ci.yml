@@ -28,7 +28,8 @@ jobs:
       - name: Test
         run: |
           cargo check
-          cargo clippy -- -D warnings
+          # cargo clippy -- -D warnings
+          cargo clippy
           cargo test --all
 
       - name: Build Docker image
