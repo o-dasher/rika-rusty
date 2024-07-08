@@ -89,7 +89,10 @@
               docker = pkgs.dockerTools.buildLayeredImage {
                 tag = "latest";
                 name = pkgName;
-                contents = with pkgs; [ cacert ];
+                contents = with pkgs; [
+                  cacert
+                  bash # required to deploy on heroku
+                ];
                 config.Cmd = [ (lib.getExe pkg) ];
               };
             };
