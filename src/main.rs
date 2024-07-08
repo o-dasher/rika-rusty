@@ -86,7 +86,7 @@ async fn main() -> OsakaResult {
         .options(FrameworkOptions {
             commands,
             on_error: |err| {
-                return Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e)));
+                Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e)))
             },
             ..Default::default()
         })
