@@ -15,20 +15,21 @@ jobs:
       - name: Update local toolchain
         run: |
           rustup update
+          rustup install nightly
+          rustup default nightly
           rustup component add clippy
-          rustup install nightly          
 
       - name: Toolchain info
         run: |
           cargo --version --verbose
           rustc --version
-          cargo clippy --version          
+          cargo clippy --version
 
       - name: Test
         run: |
           cargo check
           cargo clippy -- -D warnings
-          cargo test --all          
+          cargo test --all
 
       - name: Build Docker image
         run: nix build .#docker
