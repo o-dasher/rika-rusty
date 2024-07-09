@@ -1591,9 +1591,9 @@ dependencies = [
 
 [[package]]
 name = "poise-i18n"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "157bd9e2fd99963bc3750c772fbc091c4efd90630225cee5a1ce4f7e3b23e58d"
+checksum = "85f3e2e6a9c33da89580ccf44d11fef83f569c1b13d4fe57d6cbe14cc8f4d7b7"
 dependencies = [
  "bevy_reflect",
  "itertools 0.12.1",
@@ -2011,9 +2011,9 @@ dependencies = [
 
 [[package]]
 name = "rusty18n"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cd3292b250542bef1497d9363660dc52036030c10a33b1697d65fd27aee584c"
+checksum = "74a5f0f2e00a8fe103ba64cdc44ae7f37675946dc9b66a41b9749e6954ba3bbc"
 dependencies = [
  "bevy_reflect",
 ]
