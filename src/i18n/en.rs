@@ -17,14 +17,16 @@ macro_rules! ergo_braced {(
 ) => (::paste::paste! {
     Braceable::<$T> {
         $(
-            $field_name
+            $field_name:
                 // either
                 $(
-                    : ergo_braced!($base::$field_name, $base::$field_name::[< $field_name:camel >] {
+                    ergo_braced!(
+                        $base::$field_name,
+                        $base::$field_name::[< $field_name:camel >] {
                         $($body)*
                     })
                 )? /* or */ $(
-                    : $value
+                    $value
                 )?
             ,
         )*
