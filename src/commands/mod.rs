@@ -1,9 +1,9 @@
-pub mod owner;
 pub mod booru;
 pub mod fun;
 pub mod gif;
-pub mod user;
 pub mod osu;
+pub mod owner;
+pub mod user;
 
 #[macro_export]
 macro_rules! create_command_group {

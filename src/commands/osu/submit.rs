@@ -1,8 +1,7 @@
-use crate::responses::markdown::mono;
 use crate::{
     managers::osu::submit::ScoreSubmitterTrait,
     osaka_sqlx::discord,
-    responses::{emojis::OsakaMoji, templates::cool_text},
+    responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
 };
 use poise::ChoiceParameter;
 use rosu_v2::model::GameMode;

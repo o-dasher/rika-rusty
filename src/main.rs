@@ -84,9 +84,7 @@ async fn main() -> OsakaResult {
     poise::Framework::builder()
         .options(FrameworkOptions {
             commands,
-            on_error: |err| {
-                Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e)))
-            },
+            on_error: |err| Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e))),
             ..Default::default()
         })
         .token(&config.bot_token)

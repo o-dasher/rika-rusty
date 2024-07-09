@@ -1,8 +1,6 @@
 use std::sync::Arc;
 
-use crate::{
-    managers::osu::submit::SubmissionError, responses, OsakaContext, OsakaData
-};
+use crate::{managers::osu::submit::SubmissionError, responses, OsakaContext, OsakaData};
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
