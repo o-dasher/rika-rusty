@@ -25,16 +25,16 @@ pub async fn list(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
             Ok(r.embed(|e| {
                 e.title(format!("Blacklist for {kind}")).description({
                     let no_blacklists_response = || "No blacklists here...".to_string();
+                    chunk_result
+                        .get(idx)
+                        .map_or_else(no_blacklists_response, |idx_values| {
+                            if idx_values.is_empty() {
+                                no_blacklists_response()
+                            } else {
+                                format!("{}.", idx_values.iter().map(mono).join(", "))
+                            }
+                        })
 
-                    if let Some(idx_values) = chunk_result.get(idx) {
-                        if idx_values.is_empty() {
-                            no_blacklists_response()
-                        } else {
-                            format!("{}.", idx_values.iter().map(mono).join(", "))
-                        }
-                    } else {
-                        no_blacklists_response()
-                    }
                 })
             })
             .to_owned())

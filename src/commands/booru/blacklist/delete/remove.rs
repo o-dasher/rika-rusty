@@ -2,7 +2,7 @@ use crate::{
     error,
     osaka_sqlx::{booru_blacklisted_tag::BooruBlacklistedTag, booru_setting::SettingKind},
 };
-use std::{str::FromStr, sync::Arc, vec};
+use std::{str::FromStr, vec};
 
 use crate::{
     commands::booru::{

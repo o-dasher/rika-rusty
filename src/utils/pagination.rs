@@ -12,19 +12,19 @@ pub struct Paginator<'a> {
     pub amount_pages: usize,
 }
 
-pub struct PaginationForwarder<'a> {
+pub struct Forwarder<'a> {
     prev_button: &'a str,
     close_button: &'a str,
     next_button: &'a str,
 }
 
-impl<'a> PaginationForwarder<'a> {
+impl<'a> Forwarder<'a> {
     fn get_forward_reply<'b>(
         &self,
-        base: CreateReply<'a>,
+        base: &CreateReply<'a>,
         r: &'b mut CreateReply<'a>,
     ) -> &'b mut CreateReply<'a> {
-        r.clone_from(&base);
+        r.clone_from(base);
         r.components = r
             .components
             .clone()
@@ -68,7 +68,7 @@ impl<'a> Paginator<'a> {
             create_reply(idx, &mut CreateReply::default())
         };
 
-        let forwarder = PaginationForwarder {
+        let forwarder = Forwarder {
             prev_button,
             close_button,
             next_button,
@@ -76,7 +76,7 @@ impl<'a> Paginator<'a> {
 
         let initial_response = create_base_reply(current_idx)?;
         let sent = ctx
-            .send(|b| forwarder.get_forward_reply(initial_response, b))
+            .send(|b| forwarder.get_forward_reply(&initial_response, b))
             .await?;
 
         while let Some(press) = CollectComponentInteraction::new(ctx)
@@ -105,7 +105,7 @@ impl<'a> Paginator<'a> {
 
             let change_page_response = create_base_reply(current_idx)?;
             sent.edit(ctx, |b| {
-                forwarder.get_forward_reply(change_page_response, b)
+                forwarder.get_forward_reply(&change_page_response, b)
             })
             .await?;
         }
@@ -113,7 +113,7 @@ impl<'a> Paginator<'a> {
         let end_response = create_base_reply(current_idx)?;
         sent.edit(ctx, |b| {
             forwarder
-                .get_forward_reply(end_response, b)
+                .get_forward_reply(&end_response, b)
                 .components(|b| b)
         })
         .await?;

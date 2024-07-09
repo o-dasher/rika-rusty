@@ -1,4 +1,4 @@
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 
 use itertools::Itertools;
 use rusty_booru::generic::client::GenericClient;

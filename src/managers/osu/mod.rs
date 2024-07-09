@@ -10,6 +10,12 @@ pub struct Manager {
     pub submit_manager: Arc<RwLock<ScoreSubmitter>>,
 }
 
+impl Default for Manager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Manager {
     #[must_use]
     pub fn new() -> Self {

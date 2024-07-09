@@ -8,6 +8,12 @@ pub struct Osaka {
     pub osu_manager: Manager,
 }
 
+impl Default for Osaka {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Osaka {
     #[must_use]
     pub fn new() -> Self {

@@ -59,6 +59,12 @@ pub enum SubmissionError {
     Io(std::io::Error),
 }
 
+impl Default for ScoreSubmitter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ScoreSubmitter {
     #[must_use]
     pub fn new() -> Self {
@@ -69,7 +75,7 @@ impl ScoreSubmitter {
 }
 
 impl ReadyScoreSubmitterInjection {
-    pub fn new(
+    #[must_use] pub const fn new(
         beatmap_cache_manager: Arc<beatmap_cache::Manager>,
         rosu: Arc<rosu_v2::Osu>,
         pool: Pool<Postgres>,
