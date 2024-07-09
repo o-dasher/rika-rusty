@@ -23,6 +23,7 @@ jobs:
         run: |
           nix develop .#ci --command cargo check
           nix develop .#ci --command cargo clippy # -- -D warnings
+          nix develop .#ci --command cargo fmt --all -- --check
           nix develop .#ci --command cargo test --all
 
       - name: Build Docker image
