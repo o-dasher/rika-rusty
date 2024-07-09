@@ -75,7 +75,8 @@ impl ScoreSubmitter {
 }
 
 impl ReadyScoreSubmitterInjection {
-    #[must_use] pub const fn new(
+    #[must_use]
+    pub const fn new(
         beatmap_cache_manager: Arc<beatmap_cache::Manager>,
         rosu: Arc<rosu_v2::Osu>,
         pool: Pool<Postgres>,
@@ -129,7 +130,6 @@ impl ReadyScoreSubmitter {
             beatmap_cache_manager,
         } = self.injection;
 
-        let submitter = self.submitter.read().await;
 
         // This cast should be safe since all u8 values fit on i16
         let mode_bits = mode as i16;
@@ -141,7 +141,9 @@ impl ReadyScoreSubmitter {
             SubmissionID::ByUsername(username) => rosu.user(username).await?.user_id,
         };
 
-        let locker_guard = submitter.locker.lock(osu_id.to_string()).await?;
+        let submitter_reader = self.submitter.read().await;
+        let locker_guard = submitter_reader.locker.lock(osu_id.to_string())?;
+
         let osu_scores = rosu.user_scores(osu_id).limit(100).mode(mode).await?;
 
         let stored_osu_id = i64::from(osu_id);
@@ -262,8 +264,8 @@ impl ReadyScoreSubmitter {
 
         tx.commit().await?;
 
-        locker_guard.unlock().await?;
-        drop(submitter);
+        locker_guard.unlock()?;
+        drop(submitter_reader);
 
         Ok(())
     }
