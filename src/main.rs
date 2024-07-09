@@ -1,4 +1,9 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+#![warn(
+    clippy::all,
+    clippy::pedantic,
+    clippy::nursery,
+    clippy::clone_on_ref_ptr
+)]
 #![allow(clippy::missing_panics_doc, clippy::missing_errors_doc)]
 
 use std::sync::Arc;

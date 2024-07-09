@@ -26,7 +26,7 @@ impl Manager {
 
     pub async fn get_beatmap_file(&self, beatmap_id: u32) -> Result<Arc<Vec<u8>>, Error> {
         if let Some(cached) = self.cache.lock().await.get(&beatmap_id) {
-            return Ok(cached.clone());
+            return Ok(Arc::clone(cached));
         };
 
         let response = self
@@ -41,9 +41,9 @@ impl Manager {
             .cache
             .lock()
             .await
-            .insert(beatmap_id, map_bytes.clone());
+            .insert(beatmap_id, Arc::clone(&map_bytes));
 
-        Ok(map_bytes.clone())
+        Ok(map_bytes)
     }
 }
 

@@ -104,7 +104,7 @@ impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
 
         (
             ReadyScoreSubmitter {
-                submitter: self.clone(),
+                submitter: Self::clone(self),
                 sender,
                 injection,
             },
