@@ -100,30 +100,32 @@
 
           devShells =
             let
-              commonPackages = with toolchain; [
-                clippy
-                rustfmt
-                rust-analyzer
-                rust-src
-                rustc
-                cargo
-              ];
+              commonShell = {
+                inherit LD_LIBRARY_PATH;
+                packages = with toolchain; [
+                  clippy
+                  rustfmt
+                  rust-analyzer
+                  rust-src
+                  rustc
+                  cargo
+                ];
+              };
             in
             {
-              ci = pkgs.mkShell { packages = commonPackages; };
+              ci = pkgs.mkShell commonShell;
               default = pkgs.mkShell (
                 {
                   inherit LD_LIBRARY_PATH;
-
                   packages =
                     (with pkgs; [
                       nixfmt-rfc-style
                       sqlx-cli
                     ])
-                    ++ commonPackages
                     ++ buildInputs
                     ++ nativeBuildInputs;
                 }
+                // commonShell
                 // commonEnvironment
               );
             };
