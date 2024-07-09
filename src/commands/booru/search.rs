@@ -33,7 +33,6 @@ pub async fn search(
     ctx.defer().await?;
     default_arguments!(booru, ephemeral);
 
-    let mut query = GenericClient::query();
 
     let blacklisted_tags = BooruBlacklistedTag::fetch_all(ctx).await;
     let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
@@ -45,9 +44,9 @@ pub async fn search(
         )))?;
     }
 
-    let queried_tags = built_tags.clone();
 
-    for tag in queried_tags {
+    let mut query = GenericClient::query();
+    for tag in built_tags {
         query.tag(tag);
     }
 
