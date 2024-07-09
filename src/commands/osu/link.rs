@@ -13,7 +13,7 @@ pub async fn link(ctx: OsakaContext<'_>, username: String) -> OsakaResult {
     let i18n = ctx.i18n();
     t_prefix!($i18n.osu.link);
 
-    let OsakaData { pool, rosu, .. } = ctx.data().as_ref();
+    let OsakaData { pool, rosu, .. } = ctx.data();
 
     let osu_user = rosu
         .user(&username)

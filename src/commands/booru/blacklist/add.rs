@@ -21,7 +21,7 @@ pub async fn add(
 ) -> OsakaResult {
     blacklist::check_permissions(ctx, kind).await?;
 
-    let OsakaData { pool, .. } = ctx.data().as_ref();
+    let OsakaData { pool, .. } = ctx.data();
     let i18n = ctx.i18n();
 
     let mut tx = pool.begin().await?;

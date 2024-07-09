@@ -20,15 +20,19 @@ pub enum SubmissionID {
 }
 
 pub struct ScoreSubmitter {
-    beatmap_cache: Arc<beatmap_cache::Manager>,
-    pool: Pool<Postgres>,
-    rosu: Arc<rosu_v2::Osu>,
     locker: IDLocker<String>,
+}
+
+pub struct ReadyScoreSubmitterInjection {
+    beatmap_cache_manager: Arc<beatmap_cache::Manager>,
+    rosu: Arc<rosu_v2::Osu>,
+    pool: Pool<Postgres>,
 }
 
 pub struct ReadyScoreSubmitter {
     submitter: Arc<RwLock<ScoreSubmitter>>,
     sender: Sender<(usize, usize)>,
+    injection: ReadyScoreSubmitterInjection,
 }
 
 #[derive(thiserror::Error, Debug, derive_more::From)]
@@ -57,32 +61,46 @@ pub enum SubmissionError {
 
 impl ScoreSubmitter {
     #[must_use]
-    pub fn new(
-        beatmap_cache: Arc<beatmap_cache::Manager>,
-        pool: Pool<Postgres>,
-        rosu: Arc<rosu_v2::Osu>,
-    ) -> Self {
+    pub fn new() -> Self {
         Self {
             locker: IDLocker::new(),
-            beatmap_cache,
-            pool,
+        }
+    }
+}
+
+impl ReadyScoreSubmitterInjection {
+    pub fn new(
+        beatmap_cache_manager: Arc<beatmap_cache::Manager>,
+        rosu: Arc<rosu_v2::Osu>,
+        pool: Pool<Postgres>,
+    ) -> Self {
+        Self {
+            beatmap_cache_manager,
             rosu,
+            pool,
         }
     }
 }
 
 pub trait ScoreSubmitterTrait {
-    fn begin_submission(&self) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>);
+    fn begin_submission(
+        &self,
+        injection: ReadyScoreSubmitterInjection,
+    ) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>);
 }
 
 impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
-    fn begin_submission(&self) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>) {
+    fn begin_submission(
+        &self,
+        injection: ReadyScoreSubmitterInjection,
+    ) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>) {
         let (sender, receiver) = tokio::sync::mpsc::channel(100);
 
         (
             ReadyScoreSubmitter {
                 submitter: self.clone(),
                 sender,
+                injection,
             },
             receiver,
         )
@@ -99,6 +117,12 @@ impl ReadyScoreSubmitter {
             score_id: BigDecimal,
         }
 
+        let ReadyScoreSubmitterInjection {
+            rosu,
+            pool,
+            beatmap_cache_manager,
+        } = self.injection;
+
         let submitter = self.submitter.read().await;
 
         // This cast should be safe since all u8 values fit on i16
@@ -108,16 +132,11 @@ impl ReadyScoreSubmitter {
             SubmissionID::ByStoredID(id) => {
                 u32::try_from(id).map_err(|_| SubmissionError::InvalidUserID)?
             }
-            SubmissionID::ByUsername(username) => submitter.rosu.user(username).await?.user_id,
+            SubmissionID::ByUsername(username) => rosu.user(username).await?.user_id,
         };
 
         let locker_guard = submitter.locker.lock(osu_id.to_string()).await?;
-        let osu_scores = submitter
-            .rosu
-            .user_scores(osu_id)
-            .limit(100)
-            .mode(mode)
-            .await?;
+        let osu_scores = rosu.user_scores(osu_id).limit(100).mode(mode).await?;
 
         let stored_osu_id = i64::from(osu_id);
 
@@ -135,7 +154,7 @@ impl ReadyScoreSubmitter {
                 GameMode::Catch => "catch"
             }
         )
-        .fetch_all(&submitter.pool)
+        .fetch_all(&pool)
         .await?;
 
         let existing_scores: HashSet<_> =
@@ -162,10 +181,7 @@ impl ReadyScoreSubmitter {
                     rosu_pp::Difficulty::new()
                         .mods(score.mods.bits())
                         .calculate(&rosu_pp::Beatmap::from_bytes(
-                            &submitter
-                                .beatmap_cache
-                                .get_beatmap_file(score.map_id)
-                                .await?,
+                            &beatmap_cache_manager.get_beatmap_file(score.map_id).await?,
                         )?),
                 )
                 .n300(ss.great)
@@ -181,7 +197,7 @@ impl ReadyScoreSubmitter {
         }
 
         tracing::info!("Beginning unsafe transaction!");
-        let mut tx = submitter.pool.begin().await?;
+        let mut tx = pool.begin().await?;
 
         tracing::info!("Storing scores...");
         QueryBuilder::<Postgres>::new(

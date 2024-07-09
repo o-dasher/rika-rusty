@@ -17,7 +17,7 @@ use poise_i18n::PoiseI18NTrait;
 use rusty18n::t_prefix;
 
 pub async fn autocomplete_tag<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
+    ctx: ApplicationContext<'a, OsakaData, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     let kind = ctx

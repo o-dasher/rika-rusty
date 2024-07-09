@@ -22,7 +22,7 @@ pub mod responses;
 pub mod setup;
 pub mod utils;
 
-pub type OsakaContext<'a> = Context<'a, Arc<OsakaData>, error::Osaka>;
+pub type OsakaContext<'a> = Context<'a, OsakaData, error::Osaka>;
 pub type OsakaResult = Result<(), error::Osaka>;
 
 #[derive(Serialize, Deserialize)]
@@ -39,9 +39,9 @@ pub struct OsakaConfig {
 pub struct OsakaData {
     pub i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pub rosu: Arc<rosu_v2::Osu>,
-    pub config: Arc<OsakaConfig>,
+    pub config: OsakaConfig,
     pub pool: Pool<Postgres>,
-    pub managers: Arc<managers::Osaka>,
+    pub managers: managers::Osaka,
 }
 
 impl<'a> PoiseI18NMeta<'a, OsakaLocale, OsakaI18N> for OsakaContext<'a> {

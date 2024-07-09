@@ -13,23 +13,18 @@ use crate::{
 
 pub async fn setup(
     ctx: &poise::serenity_prelude::Context,
-    framework: &framework::Framework<Arc<OsakaData>, error::Osaka>,
+    framework: &framework::Framework<OsakaData, error::Osaka>,
     config: OsakaConfig,
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
-) -> Result<Arc<OsakaData>, error::Osaka> {
-    let rosu = Arc::new(
-        rosu_v2::Osu::builder()
-            .client_id(config.osu_client_id)
-            .client_secret(&config.osu_client_secret)
-            .build()
-            .await?,
-    );
+) -> Result<OsakaData, error::Osaka> {
+    let rosu = rosu_v2::Osu::builder()
+        .client_id(config.osu_client_id)
+        .client_secret(&config.osu_client_secret)
+        .build()
+        .await?;
 
-    let config = Arc::new(config);
-    let register_command_manager = register_command::Manager {
-        config: config.clone(),
-    };
+    let register_command_manager = register_command::Manager();
 
     Ok(register_command_manager
         .register_commands(
@@ -38,21 +33,14 @@ pub async fn setup(
                 None => register_command::Kind::Global,
                 Some(..) => register_command::Kind::Development,
             },
+            &config,
         )
         .await
-        .map(|()| {
-            let managers = Arc::new(managers::Osaka::new(
-                config.clone(),
-                pool.clone(),
-                rosu.clone(),
-            ));
-
-            Arc::new(OsakaData {
-                i18n,
-                rosu,
-                config,
-                pool,
-                managers,
-            })
+        .map(|()| OsakaData {
+            i18n,
+            rosu: Arc::new(rosu),
+            config,
+            pool,
+            managers: managers::Osaka::new(),
         })?)
 }

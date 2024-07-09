@@ -1,4 +1,3 @@
-use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use submit::ScoreSubmitter;
 use tokio::sync::RwLock;
@@ -13,12 +12,10 @@ pub struct Manager {
 
 impl Manager {
     #[must_use]
-    pub fn new(pool: Pool<Postgres>, rosu: Arc<rosu_v2::Osu>) -> Self {
-        let beatmap_cache = Arc::new(beatmap_cache::Manager::new());
-
+    pub fn new() -> Self {
         Self {
-            beatmap_cache_manager: beatmap_cache.clone(),
-            submit_manager: Arc::new(RwLock::new(ScoreSubmitter::new(beatmap_cache, pool, rosu))),
+            beatmap_cache_manager: Arc::new(beatmap_cache::Manager::new()),
+            submit_manager: Arc::new(RwLock::new(ScoreSubmitter::new())),
         }
     }
 }

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use poise::serenity_prelude::{self, GuildId};
 use strum::Display;
 
@@ -17,21 +15,12 @@ pub enum Error {
     NoDevelopmentGuildSet,
 }
 
-pub struct Manager {
-    pub config: Arc<OsakaConfig>,
-}
-
-impl Manager {
-    #[must_use]
-    pub const fn new(config: Arc<OsakaConfig>) -> Self {
-        Self { config }
-    }
-}
+pub struct Manager();
 
 pub enum Context<'a> {
     Serenity(
         &'a poise::serenity_prelude::Context,
-        &'a [poise::Command<Arc<OsakaData>, error::Osaka>],
+        &'a [poise::Command<OsakaData, error::Osaka>],
     ),
     Poise(&'a OsakaContext<'a>),
 }
@@ -41,6 +30,7 @@ impl Manager {
         &self,
         ctx: Context<'a>,
         register_kind: Kind,
+        config: &OsakaConfig
     ) -> Result<(), Error> {
         let (http, commands) = match ctx {
             Context::Serenity(ctx, commands) => (ctx, commands),
@@ -51,7 +41,7 @@ impl Manager {
         };
 
         match register_kind {
-            Kind::Development => match self.config.development_guild {
+            Kind::Development => match config.development_guild {
                 Some(guild_id) => {
                     poise::builtins::register_in_guild(http, commands, GuildId(guild_id)).await?;
                 }

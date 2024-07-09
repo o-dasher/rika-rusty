@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub async fn autocomplete_tag_single<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
+    ctx: ApplicationContext<'a, OsakaData, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     autocomplete_tag(
@@ -22,7 +22,7 @@ pub async fn autocomplete_tag_single<'a>(
 }
 
 pub async fn autocomplete_tag<'a>(
-    ctx: ApplicationContext<'a, Arc<OsakaData>, error::Osaka>,
+    ctx: ApplicationContext<'a, OsakaData, error::Osaka>,
     searching: &str,
 ) -> Vec<String> {
     if searching.is_empty() {

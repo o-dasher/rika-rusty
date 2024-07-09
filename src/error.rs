@@ -87,7 +87,7 @@ fn get_response(ctx: OsakaContext, error: Osaka) -> String {
     }
 }
 
-pub async fn handle(err: poise::FrameworkError<'_, Arc<OsakaData>, Osaka>) -> Result<(), Osaka> {
+pub async fn handle(err: poise::FrameworkError<'_, OsakaData, Osaka>) -> Result<(), Osaka> {
     match err {
         FrameworkError::Command { error, ctx } => {
             ctx.say(&responses::templates::something_wrong(&get_response(
