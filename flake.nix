@@ -102,27 +102,27 @@
             let
               commonShell = {
                 inherit LD_LIBRARY_PATH;
-                packages = with toolchain; [
-                  clippy
-                  rustfmt
-                  rust-analyzer
-                  rust-src
-                  rustc
-                  cargo
-                ];
+                packages =
+                  (with toolchain; [
+                    clippy
+                    rustfmt
+                    rust-analyzer
+                    rust-src
+                    rustc
+                    cargo
+                  ])
+                  ++ buildInputs;
               };
             in
             {
               ci = pkgs.mkShell commonShell;
               default = pkgs.mkShell (
                 {
-                  inherit LD_LIBRARY_PATH;
                   packages =
                     (with pkgs; [
                       nixfmt-rfc-style
                       sqlx-cli
                     ])
-                    ++ buildInputs
                     ++ nativeBuildInputs;
                 }
                 // commonShell
