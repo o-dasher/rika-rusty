@@ -98,28 +98,35 @@
               };
             };
 
-          devShells.default = pkgs.mkShell (
+          devShells =
+            let
+              commonPackages = with toolchain; [
+                clippy
+                rustfmt
+                rust-analyzer
+                rust-src
+                rustc
+                cargo
+              ];
+            in
             {
-              inherit LD_LIBRARY_PATH;
+              ci = pkgs.mkShell { packages = commonPackages; };
+              default = pkgs.mkShell (
+                {
+                  inherit LD_LIBRARY_PATH;
 
-              packages =
-                (with pkgs; [
-                  nixfmt-rfc-style
-                  sqlx-cli
-                ])
-                ++ (with toolchain; [
-                  clippy
-                  rustfmt
-                  rust-analyzer
-                  rust-src
-                  rustc
-                  cargo
-                ])
-                ++ buildInputs
-                ++ nativeBuildInputs;
-            }
-            // commonEnvironment
-          );
+                  packages =
+                    (with pkgs; [
+                      nixfmt-rfc-style
+                      sqlx-cli
+                    ])
+                    ++ commonPackages
+                    ++ buildInputs
+                    ++ nativeBuildInputs;
+                }
+                // commonEnvironment
+              );
+            };
         };
     };
 }
