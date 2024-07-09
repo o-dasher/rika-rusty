@@ -1,11 +1,10 @@
-use std::{collections::HashSet, hash::Hash, sync::Arc};
+use std::{collections::HashSet, hash::Hash, sync::Mutex};
 
-use poise::serenity_prelude::futures::lock::Mutex;
 use strum::Display;
 use thiserror::Error;
 
 #[derive(Debug, Default)]
-pub struct IDLocker<T: Hash + Eq + Clone>(Arc<Mutex<HashSet<T>>>);
+pub struct IDLocker<T: Hash + Eq + Clone>(Mutex<HashSet<T>>);
 
 #[derive(Error, Debug, Display)]
 pub enum IDLockerError {
@@ -21,28 +20,40 @@ pub struct IDLockGuard<'a, T: Hash + Eq + Clone + Send> {
     locking: T,
 }
 
+impl<T: Hash + Eq + Clone + Send> Drop for IDLockGuard<'_, T> {
+    fn drop(&mut self) {
+        let _ = self.borrowed_unlock();
+    }
+}
+
 impl<T: Hash + Eq + Clone + Send> IDLockGuard<'_, T> {
-    pub async fn unlock(self) -> IDLockerResult {
+    fn borrowed_unlock(&mut self) -> IDLockerResult {
         self.locker
             .0
             .lock()
-            .await
+            .ok()
+            .ok_or(IDLockerError::AlreadyUnlocked)?
             .remove(&self.locking)
             .then_some(())
             .ok_or(IDLockerError::AlreadyUnlocked)
+    }
+
+    pub fn unlock(mut self) -> IDLockerResult {
+        self.borrowed_unlock()
     }
 }
 
 impl<T: Hash + Eq + Clone + Send> IDLocker<T> {
     #[must_use]
     pub fn new() -> Self {
-        Self(Arc::new(Mutex::new(HashSet::new())))
+        Self(Mutex::new(HashSet::new()))
     }
 
-    pub async fn lock(&self, locking: T) -> Result<IDLockGuard<T>, IDLockerError> {
+    pub fn lock(&self, locking: T) -> Result<IDLockGuard<T>, IDLockerError> {
         self.0
             .lock()
-            .await
+            .ok()
+            .ok_or(IDLockerError::AlreadyLocked)?
             .insert(locking.clone())
             .then_some(IDLockGuard {
                 locking,
