@@ -3,8 +3,11 @@ use std::{collections::HashSet, hash::Hash, sync::Mutex};
 use strum::Display;
 use thiserror::Error;
 
+pub trait IDLockable: Send + Clone + Eq + Hash {}
+impl<T: Send + Clone + Eq + Hash> IDLockable for T {}
+
 #[derive(Debug, Default)]
-pub struct IDLocker<T: Hash + Eq + Clone>(Mutex<HashSet<T>>);
+pub struct IDLocker<T: IDLockable>(Mutex<HashSet<T>>);
 
 #[derive(Error, Debug, Display)]
 pub enum IDLockerError {
@@ -15,19 +18,19 @@ pub enum IDLockerError {
 pub type IDLockerResult = Result<(), IDLockerError>;
 
 #[derive(Debug)]
-pub struct IDLockGuard<'a, T: Hash + Eq + Clone + Send> {
+pub struct IDLockGuard<'a, T: IDLockable> {
     locker: &'a IDLocker<T>,
     locking: T,
 }
 
-impl<T: Hash + Eq + Clone + Send> Drop for IDLockGuard<'_, T> {
+impl<T: IDLockable> Drop for IDLockGuard<'_, T> {
     fn drop(&mut self) {
-        let _ = self.borrowed_unlock();
+        let _ = self.unchecked_unlock();
     }
 }
 
-impl<T: Hash + Eq + Clone + Send> IDLockGuard<'_, T> {
-    fn borrowed_unlock(&mut self) -> IDLockerResult {
+impl<T: IDLockable> IDLockGuard<'_, T> {
+    fn unchecked_unlock(&mut self) -> IDLockerResult {
         self.locker
             .0
             .lock()
@@ -39,11 +42,11 @@ impl<T: Hash + Eq + Clone + Send> IDLockGuard<'_, T> {
     }
 
     pub fn unlock(mut self) -> IDLockerResult {
-        self.borrowed_unlock()
+        self.unchecked_unlock()
     }
 }
 
-impl<T: Hash + Eq + Clone + Send> IDLocker<T> {
+impl<T: IDLockable> IDLocker<T> {
     #[must_use]
     pub fn new() -> Self {
         Self(Mutex::new(HashSet::new()))
