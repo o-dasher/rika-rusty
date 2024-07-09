@@ -12,6 +12,37 @@ pub struct Paginator<'a> {
     pub amount_pages: usize,
 }
 
+pub struct PaginationForwarder<'a> {
+    prev_button: &'a str,
+    close_button: &'a str,
+    next_button: &'a str,
+}
+
+impl<'a> PaginationForwarder<'a> {
+    fn get_forward_reply<'b>(
+        &self,
+        base: CreateReply<'a>,
+        r: &'b mut CreateReply<'a>,
+    ) -> &'b mut CreateReply<'a> {
+        r.clone_from(&base);
+        r.components = r
+            .components
+            .clone()
+            .unwrap_or_default()
+            .create_action_row(|b| {
+                b.create_button(|b| {
+                    b.custom_id(self.prev_button)
+                        .emoji(OsakaMoji::ArrowBackward)
+                })
+                .create_button(|b| b.custom_id(self.close_button).emoji(OsakaMoji::X))
+                .create_button(|b| b.custom_id(self.next_button).emoji(OsakaMoji::ArrowForward))
+            })
+            .clone()
+            .into();
+        r
+    }
+}
+
 impl<'a> Paginator<'a> {
     #[must_use]
     pub const fn new(ctx: OsakaContext<'a>, amount_pages: usize) -> Self {
@@ -37,26 +68,16 @@ impl<'a> Paginator<'a> {
             create_reply(idx, &mut CreateReply::default())
         };
 
-        let forward_reply = for<'b> |base: CreateReply<'a>,
-                                     r: &'b mut CreateReply<'a>|
-                 -> &'b mut CreateReply<'a> {
-            r.clone_from(&base);
-            r.components = r
-                .components
-                .clone()
-                .unwrap_or_default()
-                .create_action_row(|b| {
-                    b.create_button(|b| b.custom_id(prev_button).emoji(OsakaMoji::ArrowBackward))
-                        .create_button(|b| b.custom_id(close_button).emoji(OsakaMoji::X))
-                        .create_button(|b| b.custom_id(next_button).emoji(OsakaMoji::ArrowForward))
-                })
-                .clone()
-                .into();
-            r
+        let forwarder = PaginationForwarder {
+            prev_button,
+            close_button,
+            next_button,
         };
 
         let initial_response = create_base_reply(current_idx)?;
-        let sent = ctx.send(|b| forward_reply(initial_response, b)).await?;
+        let sent = ctx
+            .send(|b| forwarder.get_forward_reply(initial_response, b))
+            .await?;
 
         while let Some(press) = CollectComponentInteraction::new(ctx)
             .filter(move |press| {
@@ -83,13 +104,19 @@ impl<'a> Paginator<'a> {
             press.defer(self.ctx).await?;
 
             let change_page_response = create_base_reply(current_idx)?;
-            sent.edit(ctx, |b| forward_reply(change_page_response, b))
-                .await?;
+            sent.edit(ctx, |b| {
+                forwarder.get_forward_reply(change_page_response, b)
+            })
+            .await?;
         }
 
         let end_response = create_base_reply(current_idx)?;
-        sent.edit(ctx, |b| forward_reply(end_response, b).components(|b| b))
-            .await?;
+        sent.edit(ctx, |b| {
+            forwarder
+                .get_forward_reply(end_response, b)
+                .components(|b| b)
+        })
+        .await?;
 
         Ok(())
     }
