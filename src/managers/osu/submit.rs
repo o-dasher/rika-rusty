@@ -2,6 +2,7 @@ use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
 use sqlx::{types::BigDecimal, Pool, Postgres, QueryBuilder};
 use std::{collections::HashSet, sync::Arc};
+use tracing::info;
 
 use rosu_v2::model::{score::Score, GameMode};
 use tokio::sync::{
@@ -177,8 +178,11 @@ impl ReadyScoreSubmitter {
         } = self;
 
         let mode_bits = i16::from(mode as u8);
+
+        info!("Beginning unsafe transaction");
         let mut tx = pool.begin().await?;
 
+        info!("Inserting scores for user");
         QueryBuilder::<Postgres>::new(
             "
 			INSERT INTO osu_score (score_id, osu_user_id, map_id, mods, mode)
@@ -198,6 +202,7 @@ impl ReadyScoreSubmitter {
         .execute(&mut *tx)
         .await?;
 
+        info!("Inserting performance data for user");
         QueryBuilder::<Postgres>::new(format!(
             "INSERT INTO {mode}_performance (score_id, mode, overall{})",
             match mode {
