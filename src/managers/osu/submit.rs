@@ -204,7 +204,13 @@ impl ReadyScoreSubmitter {
 
         info!("Inserting performance data for user");
         QueryBuilder::<Postgres>::new(format!(
-            "INSERT INTO {mode}_performance (score_id, mode, overall{})",
+            "INSERT INTO {}_performance (score_id, mode, overall{})",
+            match mode {
+                GameMode::Osu => "osu",
+                GameMode::Taiko => "taiko",
+                GameMode::Catch => "catch",
+                GameMode::Mania => "mania",
+            },
             match mode {
                 GameMode::Osu => ", aim, speed, flashlight, accuracy",
                 GameMode::Taiko => ", accuracy, difficulty",
