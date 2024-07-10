@@ -33,7 +33,6 @@ pub async fn search(
     ctx.defer().await?;
     default_arguments!(booru, ephemeral);
 
-
     let blacklisted_tags = BooruBlacklistedTag::fetch_all(ctx).await;
     let built_tags = tag.0.split(' ').map(str::to_string).collect_vec();
 
@@ -43,7 +42,6 @@ pub async fn search(
             mono(blacklisted_tag)
         )))?;
     }
-
 
     let mut query = GenericClient::query();
     for tag in built_tags {

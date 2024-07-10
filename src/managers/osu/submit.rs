@@ -130,7 +130,6 @@ impl ReadyScoreSubmitter {
             beatmap_cache_manager,
         } = self.injection;
 
-
         // This cast should be safe since all u8 values fit on i16
         let mode_bits = mode as i16;
 

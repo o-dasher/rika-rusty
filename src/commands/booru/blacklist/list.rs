@@ -34,7 +34,6 @@ pub async fn list(ctx: OsakaContext<'_>, kind: SettingKind) -> OsakaResult {
                                 format!("{}.", idx_values.iter().map(mono).join(", "))
                             }
                         })
-
                 })
             })
             .to_owned())

@@ -45,7 +45,7 @@
             SQLX_OFFLINE = "true";
           };
 
-          toolchain = fenix.packages.${system}.stable;
+          toolchain = fenix.packages.${system}.complete;
           craneLib = (crane.mkLib pkgs).overrideToolchain toolchain.toolchain;
 
           buildInputs = with pkgs; [ openssl ];

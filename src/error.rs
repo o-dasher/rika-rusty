@@ -1,4 +1,3 @@
-
 use crate::{managers::osu::submit::SubmissionError, responses, OsakaContext, OsakaData};
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};

@@ -30,7 +30,7 @@ impl Manager {
         &self,
         ctx: Context<'a>,
         register_kind: Kind,
-        config: &OsakaConfig
+        config: &OsakaConfig,
     ) -> Result<(), Error> {
         let (http, commands) = match ctx {
             Context::Serenity(ctx, commands) => (ctx, commands),

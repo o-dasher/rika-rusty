@@ -21,7 +21,9 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
     let i18n = ctx.i18n();
     default_arguments!(on);
 
-    let OsakaData { managers, config, .. } = ctx.data();
+    let OsakaData {
+        managers, config, ..
+    } = ctx.data();
     let managers::Osaka {
         register_command_manager,
         ..
@@ -40,7 +42,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
                 },
                 RegisterChoice::Global => register_command::Kind::Global,
             },
-            config
+            config,
         )
         .await?;
 
