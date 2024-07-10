@@ -132,7 +132,7 @@ impl ReadyScoreSubmitter {
 
     async fn get_performance_information<'a>(
         &'a self,
-        new_scores: &'a Vec<(u64, &Score)>,
+        new_scores: &'a [(u64, &Score)],
     ) -> Result<SubmissionPerformanceInformation<'a>, SubmissionError> {
         let mut performance_information = vec![];
 
@@ -236,11 +236,10 @@ impl ReadyScoreSubmitter {
         Ok(())
     }
 
-    fn get_new_submitted_scores<'a>(
-        &self,
+    fn get_new_submitted_scores(
         stored_scores: Vec<MinimalStoredScore>,
-        api_scores: &'a Vec<Score>,
-    ) -> Vec<(u64, &'a Score)> {
+        api_scores: &[Score],
+    ) -> Vec<(u64, &Score)> {
         let existing_scores: HashSet<_> = stored_scores.into_iter().map(|s| s.score_id).collect();
         api_scores
             .iter()
@@ -252,7 +251,7 @@ impl ReadyScoreSubmitter {
     }
 
     pub async fn submit_scores(
-        &self,
+        self,
         osu_id: impl Into<SubmissionID> + Send,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
@@ -261,7 +260,7 @@ impl ReadyScoreSubmitter {
             submitter,
             injection: ReadyScoreSubmitterInjection { pool, .. },
             ..
-        } = self;
+        } = &self;
 
         // We are locking any submission calls from this user.
         let submitter_reader = submitter.read().await;
@@ -294,13 +293,15 @@ impl ReadyScoreSubmitter {
             .await?;
 
         self.store_new_performance_data(
-            self.get_performance_information(
-                &self.get_new_submitted_scores(osaka_osu_scores, &osu_scores),
-            )
+            self.get_performance_information(&Self::get_new_submitted_scores(
+                osaka_osu_scores,
+                &osu_scores,
+            ))
             .await?,
             raw_osu_user_id,
             mode,
-        );
+        )
+        .await?;
 
         locker_guard.unlock()?;
         drop(submitter_reader);
