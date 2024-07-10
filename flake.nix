@@ -45,14 +45,7 @@
             SQLX_OFFLINE = "true";
           };
 
-          toolchain = fenix.packages.${system}.stable.withComponents [
-            "cargo"
-            "rustc"
-            "rust-src"
-            "clippy"
-            "rustfmt"
-          ];
-
+          toolchain = fenix.packages.${system}.stable.toolchain;
           craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
 
           buildInputs = with pkgs; [ openssl ];
