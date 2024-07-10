@@ -114,72 +114,27 @@ impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
     }
 }
 
+pub struct MinimalStoredScore {
+    score_id: BigDecimal,
+}
+
+type SubmissionPerformanceInformation<'a> = Vec<(PerformanceAttributes, (&'a Score, &'a u64))>;
+
 impl ReadyScoreSubmitter {
-    pub async fn submit_scores(
-        self,
-        osu_id: impl Into<SubmissionID> + Send,
-        mode: GameMode,
-    ) -> Result<(), SubmissionError> {
-        pub struct MinimalStoredScore {
-            score_id: BigDecimal,
-        }
-
-        let ReadyScoreSubmitterInjection {
-            rosu,
-            pool,
-            beatmap_cache_manager,
-        } = self.injection;
-
-        // This cast should be safe since all u8 values fit on i16
-        let mode_bits = mode as i16;
-
-        let osu_id = match osu_id.into() {
+    async fn get_submission_user_id(&self, osu_id: SubmissionID) -> Result<u32, SubmissionError> {
+        Ok(match osu_id {
             SubmissionID::ByStoredID(id) => {
                 u32::try_from(id).map_err(|_| SubmissionError::InvalidUserID)?
             }
-            SubmissionID::ByUsername(username) => rosu.user(username).await?.user_id,
-        };
+            SubmissionID::ByUsername(username) => self.injection.rosu.user(username).await?.user_id,
+        })
+    }
 
-        let submitter_reader = self.submitter.read().await;
-        let locker_guard = submitter_reader.locker.lock(osu_id.to_string())?;
-
-        let osu_scores = rosu.user_scores(osu_id).limit(100).mode(mode).await?;
-
-        let stored_osu_id = i64::from(osu_id);
-
-        let osaka_osu_scores = sqlx_conditional_queries::conditional_query_as!(
-            MinimalStoredScore,
-            "
-			SELECT s.score_id FROM osu_score s
-			JOIN {#mode}_performance pp ON s.score_id = pp.score_id
-			WHERE s.osu_user_id = {stored_osu_id}
-			",
-            #mode = match mode {
-                GameMode::Osu => "osu",
-                GameMode::Mania => "mania",
-                GameMode::Taiko => "taiko",
-                GameMode::Catch => "catch"
-            }
-        )
-        .fetch_all(&pool)
-        .await?;
-
-        let existing_scores: HashSet<_> =
-            osaka_osu_scores.into_iter().map(|s| s.score_id).collect();
-
-        let new_scores = osu_scores
-            .iter()
-            .filter_map(|s| {
-                let is_new = !existing_scores.contains(&s.id.into());
-                is_new.then_some((s.id, s))
-            })
-            .collect_vec();
-
-        if new_scores.is_empty() {
-            return Ok(());
-        }
-
-        let mut performance_information: Vec<(PerformanceAttributes, (&Score, &u64))> = vec![];
+    async fn get_performance_information<'a>(
+        &'a self,
+        new_scores: &'a Vec<(u64, &Score)>,
+    ) -> Result<SubmissionPerformanceInformation<'a>, SubmissionError> {
+        let mut performance_information = vec![];
 
         for (i, (score_id, score)) in new_scores.iter().enumerate() {
             let ss = &score.statistics;
@@ -188,7 +143,11 @@ impl ReadyScoreSubmitter {
                     rosu_pp::Difficulty::new()
                         .mods(score.mods.bits())
                         .calculate(&rosu_pp::Beatmap::from_bytes(
-                            &beatmap_cache_manager.get_beatmap_file(score.map_id).await?,
+                            &self
+                                .injection
+                                .beatmap_cache_manager
+                                .get_beatmap_file(score.map_id)
+                                .await?,
                         )?),
                 )
                 .n300(ss.great)
@@ -203,10 +162,23 @@ impl ReadyScoreSubmitter {
             let _ = self.sender.send((i + 1, new_scores.len())).await;
         }
 
-        tracing::info!("Beginning unsafe transaction!");
+        Ok(performance_information)
+    }
+
+    pub async fn store_new_performance_data(
+        &self,
+        performance_information: SubmissionPerformanceInformation<'_>,
+        raw_osu_user_id: u32,
+        mode: GameMode,
+    ) -> Result<(), SubmissionError> {
+        let Self {
+            injection: ReadyScoreSubmitterInjection { pool, .. },
+            ..
+        } = self;
+
+        let mode_bits = i16::from(mode as u8);
         let mut tx = pool.begin().await?;
 
-        tracing::info!("Storing scores...");
         QueryBuilder::<Postgres>::new(
             "
 			INSERT INTO osu_score (score_id, osu_user_id, map_id, mods, mode)
@@ -216,7 +188,7 @@ impl ReadyScoreSubmitter {
             &performance_information,
             |mut b, (.., (score, score_id))| {
                 b.push_bind(BigDecimal::from(**score_id))
-                    .push_bind(i64::from(osu_id))
+                    .push_bind(i64::from(raw_osu_user_id))
                     .push_bind(i64::from(score.map_id))
                     .push_bind(i64::from(score.mods.bits()))
                     .push_bind(mode_bits);
@@ -226,7 +198,6 @@ impl ReadyScoreSubmitter {
         .execute(&mut *tx)
         .await?;
 
-        tracing::info!("Storing performance...");
         QueryBuilder::<Postgres>::new(format!(
             "INSERT INTO {mode}_performance (score_id, mode, overall{})",
             match mode {
@@ -262,6 +233,74 @@ impl ReadyScoreSubmitter {
         .await?;
 
         tx.commit().await?;
+        Ok(())
+    }
+
+    fn get_new_submitted_scores<'a>(
+        &self,
+        stored_scores: Vec<MinimalStoredScore>,
+        api_scores: &'a Vec<Score>,
+    ) -> Vec<(u64, &'a Score)> {
+        let existing_scores: HashSet<_> = stored_scores.into_iter().map(|s| s.score_id).collect();
+        api_scores
+            .iter()
+            .filter_map(|s| {
+                let is_new = !existing_scores.contains(&s.id.into());
+                is_new.then_some((s.id, s))
+            })
+            .collect_vec()
+    }
+
+    pub async fn submit_scores(
+        &self,
+        osu_id: impl Into<SubmissionID> + Send,
+        mode: GameMode,
+    ) -> Result<(), SubmissionError> {
+        let raw_osu_user_id = self.get_submission_user_id(osu_id.into()).await?;
+        let Self {
+            submitter,
+            injection: ReadyScoreSubmitterInjection { pool, .. },
+            ..
+        } = self;
+
+        // We are locking any submission calls from this user.
+        let submitter_reader = submitter.read().await;
+        let locker_guard = submitter_reader.locker.lock(raw_osu_user_id.to_string())?;
+
+        let stored_osu_id = i64::from(raw_osu_user_id);
+        let osaka_osu_scores = sqlx_conditional_queries::conditional_query_as!(
+            MinimalStoredScore,
+            "
+			SELECT s.score_id FROM osu_score s
+			JOIN {#mode}_performance pp ON s.score_id = pp.score_id
+			WHERE s.osu_user_id = {stored_osu_id}
+			",
+            #mode = match mode {
+                GameMode::Osu => "osu",
+                GameMode::Mania => "mania",
+                GameMode::Taiko => "taiko",
+                GameMode::Catch => "catch"
+            }
+        )
+        .fetch_all(pool)
+        .await?;
+
+        let osu_scores = self
+            .injection
+            .rosu
+            .user_scores(raw_osu_user_id)
+            .limit(100)
+            .mode(mode)
+            .await?;
+
+        self.store_new_performance_data(
+            self.get_performance_information(
+                &self.get_new_submitted_scores(osaka_osu_scores, &osu_scores),
+            )
+            .await?,
+            raw_osu_user_id,
+            mode,
+        );
 
         locker_guard.unlock()?;
         drop(submitter_reader);
