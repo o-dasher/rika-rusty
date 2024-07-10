@@ -45,8 +45,15 @@
             SQLX_OFFLINE = "true";
           };
 
-          toolchain = fenix.packages.${system}.complete;
-          craneLib = (crane.mkLib pkgs).overrideToolchain toolchain.toolchain;
+          toolchain = fenix.packages.${system}.stable.withComponents [
+            "cargo"
+            "rustc"
+            "rust-src"
+            "clippy"
+            "rustfmt"
+          ];
+
+          craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
 
           buildInputs = with pkgs; [ openssl ];
           nativeBuildInputs = with pkgs; [ pkg-config ];
@@ -60,7 +67,7 @@
               pkg =
                 (craneLib.buildPackage (
                   {
-                    buildInputs = buildInputs;
+                    inherit buildInputs;
                     nativeBuildInputs = nativeBuildInputs ++ [ pkgs.makeWrapper ];
 
                     src = nix-filter.lib {
@@ -100,27 +107,20 @@
 
           devShells =
             let
-              commonPackages =
-                (with toolchain; [
-                  clippy
-                  rustfmt
-                  rustc
-                  cargo
-                ])
-                ++ buildInputs;
+              commonPackages = buildInputs ++ [ toolchain ];
             in
             {
               ci = pkgs.mkShell { packages = commonPackages; };
               default = pkgs.mkShell (
                 {
+                  inherit LD_LIBRARY_PATH;
                   packages =
-                    (with toolchain; [ rust-analyzer ])
+                    commonPackages
+                    ++ nativeBuildInputs
                     ++ (with pkgs; [
                       nixfmt-rfc-style
                       sqlx-cli
-                    ])
-                    ++ nativeBuildInputs
-                    ++ commonPackages;
+                    ]);
                 }
                 // commonEnvironment
               );
