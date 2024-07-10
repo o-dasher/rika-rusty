@@ -30,7 +30,7 @@ impl<T: IDLockable> Drop for IDLockGuard<'_, T> {
 }
 
 impl<T: IDLockable> IDLockGuard<'_, T> {
-    fn unchecked_unlock(&mut self) -> IDLockerResult {
+    fn unchecked_unlock(&self) -> IDLockerResult {
         self.locker
             .0
             .try_lock()
@@ -41,7 +41,7 @@ impl<T: IDLockable> IDLockGuard<'_, T> {
             .ok_or(IDLockerError::AlreadyUnlocked)
     }
 
-    pub fn unlock(mut self) -> IDLockerResult {
+    pub fn unlock(self) -> IDLockerResult {
         self.unchecked_unlock()
     }
 }
