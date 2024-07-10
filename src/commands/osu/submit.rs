@@ -1,59 +1,45 @@
+use rosu_v2::model::GameMode;
+
 use crate::{
+    commands::osu::Mode,
     managers::osu::submit::{ReadyScoreSubmitterInjection, ScoreSubmitterTrait},
     osaka_sqlx::discord,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
 };
-use poise::ChoiceParameter;
-use rosu_v2::model::GameMode;
-use std::sync::Arc;
+use std::{convert::From, sync::Arc};
 
 use crate::{
     error, managers, osaka_sqlx::booru_setting::SettingKind, OsakaContext, OsakaData, OsakaResult,
 };
 
-#[derive(ChoiceParameter, Default, Clone, Copy)]
-#[repr(u8)]
-pub enum OsuMode {
-    #[default]
-    #[name = "osu"]
-    Osu = 0,
-
-    #[name = "taiko"]
-    Taiko = 1,
-
-    #[name = "catch"]
-    Catch = 2,
-
-    #[name = "mania"]
-    Mania = 3,
-}
-
-impl From<OsuMode> for GameMode {
-    fn from(value: OsuMode) -> Self {
+impl From<Mode> for GameMode {
+    fn from(value: Mode) -> Self {
         match value {
-            OsuMode::Osu => Self::Osu,
-            OsuMode::Taiko => Self::Taiko,
-            OsuMode::Catch => Self::Catch,
-            OsuMode::Mania => Self::Mania,
+            Mode::Osu => Self::Osu,
+            Mode::Taiko => Self::Taiko,
+            Mode::Catch => Self::Catch,
+            Mode::Mania => Self::Mania,
         }
     }
 }
 
 #[poise::command(slash_command)]
-pub async fn submit(ctx: OsakaContext<'_>, mode: OsuMode) -> OsakaResult {
+pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     let OsakaData {
-        pool,
-        managers,
         rosu,
+        pool,
+        managers:
+            managers::Osaka {
+                osu_manager:
+                    managers::osu::Manager {
+                        submit_manager,
+                        beatmap_cache_manager,
+                        ..
+                    },
+                ..
+            },
         ..
     } = ctx.data();
-
-    let managers::Osaka { osu_manager, .. } = managers;
-    let managers::osu::Manager {
-        submit_manager,
-        beatmap_cache_manager,
-        ..
-    } = osu_manager;
 
     let user = sqlx::query_as!(
         discord::User,
@@ -72,7 +58,7 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: OsuMode) -> OsakaResult {
             pool.clone(),
         ));
 
-    let task = tokio::spawn(ready_submitter.submit_scores(osu_id, mode.into()));
+    let task = tokio::spawn(ready_submitter.submit_scores(osu_id, GameMode::from(mode)));
 
     let msg = ctx
         .say(cool_text(OsakaMoji::ZanyFace, "Started score submission!"))
