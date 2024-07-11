@@ -18,11 +18,13 @@ pub async fn setup(
     i18n: I18NWrapper<OsakaLocale, OsakaI18N>,
     pool: Pool<Postgres>,
 ) -> Result<OsakaData, error::Osaka> {
-    let rosu = rosu_v2::Osu::builder()
-        .client_id(config.osu_client_id)
-        .client_secret(&config.osu_client_secret)
-        .build()
-        .await?;
+    let rosu = Arc::new(
+        rosu_v2::Osu::builder()
+            .client_id(config.osu_client_id)
+            .client_secret(&config.osu_client_secret)
+            .build()
+            .await?,
+    );
 
     let register_command_manager = register_command::Manager();
 
@@ -38,9 +40,9 @@ pub async fn setup(
         .await
         .map(|()| OsakaData {
             i18n,
-            rosu: Arc::new(rosu),
+            rosu: Arc::clone(&rosu),
             config,
-            pool,
-            managers: managers::Osaka::new(),
+            pool: pool.clone(),
+            managers: managers::Osaka::new(rosu, pool),
         })?)
 }

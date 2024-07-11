@@ -2,11 +2,11 @@ use rosu_v2::model::GameMode;
 
 use crate::{
     commands::osu::Mode,
-    managers::osu::submit::{ReadyScoreSubmitterInjection, ScoreSubmitterTrait},
+    managers::osu::submit::ScoreSubmitterTrait,
     osaka_sqlx::discord,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
 };
-use std::{convert::From, sync::Arc};
+use std::convert::From;
 
 use crate::{
     error, managers, osaka_sqlx::booru_setting::SettingKind, OsakaContext, OsakaData, OsakaResult,
@@ -26,16 +26,10 @@ impl From<Mode> for GameMode {
 #[poise::command(slash_command)]
 pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     let OsakaData {
-        rosu,
         pool,
         managers:
             managers::Osaka {
-                osu_manager:
-                    managers::osu::Manager {
-                        submit_manager,
-                        beatmap_cache_manager,
-                        ..
-                    },
+                osu_manager: managers::osu::Manager { submit_manager, .. },
                 ..
             },
         ..
@@ -51,12 +45,7 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     .map_err(|_| error::Osaka::SimplyUnexpected)?;
 
     let osu_id = user.osu_user_id.ok_or(error::Osaka::SimplyUnexpected)?;
-    let (ready_submitter, mut receiver) =
-        submit_manager.begin_submission(ReadyScoreSubmitterInjection::new(
-            Arc::clone(beatmap_cache_manager),
-            Arc::clone(rosu),
-            pool.clone(),
-        ));
+    let (ready_submitter, mut receiver) = submit_manager.begin_submission();
 
     let task = tokio::spawn(ready_submitter.submit_scores(osu_id, GameMode::from(mode)));
 
