@@ -1,6 +1,8 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
-use sqlx::{types::BigDecimal, Pool, Postgres, QueryBuilder};
+use sqlx::{
+    database::HasArguments, query::Query, types::BigDecimal, Database, Pool, Postgres, QueryBuilder,
+};
 use std::{collections::HashSet, sync::Arc};
 use tracing::info;
 
@@ -90,6 +92,17 @@ impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
     }
 }
 
+pub trait ActionLogger {
+    fn log(&mut self) -> &mut Self;
+}
+
+impl<DB: Database> ActionLogger for QueryBuilder<'_, DB> {
+    fn log(&mut self) -> &mut Self {
+        info!("Built query: {}", self.sql());
+        self
+    }
+}
+
 pub struct MinimalStoredScore {
     score_id: BigDecimal,
 }
@@ -97,19 +110,17 @@ pub struct MinimalStoredScore {
 type SubmissionPerformanceInformation<'a> = Vec<(PerformanceAttributes, (&'a Score, &'a u64))>;
 
 impl ReadyScoreSubmitter {
-    async fn get_submission_user_id(&self, osu_id: SubmissionID) -> Result<u32, SubmissionError> {
+    async fn get_submission_user_id(
+        &self,
+        submitter_guard: &RwLockReadGuard<'_, ScoreSubmitter>,
+        osu_id: SubmissionID,
+    ) -> Result<u32, SubmissionError> {
         Ok(match osu_id {
             SubmissionID::ByStoredID(id) => {
                 u32::try_from(id).map_err(|_| SubmissionError::InvalidUserID)?
             }
             SubmissionID::ByUsername(username) => {
-                self.submitter
-                    .read()
-                    .await
-                    .rosu
-                    .user(username)
-                    .await?
-                    .user_id
+                submitter_guard.rosu.user(username).await?.user_id
             }
         })
     }
@@ -177,6 +188,7 @@ impl ReadyScoreSubmitter {
                     .push_bind(mode_bits);
             },
         )
+        .log()
         .build()
         .execute(&mut *tx)
         .await?;
@@ -218,6 +230,7 @@ impl ReadyScoreSubmitter {
                 };
             },
         )
+        .log()
         .build()
         .execute(&mut *tx)
         .await?;
@@ -245,8 +258,10 @@ impl ReadyScoreSubmitter {
         osu_id: impl Into<SubmissionID> + Send,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
-        let raw_osu_user_id = self.get_submission_user_id(osu_id.into()).await?;
         let submitter_guard = self.submitter.read().await;
+        let raw_osu_user_id = self
+            .get_submission_user_id(&submitter_guard, osu_id.into())
+            .await?;
 
         // We are locking any submission calls from this user.
         let locker_guard = submitter_guard.locker.lock(raw_osu_user_id.to_string())?;
