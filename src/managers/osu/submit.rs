@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
 use sqlx::{types::BigDecimal, Pool, Postgres, QueryBuilder};
-use std::{borrow::Borrow, collections::HashSet, ops::Deref, sync::Arc};
+use std::{collections::HashSet, sync::Arc};
 use tracing::info;
 
 use rosu_v2::model::{score::Score, GameMode};
@@ -10,10 +10,7 @@ use tokio::sync::{
     RwLock, RwLockReadGuard,
 };
 
-use crate::{
-    managers,
-    utils::id_locked::{IDLocker, IDLockerError},
-};
+use crate::utils::id_locked::{IDLocker, IDLockerError};
 
 use super::beatmap_cache;
 
@@ -292,6 +289,7 @@ impl ReadyScoreSubmitter {
         .await?;
 
         locker_guard.unlock()?;
+        drop(submitter_guard);
 
         Ok(())
     }
