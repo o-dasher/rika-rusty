@@ -1,8 +1,6 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
-use sqlx::{
-    database::HasArguments, query::Query, types::BigDecimal, Database, Pool, Postgres, QueryBuilder,
-};
+use sqlx::{types::BigDecimal, Database, Pool, Postgres, QueryBuilder};
 use std::{collections::HashSet, sync::Arc};
 use tracing::info;
 
@@ -167,6 +165,11 @@ impl ReadyScoreSubmitter {
         raw_osu_user_id: u32,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
+        // Let's not start an transaction if not required.
+        if performance_information.is_empty() {
+            return Ok(());
+        }
+
         let mode_bits = i16::from(mode as u8);
 
         info!("Beginning unsafe transaction");
