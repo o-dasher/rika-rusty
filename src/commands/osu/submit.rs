@@ -35,7 +35,7 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
         ..
     } = ctx.data();
 
-    let user = sqlx::query_as!(
+    let osu_user_id = sqlx::query_as!(
         discord::User,
         "SELECT * FROM discord_user WHERE id=$1",
         SettingKind::User.get_sqlx_id(ctx)?
@@ -43,12 +43,13 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     .fetch_one(pool)
     .await
     .ok()
+    .ok_or(osu::Error::NotLinked)?
+    .osu_user_id
     .ok_or(osu::Error::NotLinked)?;
 
-    let osu_id = user.osu_user_id.ok_or(error::Osaka::SimplyUnexpected)?;
     let (ready_submitter, mut receiver) = submit_manager.begin_submission();
 
-    let task = tokio::spawn(ready_submitter.submit_scores(osu_id, GameMode::from(mode)));
+    let task = tokio::spawn(ready_submitter.submit_scores(osu_user_id, GameMode::from(mode)));
 
     let msg = ctx
         .say(cool_text(OsakaMoji::ZanyFace, "Started score submission!"))
