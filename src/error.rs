@@ -58,17 +58,15 @@ pub enum Osaka {
     SimplyUnexpected,
 }
 
+pub trait Translated {
+    fn get_response<'a>(self, i18n: &'a I18NAccess<I18NWrapper<OsakaLocale, OsakaI18N>>)
+        -> &'a str;
+}
+
 #[derive(Debug, Display, thiserror::Error)]
 pub enum Notify {
     Warn(String),
     MissingPermissions,
-}
-
-pub trait Translated {
-    fn get_response<'a>(
-        self,
-        i18n: &'a I18NAccess<I18NWrapper<OsakaLocale, OsakaI18N>>,
-    ) -> &'a String;
 }
 
 fn get_response(ctx: OsakaContext, error: Osaka) -> String {

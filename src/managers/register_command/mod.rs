@@ -1,7 +1,10 @@
 use poise::serenity_prelude::{self, GuildId};
 use strum::Display;
 
-use crate::{error, OsakaConfig, OsakaContext, OsakaData};
+use crate::{
+    error::{self},
+    OsakaConfig, OsakaContext, OsakaData,
+};
 
 pub enum Kind {
     Development,

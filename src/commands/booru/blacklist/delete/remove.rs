@@ -52,11 +52,11 @@ pub async fn remove(
     kind: SettingKind,
     #[autocomplete = "autocomplete_tag"] tag: OsakaBooruTag,
 ) -> OsakaResult {
-    provide_delete_feedback(ctx, kind, Operation::Remove(tag.0.clone()), |cleared| {
+    provide_delete_feedback(ctx, kind, Operation::Remove(&tag.0), |cleared| {
         let i18n = ctx.i18n();
         t_prefix!($i18n.booru.blacklist.remove);
 
-        let tag = tag.0.clone();
+        let tag = &tag.0;
         if cleared {
             t!(failed).with(mono(tag))
         } else {

@@ -25,7 +25,7 @@ pub async fn avatar(ctx: OsakaContext<'_>, user: Option<serenity_prelude::User>)
             e.color(Colour::DARK_BLUE)
                 .image(avatar)
                 .footer(|f| f.text(footer))
-                .title(u.name.clone())
+                .title(&u.name)
         })
     })
     .await?;

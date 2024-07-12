@@ -9,15 +9,15 @@ use crate::{
 pub mod clear;
 pub mod remove;
 
-pub enum Operation {
-    Remove(String),
+pub enum Operation<'a> {
+    Remove(&'a str),
     Clear,
 }
 
 pub async fn provide_delete_feedback<F: (Fn(bool) -> String) + Send>(
     ctx: OsakaContext<'_>,
     kind: SettingKind,
-    operation: Operation,
+    operation: Operation<'_>,
     provide_message: F,
 ) -> OsakaResult {
     blacklist::check_permissions(ctx, kind).await?;
