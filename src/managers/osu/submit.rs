@@ -1,14 +1,10 @@
 use itertools::Itertools;
 use rosu_pp::any::PerformanceAttributes;
-use sqlx::{types::BigDecimal, Database, Pool, Postgres, QueryBuilder};
+use sqlx::{types::BigDecimal, Pool, Postgres, QueryBuilder};
 use std::{collections::HashSet, sync::Arc};
-use tracing::info;
 
 use rosu_v2::model::{score::Score, GameMode};
-use tokio::sync::{
-    mpsc::{Receiver, Sender},
-    RwLock, RwLockReadGuard,
-};
+use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::utils::id_locked::{IDLocker, IDLockerError};
 
@@ -28,7 +24,7 @@ pub struct ScoreSubmitter {
 }
 
 pub struct ReadyScoreSubmitter {
-    submitter: Arc<RwLock<ScoreSubmitter>>,
+    submitter: Arc<ScoreSubmitter>,
     sender: Sender<(usize, usize)>,
 }
 
@@ -72,11 +68,11 @@ impl ScoreSubmitter {
     }
 }
 
-pub trait ScoreSubmitterTrait {
+pub trait ScoreSubmitterDispatcher {
     fn begin_submission(&self) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>);
 }
 
-impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
+impl ScoreSubmitterDispatcher for Arc<ScoreSubmitter> {
     fn begin_submission(&self) -> (ReadyScoreSubmitter, Receiver<(usize, usize)>) {
         let (sender, receiver) = tokio::sync::mpsc::channel(100);
 
@@ -90,17 +86,6 @@ impl ScoreSubmitterTrait for Arc<RwLock<ScoreSubmitter>> {
     }
 }
 
-pub trait ActionLogger {
-    fn log(&mut self) -> &mut Self;
-}
-
-impl<DB: Database> ActionLogger for QueryBuilder<'_, DB> {
-    fn log(&mut self) -> &mut Self {
-        info!("Built query: {}", self.sql());
-        self
-    }
-}
-
 pub struct MinimalStoredScore {
     score_id: BigDecimal,
 }
@@ -108,24 +93,17 @@ pub struct MinimalStoredScore {
 type SubmissionPerformanceInformation<'a> = Vec<(PerformanceAttributes, (&'a Score, &'a u64))>;
 
 impl ReadyScoreSubmitter {
-    async fn get_submission_user_id(
-        &self,
-        submitter_guard: &RwLockReadGuard<'_, ScoreSubmitter>,
-        osu_id: SubmissionID,
-    ) -> Result<u32, SubmissionError> {
+    async fn get_submission_user_id(&self, osu_id: SubmissionID) -> Result<u32, SubmissionError> {
         Ok(match osu_id {
             SubmissionID::ByStoredID(id) => {
                 u32::try_from(id).map_err(|_| SubmissionError::InvalidUserID)?
             }
-            SubmissionID::ByUsername(username) => {
-                submitter_guard.rosu.user(username).await?.user_id
-            }
+            SubmissionID::ByUsername(username) => self.submitter.rosu.user(username).await?.user_id,
         })
     }
 
     async fn get_performance_information<'a>(
         &'a self,
-        submitter_guard: &RwLockReadGuard<'_, ScoreSubmitter>,
         new_scores: &'a [(u64, &Score)],
     ) -> Result<SubmissionPerformanceInformation<'a>, SubmissionError> {
         let mut performance_information = vec![];
@@ -137,7 +115,8 @@ impl ReadyScoreSubmitter {
                     rosu_pp::Difficulty::new()
                         .mods(score.mods.bits())
                         .calculate(&rosu_pp::Beatmap::from_bytes(
-                            &submitter_guard
+                            &self
+                                .submitter
                                 .beatmap_cache_manager
                                 .get_beatmap_file(score.map_id)
                                 .await?,
@@ -160,7 +139,6 @@ impl ReadyScoreSubmitter {
 
     async fn store_new_performance_data(
         &self,
-        submitter_guard: &RwLockReadGuard<'_, ScoreSubmitter>,
         performance_information: SubmissionPerformanceInformation<'_>,
         raw_osu_user_id: u32,
         mode: GameMode,
@@ -171,11 +149,8 @@ impl ReadyScoreSubmitter {
         }
 
         let mode_bits = i16::from(mode as u8);
+        let mut tx = self.submitter.pool.begin().await?;
 
-        info!("Beginning unsafe transaction");
-        let mut tx = submitter_guard.pool.begin().await?;
-
-        info!("Inserting scores for user");
         QueryBuilder::<Postgres>::new(
             "
 			INSERT INTO osu_score (score_id, osu_user_id, map_id, mods, mode)
@@ -191,12 +166,10 @@ impl ReadyScoreSubmitter {
                     .push_bind(mode_bits);
             },
         )
-        .log()
         .build()
         .execute(&mut *tx)
         .await?;
 
-        info!("Inserting performance data for user");
         QueryBuilder::<Postgres>::new(format!(
             "INSERT INTO {}_performance (score_id, mode, overall{})",
             match mode {
@@ -233,7 +206,6 @@ impl ReadyScoreSubmitter {
                 };
             },
         )
-        .log()
         .build()
         .execute(&mut *tx)
         .await?;
@@ -261,13 +233,11 @@ impl ReadyScoreSubmitter {
         osu_id: impl Into<SubmissionID> + Send,
         mode: GameMode,
     ) -> Result<(), SubmissionError> {
-        let submitter_guard = self.submitter.read().await;
-        let raw_osu_user_id = self
-            .get_submission_user_id(&submitter_guard, osu_id.into())
-            .await?;
+        let Self { submitter, .. } = &self;
 
         // We are locking any submission calls from this user.
-        let locker_guard = submitter_guard.locker.lock(raw_osu_user_id.to_string())?;
+        let raw_osu_user_id = self.get_submission_user_id(osu_id.into()).await?;
+        let locker_guard = submitter.locker.lock(raw_osu_user_id.to_string())?;
 
         let stored_osu_id = i64::from(raw_osu_user_id);
         let osaka_osu_scores = sqlx_conditional_queries::conditional_query_as!(
@@ -284,10 +254,10 @@ impl ReadyScoreSubmitter {
                 GameMode::Catch => "catch"
             }
         )
-        .fetch_all(&submitter_guard.pool)
+        .fetch_all(&submitter.pool)
         .await?;
 
-        let osu_scores = submitter_guard
+        let osu_scores = submitter
             .rosu
             .user_scores(raw_osu_user_id)
             .limit(100)
@@ -295,11 +265,10 @@ impl ReadyScoreSubmitter {
             .await?;
 
         self.store_new_performance_data(
-            &submitter_guard,
-            self.get_performance_information(
-                &submitter_guard,
-                &Self::get_new_submitted_scores(osaka_osu_scores, &osu_scores),
-            )
+            self.get_performance_information(&Self::get_new_submitted_scores(
+                osaka_osu_scores,
+                &osu_scores,
+            ))
             .await?,
             raw_osu_user_id,
             mode,
@@ -307,7 +276,6 @@ impl ReadyScoreSubmitter {
         .await?;
 
         locker_guard.unlock()?;
-        drop(submitter_guard);
 
         Ok(())
     }

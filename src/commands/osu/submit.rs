@@ -2,7 +2,7 @@ use rosu_v2::model::GameMode;
 
 use crate::{
     commands::osu::Mode,
-    managers::osu::submit::ScoreSubmitterTrait,
+    managers::osu::submit::ScoreSubmitterDispatcher,
     osaka_sqlx::discord,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
 };
