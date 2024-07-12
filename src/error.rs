@@ -14,48 +14,24 @@ use tracing::error;
 use crate::managers::register_command::Error;
 
 #[derive(thiserror::Error, derive_more::From, Debug)]
+#[error(transparent)]
 pub enum Osaka {
-    #[error(transparent)]
-    Serenity(serenity_prelude::SerenityError),
-
-    #[error(transparent)]
-    Envy(envy::Error),
-
-    #[error(transparent)]
-    Sqlx(sqlx::Error),
-
-    #[error(transparent)]
-    Migrate(sqlx::migrate::MigrateError),
-
-    #[error(transparent)]
-    Url(url::ParseError),
-
-    #[error(transparent)]
-    Booru(rusty_booru::shared::Error),
-
-    #[error(transparent)]
-    DurationOutOfRange(OutOfRangeError),
-
-    #[error(transparent)]
-    Reqwest(reqwest::Error),
-
-    #[error(transparent)]
-    Rosu(rosu_v2::error::OsuError),
-
-    #[error(transparent)]
-    Notify(Notify),
-
-    #[error(transparent)]
-    OsuCommand(commands::osu::Error),
-
-    #[error(transparent)]
-    RegisterCommand(managers::register_command::Error),
-
-    #[error(transparent)]
-    Submission(SubmissionError),
-
-    #[error("Something really sketchy happened!")]
+    #[error("Something sketchy happened!")]
     SimplyUnexpected,
+
+    Serenity(serenity_prelude::SerenityError),
+    Envy(envy::Error),
+    Sqlx(sqlx::Error),
+    Migrate(sqlx::migrate::MigrateError),
+    Url(url::ParseError),
+    Booru(rusty_booru::shared::Error),
+    DurationOutOfRange(OutOfRangeError),
+    Reqwest(reqwest::Error),
+    Rosu(rosu_v2::error::OsuError),
+    Notify(Notify),
+    OsuCommand(commands::osu::Error),
+    RegisterCommand(managers::register_command::Error),
+    Submission(SubmissionError),
 }
 
 pub trait Translated {
