@@ -1,7 +1,7 @@
 use rosu_v2::model::GameMode;
 
 use crate::{
-    commands::osu::Mode,
+    commands::osu::{self, Mode},
     managers::osu::submit::ScoreSubmitterDispatcher,
     osaka_sqlx::discord,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
@@ -42,7 +42,8 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     )
     .fetch_one(pool)
     .await
-    .map_err(|_| error::Osaka::SimplyUnexpected)?;
+    .ok()
+    .ok_or(osu::Error::NotLinked)?;
 
     let osu_id = user.osu_user_id.ok_or(error::Osaka::SimplyUnexpected)?;
     let (ready_submitter, mut receiver) = submit_manager.begin_submission();
@@ -68,7 +69,7 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     })
     .await?;
 
-    task.await.map_err(|_| error::Osaka::SimplyUnexpected)??;
+    task.await.ok().ok_or(error::Osaka::SimplyUnexpected)??;
 
     Ok(())
 }

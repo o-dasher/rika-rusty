@@ -1,8 +1,13 @@
-use crate::{managers::osu::submit::SubmissionError, responses, OsakaContext, OsakaData};
+use crate::{
+    commands,
+    i18n::{osaka_i_18_n::OsakaI18N, OsakaLocale},
+    managers::{self, osu::submit::SubmissionError},
+    responses, OsakaContext, OsakaData,
+};
 use chrono::OutOfRangeError;
 use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
-use rusty18n::t_prefix;
+use rusty18n::{t_prefix, I18NAccess, I18NWrapper};
 use strum::Display;
 
 use crate::managers::register_command::Error;
@@ -40,7 +45,10 @@ pub enum Osaka {
     Notify(Notify),
 
     #[error(transparent)]
-    RegisterCommand(Error),
+    OsuCommand(commands::osu::Error),
+
+    #[error(transparent)]
+    RegisterCommand(managers::register_command::Error),
 
     #[error(transparent)]
     Submission(SubmissionError),
@@ -53,6 +61,13 @@ pub enum Osaka {
 pub enum Notify {
     Warn(String),
     MissingPermissions,
+}
+
+pub trait Translated {
+    fn get_response<'a>(
+        self,
+        i18n: &'a I18NAccess<I18NWrapper<OsakaLocale, OsakaI18N>>,
+    ) -> &'a String;
 }
 
 fn get_response(ctx: OsakaContext, error: Osaka) -> String {
@@ -82,6 +97,7 @@ fn get_response(ctx: OsakaContext, error: Osaka) -> String {
             Notify::Warn(warn) => warn,
             Notify::MissingPermissions => t!(user_missing_permissions).clone(),
         },
+        Osaka::OsuCommand(e) => e.get_response(&i18n).to_string(),
     }
 }
 

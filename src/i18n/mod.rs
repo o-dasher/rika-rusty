@@ -52,6 +52,9 @@ nestruct::nest!(
             link: {
                 failed: rusty18n::DR<String>?,
                 linked: rusty18n::DR<String>?
+            },
+            errors: {
+                not_linked: rusty18n::R?
             }
         }
     }

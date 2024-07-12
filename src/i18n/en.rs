@@ -48,6 +48,9 @@ define_i18n_fallback! {
         link {
             failed: r!(|u| "Failed to link your osu! profile to {u}"),
             linked: r!(|u| "Alright linked your osu! profile to {u}"),
+        },
+        errors {
+            not_linked: r!("You must link your osu! account to use this command!")
         }
     }
 }

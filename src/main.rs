@@ -60,7 +60,7 @@ async fn main() -> OsakaResult {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
         .with_target(true)
-        .with_max_level(tracing::Level::INFO)
+        .with_max_level(tracing::Level::DEBUG)
         .pretty()
         .init();
 

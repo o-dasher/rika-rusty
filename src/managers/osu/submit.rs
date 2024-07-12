@@ -95,9 +95,9 @@ type SubmissionPerformanceInformation<'a> = Vec<(PerformanceAttributes, (&'a Sco
 impl ReadyScoreSubmitter {
     async fn get_submission_user_id(&self, osu_id: SubmissionID) -> Result<u32, SubmissionError> {
         Ok(match osu_id {
-            SubmissionID::ByStoredID(id) => {
-                u32::try_from(id).map_err(|_| SubmissionError::InvalidUserID)?
-            }
+            SubmissionID::ByStoredID(id) => u32::try_from(id)
+                .ok()
+                .ok_or(SubmissionError::InvalidUserID)?,
             SubmissionID::ByUsername(username) => self.submitter.rosu.user(username).await?.user_id,
         })
     }
