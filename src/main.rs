@@ -4,7 +4,11 @@
     clippy::nursery,
     clippy::clone_on_ref_ptr
 )]
-#![allow(clippy::missing_panics_doc, clippy::missing_errors_doc)]
+#![allow(
+    clippy::missing_panics_doc,
+    clippy::missing_errors_doc,
+    clippy::too_many_lines
+)]
 
 use std::sync::Arc;
 

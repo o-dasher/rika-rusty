@@ -60,24 +60,21 @@ pub async fn search(
     }
 
     dbg!("Someone is searching: {}", &query.tags);
-
-    let query_res = query.get(booru.clone().into()).await;
-
-    match &query_res {
+    let query_res = match query.get(booru.clone().into()).await {
         Ok(value) => {
             if value.is_empty() {
                 reply_not_found().await?;
                 return Ok(());
             }
+
+            value
         }
         Err(e) => {
             dbg!("Something bad happened, booru: {}", e);
             reply_not_found().await?;
             return Ok(());
         }
-    }
-
-    let query_res = query_res?;
+    };
 
     let mapped_result = query_res
         .iter()
