@@ -17,6 +17,7 @@ use poise_i18n::{apply_translations, PoiseI18NMeta};
 use rusty18n::I18NWrapper;
 use serde::{Deserialize, Serialize};
 use sqlx::{pool::PoolOptions, Pool, Postgres};
+use tracing::error;
 
 pub mod commands;
 pub mod error;
@@ -89,7 +90,7 @@ async fn main() -> OsakaResult {
     poise::Framework::builder()
         .options(FrameworkOptions {
             commands,
-            on_error: |err| Box::pin(error::handle(err).unwrap_or_else(|e| log::error!("{}", e))),
+            on_error: |err| Box::pin(error::handle(err).unwrap_or_else(|e| error!("{}", e))),
             ..Default::default()
         })
         .token(&config.bot_token)

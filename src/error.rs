@@ -9,6 +9,7 @@ use poise::{serenity_prelude, FrameworkError};
 use poise_i18n::PoiseI18NTrait;
 use rusty18n::{t_prefix, I18NAccess, I18NWrapper};
 use strum::Display;
+use tracing::error;
 
 use crate::managers::register_command::Error;
 
@@ -86,7 +87,7 @@ fn get_response(ctx: OsakaContext, error: Osaka) -> String {
         | Osaka::Rosu(..)
         | Osaka::Submission(..)
         | Osaka::SimplyUnexpected => {
-            log::error!("{}", error);
+            error!("{}", error);
             t!(unexpected).clone()
         }
         Osaka::RegisterCommand(e) => match e {

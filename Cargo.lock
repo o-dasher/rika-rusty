@@ -1446,7 +1446,6 @@ dependencies = [
  "envy",
  "fchashmap",
  "itertools 0.12.1",
- "log",
  "nestruct",
  "paste",
  "poise",
