@@ -95,7 +95,7 @@ pub async fn search(
             let (file_url, queried) = indexed_res;
 
             let tag_description = if queried.tags.len() < CLAMP_TAGS_LEN {
-                queried.tags.clone()
+                queried.tags.to_string()
             } else {
                 format!(
                     "{}...",

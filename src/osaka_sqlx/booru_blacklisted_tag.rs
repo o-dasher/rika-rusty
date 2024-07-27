@@ -21,7 +21,7 @@ create_conditional_query_as!(
 
 impl BooruBlacklistedTag {
     fn map_to_string(tags: Result<Vec<Self>, sqlx::Error>) -> Vec<String> {
-        tags.map(|v| v.iter().map(|v| v.blacklisted.clone()).collect())
+        tags.map(|v| v.iter().map(|v| v.blacklisted.to_string()).collect())
             .unwrap_or_default()
     }
 

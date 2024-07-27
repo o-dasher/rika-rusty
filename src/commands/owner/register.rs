@@ -38,7 +38,7 @@ pub async fn register(ctx: OsakaContext<'_>, on: Option<RegisterChoice>) -> Osak
                 RegisterChoice::Local => match ctx.guild_id() {
                     Some(guild_id) => register_command::Kind::Local(guild_id),
                     None => Err(error::Notify::Warn(
-                        t!(i18n.errors.must_be_used_on_guild).clone(),
+                        t!(i18n.errors.must_be_used_on_guild).to_string(),
                     ))?,
                 },
                 RegisterChoice::Global => register_command::Kind::Global,

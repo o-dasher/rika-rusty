@@ -56,7 +56,7 @@ pub async fn autocomplete_tag<'a>(
                 .unwrap_or_default()
                 .iter()
                 .filter(|v| !blacklisted_tags.contains(&v.value))
-                .map(|v| [prefix_search.clone(), v.value.clone()].join(" "))
+                .map(|v| [prefix_search.to_string(), v.value.to_string()].join(" "))
                 .collect_vec()
         }
         None => vec![prefix_search],

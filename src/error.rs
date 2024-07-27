@@ -62,15 +62,15 @@ fn get_response(ctx: OsakaContext, error: Osaka) -> String {
         | Osaka::Submission(..)
         | Osaka::SimplyUnexpected => {
             error!("{}", error);
-            t!(unexpected).clone()
+            t!(unexpected).to_string()
         }
         Osaka::RegisterCommand(e) => match e {
             Error::Serenity(e) => get_response(ctx, e.into()),
-            Error::NoDevelopmentGuildSet => t!(register.no_development_guild_set).clone(),
+            Error::NoDevelopmentGuildSet => t!(register.no_development_guild_set).to_string(),
         },
         Osaka::Notify(e) => match e {
             Notify::Warn(warn) => warn,
-            Notify::MissingPermissions => t!(user_missing_permissions).clone(),
+            Notify::MissingPermissions => t!(user_missing_permissions).to_string(),
         },
         Osaka::OsuCommand(e) => e.get_response(&i18n).to_string(),
     }
