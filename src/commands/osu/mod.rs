@@ -40,7 +40,7 @@ impl error::Translated for Error {
         i18n: &'a I18NAccess<I18NWrapper<OsakaLocale, OsakaI18N>>,
     ) -> &'a str {
         match self {
-            Self::NotLinked => &t!(i18n.osu.errors.not_linked),
+            Self::NotLinked => t!(i18n.osu.errors.not_linked).as_ref(),
         }
     }
 }
