@@ -53,6 +53,11 @@ nestruct::nest!(
                 failed: rusty18n::DR<String>?,
                 linked: rusty18n::DR<String>?
             },
+            submit: {
+                started: rusty18n::R?,
+                processing: rusty18n::DR<(String, String)>?,
+                finished: rusty18n::R?
+            },
             errors: {
                 not_linked: rusty18n::R?
             }

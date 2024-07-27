@@ -1,4 +1,6 @@
+use poise_i18n::PoiseI18NTrait;
 use rosu_v2::model::GameMode;
+use rusty18n::t_prefix;
 
 use crate::{
     commands::osu::{Mode, OsuCommandContext},
@@ -11,6 +13,9 @@ use crate::{error, managers, OsakaContext, OsakaData, OsakaResult};
 
 #[poise::command(slash_command)]
 pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
+    let i18n = ctx.i18n();
+    t_prefix!($i18n.osu.submit);
+
     let OsakaData {
         managers:
             managers::Osaka {
@@ -26,21 +31,21 @@ pub async fn submit(ctx: OsakaContext<'_>, mode: Mode) -> OsakaResult {
     let task = tokio::spawn(ready_submitter.submit_scores(osu_user_id, GameMode::from(mode)));
 
     let msg = ctx
-        .say(cool_text(OsakaMoji::ZanyFace, "Started score submission!"))
+        .say(cool_text(OsakaMoji::ZanyFace, t!(started).as_str()))
         .await?;
 
     while let Some((cur, of)) = receiver.recv().await {
         msg.edit(ctx, |b| {
             b.content(cool_text(
                 OsakaMoji::ChocolateBar,
-                &format!("Processing score {} out of {}", mono(cur), mono(of)),
+                &t!(processing).with((mono(cur), mono(of))),
             ))
         })
         .await?;
     }
 
     msg.edit(ctx, |b| {
-        b.content(cool_text(OsakaMoji::ZanyFace, "Finished score submission"))
+        b.content(cool_text(OsakaMoji::ZanyFace, t!(finished).as_str()))
     })
     .await?;
 

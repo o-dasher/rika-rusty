@@ -49,6 +49,11 @@ define_i18n_fallback! {
             failed: r!(|u| "Failed to link your osu! profile to {u}"),
             linked: r!(|u| "Alright linked your osu! profile to {u}"),
         },
+        submit {
+            started: r!("Started score submission!"),
+            processing: r!(|(a, b)| "processing score {a} out of {b}"),
+            finished: r!("finished score submission")
+        },
         errors {
             not_linked: r!("You must link your osu! account to use this command!")
         }
