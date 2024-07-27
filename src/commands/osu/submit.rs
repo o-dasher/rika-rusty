@@ -1,9 +1,10 @@
+use crate::commands::osu::Context;
 use poise_i18n::PoiseI18NTrait;
 use rosu_v2::model::GameMode;
 use rusty18n::t_prefix;
 
 use crate::{
-    commands::osu::{Mode, OsuCommandContext},
+    commands::osu::Mode,
     managers::osu::submit::ScoreSubmitterDispatcher,
     responses::{emojis::OsakaMoji, markdown::mono, templates::cool_text},
 };

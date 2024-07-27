@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use crate::{
     commands::osu::{link::link, submit::submit},
     create_command_group, error,
@@ -58,11 +60,11 @@ impl error::Translated for Error {
     }
 }
 
-pub trait OsuCommandContext {
-    async fn get_linked_user(&self) -> Result<i64, error::Osaka>;
+pub trait Context {
+    fn get_linked_user(&self) -> impl Future<Output = Result<i64, error::Osaka>> + Send;
 }
 
-impl OsuCommandContext for OsakaContext<'_> {
+impl Context for OsakaContext<'_> {
     async fn get_linked_user(&self) -> Result<i64, error::Osaka> {
         sqlx::query_as!(
             discord::User,
