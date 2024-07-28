@@ -54,6 +54,9 @@ define_i18n_fallback! {
             processing: r!(|(a, b)| "processing score {a} out of {b}"),
             finished: r!("finished score submission")
         },
+        recommend {
+            recommendation: r!(|(a, b)| "I recommend you to play {a} with the mods {b}"),
+        },
         errors {
             not_linked: r!("You must link your osu! account to use this command!")
         }

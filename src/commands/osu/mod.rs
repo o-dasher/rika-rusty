@@ -1,3 +1,4 @@
+use crate::commands::osu::recommend::recommend;
 use std::future::Future;
 
 use crate::{
@@ -15,7 +16,7 @@ pub mod link;
 pub mod recommend;
 pub mod submit;
 
-create_command_group!(osu, ["link", "submit"]);
+create_command_group!(osu, ["link", "submit", "recommend"]);
 
 #[derive(ChoiceParameter, Default, Clone, Copy)]
 #[repr(u8)]

@@ -1,58 +1,58 @@
 use sqlx::{prelude::FromRow, types::BigDecimal};
 
 #[derive(FromRow)]
-pub struct OsuScore {
+pub struct DatabaseOsuScore {
     pub score_id: BigDecimal,
-    pub mode: i8,
+    pub mode: i16,
 
-    pub mods: i32,
+    pub mods: i64,
     pub map_id: i32,
     pub osu_user_id: i64,
 }
 
 #[derive(FromRow)]
-pub struct OsuPerformance {
+pub struct DatabaseOsuPerformance {
     pub score_id: BigDecimal,
-    pub mode: i8,
+    pub mode: i16,
 
-    pub overall: f32,
-    pub aim: f32,
-    pub speed: f32,
-    pub accuracy: f32,
-    pub flashlight: f32,
+    pub overall: f64,
+    pub aim: f64,
+    pub speed: f64,
+    pub accuracy: f64,
+    pub flashlight: f64,
 }
 
 #[derive(FromRow)]
-pub struct TaikoPerformance {
+pub struct DatabaseTaikoPerformance {
     pub score_id: BigDecimal,
-    pub mode: i8,
+    pub mode: i16,
 
-    pub overall: f32,
-    pub accuracy: f32,
-    pub difficulty: f32,
+    pub overall: f64,
+    pub accuracy: f64,
+    pub difficulty: f64,
 }
 
 #[derive(FromRow)]
-pub struct CatchPerformance {
+pub struct DatabaseCatchPerformance {
     pub score_id: BigDecimal,
-    pub mode: i8,
+    pub mode: i16,
 
-    pub overall: f32,
+    pub overall: f64,
 }
 
 #[derive(FromRow)]
-pub struct ManiaPerformance {
+pub struct DatabaseManiaPerformance {
     pub score_id: BigDecimal,
-    pub mode: i8,
+    pub mode: i16,
 
-    pub overall: f32,
-    pub difficulty: f32,
+    pub overall: f64,
+    pub difficulty: f64,
 }
 
 #[derive(derive_more::From)]
-pub enum OsakaOsuPerformance {
-    Osu(OsuPerformance),
-    Taiko(TaikoPerformance),
-    Catch(CatchPerformance),
-    Mania(ManiaPerformance),
+pub enum DatabaseGeneralOsuPerformance {
+    Osu(DatabaseOsuPerformance),
+    Taiko(DatabaseTaikoPerformance),
+    Catch(DatabaseCatchPerformance),
+    Mania(DatabaseManiaPerformance),
 }

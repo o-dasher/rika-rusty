@@ -58,6 +58,9 @@ nestruct::nest!(
                 processing: rusty18n::DR<(String, String)>?,
                 finished: rusty18n::R?
             },
+            recommend: {
+                recommendation: rusty18n::DR<(String, String)>?
+            },
             errors: {
                 not_linked: rusty18n::R?
             }

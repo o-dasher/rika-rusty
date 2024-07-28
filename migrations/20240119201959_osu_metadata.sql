@@ -12,7 +12,7 @@ CREATE TABLE osu_score_identifier (
 CREATE TABLE osu_score (
     osu_user_id BIGINT NOT NULL,
 
-    mods INT NOT NULL,
+    mods BIGINT NOT NULL,
     map_id INT NOT NULL,
 
     PRIMARY KEY (score_id, mode),
