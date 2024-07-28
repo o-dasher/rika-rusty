@@ -1,3 +1,4 @@
+#![feature(impl_trait_in_fn_trait_return)]
 #![warn(
     clippy::all,
     clippy::pedantic,

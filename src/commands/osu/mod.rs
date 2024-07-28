@@ -12,6 +12,7 @@ use rusty18n::{t, I18NAccess, I18NWrapper};
 use strum::Display;
 
 pub mod link;
+pub mod recommend;
 pub mod submit;
 
 create_command_group!(osu, ["link", "submit"]);
