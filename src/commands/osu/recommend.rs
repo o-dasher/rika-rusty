@@ -24,7 +24,7 @@ pub fn get_weighter<T>(
             .enumerate()
             .map(|(i, value)| i32::try_from(i).map(|weight| (value, 0.95f64.powi(weight))))
             .map_ok(|(value, weight_by)| (value * weight_by, weight_by))
-            .fold_ok((0f64, 0f64), |(pp_sum, weight), (value, weight_by)| {
+            .fold_ok((0., 0.), |(pp_sum, weight), (value, weight_by)| {
                 (pp_sum + value, weight + weight_by)
             })
             .map(|(total_pp_sum, total_pp_weight)| total_pp_sum / total_pp_weight)
